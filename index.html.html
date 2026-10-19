@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Exclusive Thai Kitchen - POS System</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 8px; 
+            background-color: #f4f4f9; 
+            margin: 0; 
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Header */
+        .top-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #2c3e50;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            height: 42px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        .menu-toggle-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+        }
+        .restaurant-title {
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+        .header-time {
+            font-size: 13px;
+            font-weight: bold;
+            color: #f1c40f;
+        }
+        
+        .pos-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            gap: 6px;
+            min-height: 0;
+        }
+
+        /* Category Grid */
+        .category-grid { 
+            display: flex; 
+            gap: 6px; 
+            height: 38px;
+        }
+        .cat-btn { 
+            background: #34495e; 
+            color: white; 
+            border: none; 
+            padding: 0 6px; 
+            border-radius: 6px; 
+            font-size: 11px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            flex: 1;
+            white-space: nowrap;
+        }
+        .cat-btn.active { background: #e67e22; }
+
+        /* Main Layout */
+        .main-layout { 
+            display: flex; 
+            gap: 10px; 
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* Menu Column */
+        .col-menu {
+            flex: 2.2;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .section-header-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #2c3e50;
+            border-bottom: 2px solid #e67e22;
+            padding-bottom: 4px;
+            margin-bottom: 6px;
+        }
+
+        .menu-scroll-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            overflow-y: auto;
+        }
+
+        .sub-header { 
+            background: #34495e; 
+            color: white; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            font-size: 13px; 
+            font-weight: bold; 
+        }
+
+        .item-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 6px; 
+        }
+        .item-card { 
+            background: #fff; 
+            padding: 10px 4px; 
+            border-radius: 6px; 
+            border: 2px solid #bdc3c7; 
+            cursor: pointer; 
+            text-align: center; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .item-card:hover { border-color: #3498db; background: #ebf5fb; }
+        .item-card.selected { border-color: #e67e22; background: #fef5e7; box-shadow: 0 0 5px rgba(230,126,34,0.5); }
+        .item-title { font-weight: bold; color: #2c3e50; font-size: 12px; line-height: 1.2; }
+
+        /* Options Column */
+        .col-options {
+            flex: 1.6;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .opt-box {
+            background: white;
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .opt-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+
+        .opt-grid-2col {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+        }
+
+        .opt-grid-3col {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+        }
+
+        .opt-btn { 
+            background: #ecf0f1; 
+            border: 2px solid #bdc3c7; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            text-align: center; 
+            font-size: 12px; 
+            color: #2c3e50; 
+            padding: 7px 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .opt-btn:hover { background: #d5dbdb; }
+        .opt-btn.selected { background: #e67e22; color: white; border-color: #d35400; }
+        
+        .btn-no-opt {
+            background: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+        }
+        .btn-no-opt:hover { background: #c0392b; }
+
+        /* Cart Column */
+        .col-cart {
+            flex: 1.2;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        .cart-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 6px;
+            border-bottom: 2px solid #27ae60;
+            padding-bottom: 4px;
+        }
+
+        .cart-list-box { 
+            flex: 1; 
+            overflow-y: auto; 
+            border: 1px solid #eee; 
+            padding: 6px; 
+            border-radius: 4px; 
+            margin-bottom: 6px;
+        }
+        .cart-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start;
+            margin-bottom: 6px; 
+            border-bottom: 1px solid #f0f0f0; 
+            padding-bottom: 4px; 
+            font-size: 13px; 
+            cursor: pointer;
+        }
+        .cart-item:hover { background-color: #f8f9fa; }
+        .cart-item-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+            padding-right: 4px;
+        }
+        .cart-item-title {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .cart-sub-detail {
+            font-size: 12px;
+            color: #555;
+            padding-left: 8px;
+        }
+        .cart-item-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-delete-item {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 20px;
+            height: 20px;
+            font-size: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            font-weight: bold;
+        }
+        .btn-delete-item:hover { background: #c0392b; }
+
+        .cart-total { 
+            font-size: 18px; 
+            font-weight: bold; 
+            text-align: right; 
+            margin-bottom: 8px; 
+            color: #c0392b; 
+        }
+        
+        .cart-actions {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+        .btn-pay-cash { 
+            background: #27ae60; 
+            color: white; 
+            border: none; 
+            flex: 1; 
+            padding: 10px 4px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 13px; 
+        }
+        .btn-pay-cash:hover { background: #219653; }
+
+        .btn-pay-card { 
+            background: #2980b9; 
+            color: white; 
+            border: none; 
+            flex: 1; 
+            padding: 10px 4px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 13px; 
+        }
+        .btn-pay-card:hover { background: #1f618d; }
+
+        .btn-pay-bulk {
+            background: #8e44ad;
+            color: white;
+            border: none;
+            flex: 1;
+            padding: 10px 4px;
+            border-radius: 6px;
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 13px; 
+            display: none;
+        }
+        .btn-pay-bulk:hover { background: #732d91; }
+
+        /* Daily Report Box */
+        .daily-report-box {
+            background: #eaf2f8;
+            border: 1px solid #2980b9;
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #2c3e50;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .daily-report-header {
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #bdc3c7;
+            padding-bottom: 3px;
+            margin-bottom: 2px;
+        }
+        .daily-report-row {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Modal Overlays */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 18px;
+            border-radius: 8px;
+            width: 440px;
+            max-width: 95%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e67e22;
+            padding-bottom: 6px;
+        }
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+        .report-details-box {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .btn-modal-action {
+            background: #34495e;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            flex: 1;
+        }
+        .btn-modal-close {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            flex: 1;
+        }
+
+        .no-opt-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+        }
+        .no-opt-item {
+            background: #fdfefe;
+            border: 1px solid #bdc3c7;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+        }
+        .no-opt-item.selected {
+            background: #e74c3c;
+            color: white;
+            border-color: #c0392b;
+        }
+        .no-opt-section-title {
+            font-weight: bold;
+            font-size: 12px;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 2px;
+            margin-top: 4px;
+        }
+
+        /* Numpad Styles */
+        .numpad-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-top: 4px;
+        }
+        .numpad-btn {
+            background: #f8f9fa;
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            padding: 10px 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            cursor: pointer;
+            text-align: center;
+        }
+        .numpad-btn:hover { background: #e2e6ea; }
+        .numpad-btn:active { background: #d6dbe0; }
+        .numpad-btn.preset {
+            background: #f3e5f5;
+            color: #732d91;
+            border-color: #8e44ad;
+        }
+        .numpad-btn.preset:hover { background: #e8daef; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #printable-receipt, #printable-receipt * { visibility: visible; }
+            #printable-receipt { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Header -->
+    <div class="top-header">
+        <div class="header-left">
+            <button class="menu-toggle-btn" onclick="openReportModal()" title="Daily Sales & Report">☰</button>
+            <div class="restaurant-title">🍽️ The Exclusive Thai Kitchen</div>
+        </div>
+        <div class="header-time" id="clock-display">--:--:--</div>
+    </div>
+
+    <div class="pos-container">
+        <!-- Category Buttons -->
+        <div class="category-grid">
+            <button class="cat-btn active" id="btn-lunch" onclick="switchCategory('lunch')">1. Lunch Special</button>
+            <button class="cat-btn" id="btn-dinner" onclick="switchCategory('dinner')">2. Dinner</button>
+            <button class="cat-btn" id="btn-entree" onclick="switchCategory('entree')">3. Entree</button>
+            <button class="cat-btn" id="btn-main" onclick="switchCategory('main')">4. Main</button>
+            <button class="cat-btn" id="btn-chef" onclick="switchCategory('chef')">5. Chef Recommended</button>
+            <button class="cat-btn" id="btn-burger" onclick="switchCategory('burger')">6. Burger</button>
+            <button class="cat-btn" id="btn-pizza" onclick="switchCategory('pizza')">7. Pizza</button>
+            <button class="cat-btn" id="btn-sunday" onclick="switchCategory('sunday')">8. Sunday Special ($7)</button>
+        </div>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            
+            <!-- Column 1: Menu Items -->
+            <div class="col-menu">
+                <div class="section-header-title" id="mode-title">🍳 1. Select Menu (Lunch Special)</div>
+                <div class="menu-scroll-area" id="menu-container-box"></div>
+            </div>
+
+            <!-- Column 2: Options Panel -->
+            <div class="col-options" id="options-panel"></div>
+
+            <!-- Column 3: Cart -->
+            <div class="col-cart">
+                <div>
+                    <div class="cart-title">🛒 Your Order</div>
+                    <div class="cart-list-box" id="cart-list">No items ordered yet</div>
+                </div>
+                <div>
+                    <div class="cart-total">Total: $<span id="total-amount">0</span></div>
+                    
+                    <div class="cart-actions">
+                        <button class="btn-pay-cash" id="btn-pay-cash" onclick="initiateCashCheckout('Cash')">💵 Cash</button>
+                        <button class="btn-pay-card" id="btn-pay-card" onclick="checkoutOrder('Card')">💳 Card</button>
+                        <button class="btn-pay-bulk" id="btn-pay-bulk" onclick="initiateCashCheckout('Bulk Cash')">💵 Bulk Cash</button>
+                    </div>
+
+                    <!-- Daily Sales Summary Widget -->
+                    <div class="daily-report-box">
+                        <div class="daily-report-header">
+                            <span>📊 Today's Sales Summary</span>
+                        </div>
+                        <div class="daily-report-row">
+                            <span>💵 Cash (<span id="daily-cash-count">0</span>):</span>
+                            <b style="color: #27ae60;">$<span id="daily-cash-amount">0</span></b>
+                        </div>
+                        <div class="daily-report-row">
+                            <span>💳 Card (<span id="daily-card-count">0</span>):</span>
+                            <b style="color: #2980b9;">$<span id="daily-card-amount">0</span></b>
+                        </div>
+                        <div class="daily-report-row">
+                            <span>💵 Bulk Cash (<span id="daily-bulk-count">0</span>):</span>
+                            <b style="color: #8e44ad;">$<span id="daily-bulk-amount">0</span></b>
+                        </div>
+                        <div class="daily-report-row" style="border-top: 1px dashed #bdc3c7; padding-top: 2px; font-weight: bold;">
+                            <span>Total (<span id="daily-orders-count">0</span>):</span>
+                            <span style="color: #c0392b;">$<span id="daily-total-amount">0</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal: Bulk Option Custom Price Input with On-screen Numpad -->
+    <div class="modal-overlay" id="bulk-modal">
+        <div class="modal-content" style="width: 360px;">
+            <div class="modal-header">
+                <span>📦 Enter Bulk Amount</span>
+                <button class="close-modal" onclick="closeBulkModal()">✕</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div>
+                    <label style="font-size: 12px; font-weight: bold;">Custom Amount ($):</label>
+                    <input type="number" id="bulk-price-input" placeholder="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 18px; font-weight: bold; text-align: right;" readonly>
+                </div>
+
+                <!-- Quick Preset Amounts -->
+                <div class="numpad-container" style="grid-template-columns: repeat(3, 1fr);">
+                    <button class="numpad-btn preset" onclick="setBulkPreset(20)">$20</button>
+                    <button class="numpad-btn preset" onclick="setBulkPreset(50)">$50</button>
+                    <button class="numpad-btn preset" onclick="setBulkPreset(100)">$100</button>
+                </div>
+
+                <!-- On-Screen Numpad -->
+                <div class="numpad-container">
+                    <button class="numpad-btn" onclick="pressBulkNumpad('7')">7</button>
+                    <button class="numpad-btn" onclick="pressBulkNumpad('8')">8</button>
+                    <button class="numpad-btn" onclick="pressBulkNumpad('9')">9</button>
+                    
+                    <button class="numpad-btn" onclick="pressBulkNumpad('4')">4</button>
+                    <button class="numpad-btn" onclick="pressBulkNumpad('5')">5</button>
+                    <button class="numpad-btn" onclick="pressBulkNumpad('6')">6</button>
+                    
+                    <button class="numpad-btn" onclick="pressBulkNumpad('1')">1</button>
+                    <button class="numpad-btn" onclick="pressBulkNumpad('2')">2</button>
+                    <button class="numpad-btn" onclick="pressBulkNumpad('3')">3</button>
+                    
+                    <button class="numpad-btn" style="background: #fadbd8; color: #c0392b;" onclick="pressBulkNumpad('C')">C</button>
+                    <button class="numpad-btn" onclick="pressBulkNumpad('0')">0</button>
+                    <button class="numpad-btn" onclick="pressBulkNumpad('DEL')">⌫</button>
+                </div>
+
+                <button class="btn-modal-action" style="background: #8e44ad; padding: 10px; font-size: 15px; margin-top: 4px;" onclick="confirmBulkOption()">Confirm Bulk Amount</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Cash Payment & Change Calculator Pop-up with On-screen Numpad -->
+    <div class="modal-overlay" id="cash-modal">
+        <div class="modal-content" style="width: 360px;">
+            <div class="modal-header">
+                <span>💵 Cash Payment & Change</span>
+                <button class="close-modal" onclick="closeCashModal()">✕</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="font-size: 14px; display: flex; justify-content: space-between;">
+                    <span>Total Due:</span>
+                    <b style="color: #c0392b; font-size: 18px;">$<span id="cash-modal-total">0</span></b>
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: bold;">Amount Received ($):</label>
+                    <input type="number" id="cash-received-input" oninput="calculateChange()" placeholder="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 18px; font-weight: bold; text-align: right;" readonly>
+                </div>
+
+                <!-- Quick Banknote Preset Buttons -->
+                <div class="numpad-container" style="grid-template-columns: repeat(3, 1fr);">
+                    <button class="numpad-btn preset" onclick="setPresetCash('exact')">Exact</button>
+                    <button class="numpad-btn preset" onclick="setPresetCash(5)">$5</button>
+                    <button class="numpad-btn preset" onclick="setPresetCash(10)">$10</button>
+                    <button class="numpad-btn preset" onclick="setPresetCash(20)">$20</button>
+                    <button class="numpad-btn preset" onclick="setPresetCash(50)">$50</button>
+                    <button class="numpad-btn preset" onclick="setPresetCash(100)">$100</button>
+                </div>
+
+                <!-- On-Screen Numpad -->
+                <div class="numpad-container">
+                    <button class="numpad-btn" onclick="pressNumpad('7')">7</button>
+                    <button class="numpad-btn" onclick="pressNumpad('8')">8</button>
+                    <button class="numpad-btn" onclick="pressNumpad('9')">9</button>
+                    
+                    <button class="numpad-btn" onclick="pressNumpad('4')">4</button>
+                    <button class="numpad-btn" onclick="pressNumpad('5')">5</button>
+                    <button class="numpad-btn" onclick="pressNumpad('6')">6</button>
+                    
+                    <button class="numpad-btn" onclick="pressNumpad('1')">1</button>
+                    <button class="numpad-btn" onclick="pressNumpad('2')">2</button>
+                    <button class="numpad-btn" onclick="pressNumpad('3')">3</button>
+                    
+                    <button class="numpad-btn" style="background: #fadbd8; color: #c0392b;" onclick="pressNumpad('C')">C</button>
+                    <button class="numpad-btn" onclick="pressNumpad('0')">0</button>
+                    <button class="numpad-btn" onclick="pressNumpad('DEL')">⌫</button>
+                </div>
+
+                <div style="font-size: 14px; display: flex; justify-content: space-between; background: #eaf2f8; padding: 8px; border-radius: 4px; margin-top: 2px;">
+                    <span>Change Due:</span>
+                    <b style="color: #27ae60; font-size: 18px;">$<span id="cash-change-amount">0.00</span></b>
+                </div>
+                <button class="btn-modal-action" style="background: #27ae60; padding: 10px; font-size: 15px; margin-top: 4px;" onclick="confirmCashCheckout()">Confirm Payment & Print</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Security Auth -->
+    <div class="modal-overlay" id="auth-modal">
+        <div class="modal-content" style="width: 320px;">
+            <div class="modal-header">
+                <span>🔒 Security Authentication</span>
+                <button class="close-modal" onclick="closeAuthModal()">✕</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-size: 12px; font-weight: bold;">Enter Password:</label>
+                <input type="password" id="auth-pass-input" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <button class="btn-modal-action" onclick="verifyPassword()">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Change Password -->
+    <div class="modal-overlay" id="chpass-modal">
+        <div class="modal-content" style="width: 340px;">
+            <div class="modal-header">
+                <span>🔑 Change Password</span>
+                <button class="close-modal" onclick="closeChPassModal()">✕</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-size: 12px; font-weight: bold;">Username:</label>
+                <input type="text" id="chpass-user-input" placeholder="Lek.Tetk" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <label style="font-size: 12px; font-weight: bold;">Current Password:</label>
+                <input type="password" id="chpass-old-input" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <label style="font-size: 12px; font-weight: bold;">New Password:</label>
+                <input type="password" id="chpass-new-input" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <button class="btn-modal-action" onclick="submitChangePassword()">Save New Password</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Reports & Logs -->
+    <div class="modal-overlay" id="report-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>📅 Sales & Orders Report</span>
+                <button class="close-modal" onclick="closeReportModal()">✕</button>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                <input type="date" id="report-date-picker" onchange="loadReportByDate(this.value)" style="flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+                <button style="background: #8e44ad; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;" onclick="openChPassModal()">Change Pass</button>
+            </div>
+            <div class="report-details-box" id="report-details-content"></div>
+            <div class="modal-actions">
+                <button class="btn-modal-action" style="background: #e74c3c;" onclick="deleteCashRecords()">Delete Cash</button>
+                <button class="btn-modal-action" onclick="printDailySummaryReport()">🖨️ Summary Print</button>
+                <button class="btn-modal-close" onclick="closeReportModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: "NO" Ingredients Options -->
+    <div class="modal-overlay" id="no-opt-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>🚫 Select Ingredients to Exclude (NO)</span>
+                <button class="close-modal" onclick="closeNoOptModal()">✕</button>
+            </div>
+            
+            <div class="no-opt-section-title">🥦 Vegetables Options</div>
+            <div class="no-opt-grid">
+                <div class="no-opt-item" onclick="toggleNoIngredient('Onion', this)">Onion</div>
+                <div class="no-opt-item" onclick="toggleNoIngredient('Capsicum', this)">Capsicum</div>
+                <div class="no-opt-item" onclick="toggleNoIngredient('Green bean', this)">Green bean</div>
+                <div class="no-opt-item" onclick="toggleNoIngredient('Mushroom', this)">Mushroom</div>
+                <div class="no-opt-item" onclick="toggleNoIngredient('Carrot', this)">Carrot</div>
+                <div class="no-opt-item" onclick="toggleNoIngredient('Zucchini', this)">Zucchini</div>
+                <div class="no-opt-item" onclick="toggleNoIngredient('Broccoli', this)">Broccoli</div>
+                <div class="no-opt-item" onclick="toggleNoIngredient('Shallot', this)">Shallot</div>
+                <div class="no-opt-item" onclick="toggleNoIngredient('Bean sprout', this)">Bean sprout</div>
+                <div class="no-opt-item" onclick="toggleNoIngredient('Bok choy', this)">Bok choy</div>
+            </div>
+
+            <div class="no-opt-section-title">🍳 Separated Options</div>
+            <div class="no-opt-grid">
+                <div class="no-opt-item" onclick="toggleNoIngredient('Egg', this)">Egg</div>
+                <div class="no-opt-item" onclick="toggleNoIngredient('Salad', this)">Salad</div>
+                <div class="no-opt-item" onclick="toggleNoIngredient('Pickled cucumber', this)">Pickled cucumber</div>
+                <div class="no-opt-item" onclick="toggleNoIngredient('Cheese', this)">Cheese</div>
+                <div class="no-opt-item" onclick="toggleNoIngredient('Tomato', this)">Tomato</div>
+                <div class="no-opt-item" onclick="toggleNoIngredient('Red onion', this)">Red onion</div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-modal-action" onclick="applyNoIngredients()">Apply Exclusion</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="printable-receipt" style="display: none;"></div>
+
+    <script>
+        let currentMode = 'lunch'; 
+        let currentBasePrice = 0;
+
+        let selectedMenu = null;
+        let selectedMeat = null;
+        let meatExtraPrice = 0;
+        
+        let selectedCooking = null;
+        let selectedSides = [];
+        let selectedSauces = [];
+        let selectedBurgerExtras = [];
+        let sundaySides = [];
+        let sundaySauces = [];
+        let selectedNoIngredients = [];
+
+        let isBulkOptionSelected = false;
+        let pendingCashType = 'Cash';
+
+        let cart = [];
+        let total = 0;
+        let activeCartIndex = null;
+
+        let systemPassword = localStorage.getItem('pos_system_password') || '8989';
+
+        function updateClock() {
+            let now = new Date();
+            document.getElementById('clock-display').innerText = now.toLocaleString('en-AU', { 
+                hour12: false, 
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit' 
+            });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function getTodayDateKey() {
+            let d = new Date();
+            let year = d.getFullYear();
+            let month = String(d.getMonth() + 1).padStart(2, '0');
+            let day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        let todayKey = getTodayDateKey();
+        let allStats = JSON.parse(localStorage.getItem('pos_all_daily_stats')) || {};
+        let allOrderLogs = JSON.parse(localStorage.getItem('pos_all_order_logs')) || {};
+
+        if (!allStats[todayKey]) {
+            allStats[todayKey] = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
+            localStorage.setItem('pos_all_daily_stats', JSON.stringify(allStats));
+        }
+
+        if (!allOrderLogs[todayKey]) {
+            allOrderLogs[todayKey] = [];
+            localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
+        }
+
+        let dailyStats = allStats[todayKey];
+        updateDailyReportUI();
+
+        setInterval(() => {
+            let currentKey = getTodayDateKey();
+            if (currentKey !== todayKey) {
+                location.reload();
+            }
+        }, 60000);
+
+        const menuData = {
+            lunch: `
+                <div class="sub-header">🔥 WOK FRIED</div>
+                <div class="item-grid">
+                    <div class="item-card" onclick="selectMenu('Chilli Basil', 15, 'standard', this)"><div class="item-title">Chilli Basil</div></div>
+                    <div class="item-card" onclick="selectMenu('Cashewnut', 15, 'standard', this)"><div class="item-title">Cashewnut</div></div>
+                    <div class="item-card" onclick="selectMenu('Oyster Sauce', 15, 'standard', this)"><div class="item-title">Oyster Sauce</div></div>
+                    <div class="item-card" onclick="selectMenu('Garlic & Pepper', 15, 'standard', this)"><div class="item-title">Garlic & Pepper</div></div>
+                    <div class="item-card" onclick="selectMenu('Peanut Sauce', 15, 'standard', this)"><div class="item-title">Peanut Sauce</div></div>
+                    <div class="item-card" onclick="selectMenu('Sweet & Sour', 15, 'standard', this)"><div class="item-title">Sweet & Sour</div></div>
+                    <div class="item-card" onclick="selectMenu('Thai Fried Rice', 15, 'standard', this)"><div class="item-title">Thai Fried Rice</div></div>
+                    <div class="item-card" onclick="selectMenu('Tom Yum Fried Rice', 15, 'standard', this)"><div class="item-title">Tom Yum Fried Rice</div></div>
+                    <div class="item-card" onclick="selectMenu('Chilli Basil Fried Rice', 15, 'standard', this)"><div class="item-title">Basil Fried Rice</div></div>
+                </div>
+                <div class="sub-header">🍜 NOODLE</div>
+                <div class="item-grid">
+                    <div class="item-card" onclick="selectMenu('Pad Thai', 15, 'standard', this)"><div class="item-title">Pad Thai</div></div>
+                    <div class="item-card" onclick="selectMenu('Pad See Ew', 15, 'standard', this)"><div class="item-title">Pad See Ew</div></div>
+                    <div class="item-card" onclick="selectMenu('Pad Kee Mao', 15, 'standard', this)"><div class="item-title">Pad Kee Mao</div></div>
+                    <div class="item-card" onclick="selectMenu('Tom Yum Noodle Soup', 15, 'standard', this)"><div class="item-title">Tom Yum Noodle</div></div>
+                </div>
+                <div class="sub-header">🍛 CURRY</div>
+                <div class="item-grid">
+                    <div class="item-card" onclick="selectMenu('Red Curry', 15, 'standard', this)"><div class="item-title">Red Curry</div></div>
+                    <div class="item-card" onclick="selectMenu('Green Curry', 15, 'standard', this)"><div class="item-title">Green Curry</div></div>
+                    <div class="item-card" onclick="selectMenu('Pa Nang Curry', 15, 'standard', this)"><div class="item-title">Pa Nang Curry</div></div>
+                </div>
+            `,
+            dinner: `
+                <div class="sub-header">🔥 WOK FRIED</div>
+                <div class="item-grid">
+                    <div class="item-card" onclick="selectMenu('Chilli Basil', 21, 'standard', this)"><div class="item-title">Chilli Basil</div></div>
+                    <div class="item-card" onclick="selectMenu('Cashewnut', 21, 'standard', this)"><div class="item-title">Cashewnut</div></div>
+                    <div class="item-card" onclick="selectMenu('Oyster Sauce', 21, 'standard', this)"><div class="item-title">Oyster Sauce</div></div>
+                    <div class="item-card" onclick="selectMenu('Garlic & Pepper', 21, 'standard', this)"><div class="item-title">Garlic & Pepper</div></div>
+                    <div class="item-card" onclick="selectMenu('Peanut Sauce', 21, 'standard', this)"><div class="item-title">Peanut Sauce</div></div>
+                    <div class="item-card" onclick="selectMenu('Sweet & Sour', 21, 'standard', this)"><div class="item-title">Sweet & Sour</div></div>
+                    <div class="item-card" onclick="selectMenu('Thai Fried Rice', 21, 'standard', this)"><div class="item-title">Thai Fried Rice</div></div>
+                    <div class="item-card" onclick="selectMenu('Tom Yum Fried Rice', 21, 'standard', this)"><div class="item-title">Tom Yum Fried Rice</div></div>
+                    <div class="item-card" onclick="selectMenu('Chilli Basil Fried Rice', 21, 'standard', this)"><div class="item-title">Basil Fried Rice</div></div>
+                </div>
+                <div class="sub-header">🍜 NOODLE</div>
+                <div class="item-grid">
+                    <div class="item-card" onclick="selectMenu('Pad Thai', 21, 'standard', this)"><div class="item-title">Pad Thai</div></div>
+                    <div class="item-card" onclick="selectMenu('Pad See Ew', 21, 'standard', this)"><div class="item-title">Pad See Ew</div></div>
+                    <div class="item-card" onclick="selectMenu('Pad Kee Mao', 21, 'standard', this)"><div class="item-title">Pad Kee Mao</div></div>
+                    <div class="item-card" onclick="selectMenu('Tom Yum Noodle Soup', 21, 'standard', this)"><div class="item-title">Tom Yum Noodle</div></div>
+                </div>
+                <div class="sub-header">🍛 CURRY</div>
+                <div class="item-grid">
+                    <div class="item-card" onclick="selectMenu('Red Curry', 21, 'standard', this)"><div class="item-title">Red Curry</div></div>
+                    <div class="item-card" onclick="selectMenu('Green Curry', 21, 'standard', this)"><div class="item-title">Green Curry</div></div>
+                    <div class="item-card" onclick="selectMenu('Pa Nang Curry', 21, 'standard', this)"><div class="item-title">Pa Nang Curry</div></div>
+                </div>
+            `,
+            entree: `
+                <div class="sub-header">🍤 ENTREE</div>
+                <div class="item-grid">
+                    <div class="item-card" onclick="selectMenu('Prawn Cracker', 9, 'direct', this)"><div class="item-title">Prawn Cracker</div></div>
+                    <div class="item-card" onclick="selectMenu('Spring Roll Veggie (4Pcs)', 12, 'direct', this)"><div class="item-title">Spring Roll (4Pcs)</div></div>
+                    <div class="item-card" onclick="selectMenu('Fish Cake (4Pcs)', 12, 'direct', this)"><div class="item-title">Fish Cake (4Pcs)</div></div>
+                    <div class="item-card" onclick="selectMenu('Onion Ring', 13, 'direct', this)"><div class="item-title">Onion Ring</div></div>
+                    <div class="item-card" onclick="selectMenu('Chicken Wings (4Pcs)', 15, 'direct', this)"><div class="item-title">Chicken Wings (4Pcs)</div></div>
+                    <div class="item-card" onclick="selectMenu('Chicken Dim Sim (4Pcs)', 15, 'direct', this)"><div class="item-title">Dim Sim (4Pcs)</div></div>
+                    <div class="item-card" onclick="selectMenu('Prawns Har Gow (6Pcs)', 15, 'direct', this)"><div class="item-title">Prawns Har Gow (6Pcs)</div></div>
+                    <div class="item-card" onclick="selectMenu('Bowl of Chips', 13, 'direct', this)"><div class="item-title">Bowl of Chips</div></div>
+                    <div class="item-card" onclick="selectMenu('Bowl of Wedges', 14, 'direct', this)"><div class="item-title">Bowl of Wedges</div></div>
+                    <div class="item-card" onclick="selectMenu('Bowl of Sweet Potato', 14, 'direct', this)"><div class="item-title">Sweet Potato</div></div>
+                    <div class="item-card" onclick="selectMenu('Satay Chicken with Roti', 16, 'direct', this)"><div class="item-title">Satay Chicken Roti</div></div>
+                    <div class="item-card" onclick="selectMenu('Calamari Ring (5Pcs)', 15, 'direct', this)"><div class="item-title">Calamari Ring (5Pcs)</div></div>
+                    <div class="item-card" onclick="selectMenu('Chicken Nuggets', 14, 'direct', this)"><div class="item-title">Chicken Nuggets</div></div>
+                </div>
+            `,
+            main: `
+                <div class="sub-header">🥩 MAIN</div>
+                <div class="item-grid">
+                    <div class="item-card" onclick="selectMenu('Rump Steak', 27, 'main', this)"><div class="item-title">Rump Steak</div></div>
+                    <div class="item-card" onclick="selectMenu('T-Bone Steak', 30, 'main', this)"><div class="item-title">T-Bone Steak</div></div>
+                    <div class="item-card" onclick="selectMenu('Chicken Schnitzel', 23, 'main', this)"><div class="item-title">Chicken Schnitzel</div></div>
+                    <div class="item-card" onclick="selectMenu('Chicken Parmigiana', 25, 'main', this)"><div class="item-title">Chicken Parmigiana</div></div>
+                    <div class="item-card" onclick="selectMenu('Fish and Chips', 22, 'main', this)"><div class="item-title">Fish and Chips</div></div>
+                    <div class="item-card" onclick="selectMenu('Lamb Cutlets', 35, 'main', this)"><div class="item-title">Lamb Cutlets</div></div>
+                </div>
+            `,
+            chef: `
+                <div class="sub-header">⭐ CHEF RECOMMENDED</div>
+                <div class="item-grid">
+                    <div class="item-card" onclick="selectMenu('Crispy Salt & Pepper Tofu', 15, 'direct', this)"><div class="item-title">Salt & Pepper Tofu</div></div>
+                    <div class="item-card" onclick="selectMenu('Fried Chicken Salad', 23, 'direct', this)"><div class="item-title">Fried Chicken Salad</div></div>
+                    <div class="item-card" onclick="selectMenu('Teriyaki Chicken', 23, 'direct', this)"><div class="item-title">Teriyaki Chicken</div></div>
+                    <div class="item-card" onclick="selectMenu('Broccoli King Prawns', 25, 'direct', this)"><div class="item-title">Broccoli King Prawns</div></div>
+                    <div class="item-card" onclick="selectMenu('Pork Belly Basil', 25, 'direct', this)"><div class="item-title">Pork Belly Basil</div></div>
+                    <div class="item-card" onclick="selectMenu('Pork Belly Chinese Broccoli', 25, 'direct', this)"><div class="item-title">Pork Belly Ch. Broccoli</div></div>
+                    <div class="item-card" onclick="selectMenu('Tom Yum Soup', 21, 'direct', this)"><div class="item-title">Tom Yum Soup</div></div>
+                </div>
+            `,
+            burger: `
+                <div class="sub-header">🍔 BURGER</div>
+                <div class="item-grid">
+                    <div class="item-card" onclick="selectMenu('Classic Beef Burger', 20, 'burger', this)"><div class="item-title">Classic Beef Burger</div></div>
+                    <div class="item-card" onclick="selectMenu('Hungry Burger', 25, 'burger', this)"><div class="item-title">Hungry Burger</div></div>
+                    <div class="item-card" onclick="selectMenu('Southern Fried Chicken Burger', 23, 'burger', this)"><div class="item-title">Southern Fried Chicken</div></div>
+                    <div class="item-card" onclick="selectMenu('Chicken Schnitzel Burger', 23, 'burger', this)"><div class="item-title">Chicken Schnitzel Burger</div></div>
+                    <div class="item-card" onclick="selectMenu('Teriyaki Chicken Burger', 23, 'burger', this)"><div class="item-title">Teriyaki Chicken Burger</div></div>
+                    <div class="item-card" onclick="selectMenu('Pulled Pork Burger', 23, 'burger', this)"><div class="item-title">Pulled Pork Burger</div></div>
+                </div>
+            `,
+            pizza: `
+                <div class="sub-header">🍕 PIZZA</div>
+                <div class="item-grid">
+                    <div class="item-card" onclick="selectMenu('Margherita', 22, 'direct', this)"><div class="item-title">Margherita</div></div>
+                    <div class="item-card" onclick="selectMenu('Pepperoni', 22, 'direct', this)"><div class="item-title">Pepperoni</div></div>
+                    <div class="item-card" onclick="selectMenu('Garlic and Cheese', 22, 'direct', this)"><div class="item-title">Garlic and Cheese</div></div>
+                    <div class="item-card" onclick="selectMenu('Hawaiian', 22, 'direct', this)"><div class="item-title">Hawaiian</div></div>
+                    <div class="item-card" onclick="selectMenu('Meat Lovers', 25, 'direct', this)"><div class="item-title">Meat Lovers</div></div>
+                    <div class="item-card" onclick="selectMenu('Chicken Supreme', 25, 'direct', this)"><div class="item-title">Chicken Supreme</div></div>
+                    <div class="item-card" onclick="selectMenu('Ken Pizza', 25, 'ken_pizza', this)" style="background: #fef9e7; border-color: #f39c12;"><div class="item-title" style="color: #d35400;">⭐ Ken Pizza</div></div>
+                </div>
+            `,
+            sunday: `
+                <div class="sub-header">🥩 SUNDAY SPECIAL</div>
+                <div class="item-grid">
+                    <div class="item-card" onclick="selectMenu('Rump steak', 7, 'sunday', this)" style="background: #e8f8f5; border-color: #27ae60; grid-column: span 3;"><div class="item-title" style="color: #1e8449;">🥩 Rump steak ($7)</div></div>
+                </div>
+                <div style="border-top: 1px dashed #bdc3c7; margin: 6px 0;"></div>
+                <div class="item-grid">
+                    <div class="item-card" onclick="selectMenu('Bulk Option', 0, 'bulk', this)" style="background: #f3e5f5; border-color: #8e44ad; grid-column: span 3;"><div class="item-title" style="color: #732d91;">📦 Bulk Option</div></div>
+                </div>
+            `
+        };
+
+        function switchCategory(cat) {
+            currentMode = cat;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            if(document.getElementById('btn-' + cat)) document.getElementById('btn-' + cat).classList.add('active');
+
+            let titles = {
+                lunch: 'Lunch Special', dinner: 'Dinner', entree: 'Entree', main: 'Main', chef: 'Chef Recommended', burger: 'Burger', pizza: 'Pizza', sunday: 'Sunday Special'
+            };
+            document.getElementById('mode-title').innerText = `🍳 1. Select Menu (${titles[cat] || cat})`;
+
+            renderOptionsPanel(cat);
+
+            if (menuData[cat]) {
+                document.getElementById('menu-container-box').innerHTML = menuData[cat];
+            } else {
+                document.getElementById('menu-container-box').innerHTML = `<div class="sub-header">Menu coming soon</div>`;
+            }
+
+            resetSelection();
+        }
+
+        function renderOptionsPanel(cat) {
+            let panel = document.getElementById('options-panel');
+
+            if (cat === 'main') {
+                panel.innerHTML = `
+                    <div class="opt-box" style="border-top: 4px solid #2980b9;">
+                        <div class="opt-title">🔥 How to Cook</div>
+                        <div class="opt-grid-2col">
+                            <button class="opt-btn cook-btn" onclick="selectMainOption('cook', 'Blue', this)">Blue</button>
+                            <button class="opt-btn cook-btn" onclick="selectMainOption('cook', 'Rare', this)">Rare</button>
+                            <button class="opt-btn cook-btn" onclick="selectMainOption('cook', 'Medium Rare', this)">Medium Rare</button>
+                            <button class="opt-btn cook-btn" onclick="selectMainOption('cook', 'Medium', this)">Medium</button>
+                            <button class="opt-btn cook-btn" onclick="selectMainOption('cook', 'Medium Well', this)">Medium Well</button>
+                            <button class="opt-btn cook-btn" onclick="selectMainOption('cook', 'Well Done', this)">Well Done</button>
+                        </div>
+                    </div>
+
+                    <div class="opt-box" style="border-top: 4px solid #27ae60;">
+                        <div class="opt-title">🥗 Side</div>
+                        <div class="opt-grid-2col">
+                            <button class="opt-btn side-btn" onclick="toggleMainOption('side', 'Chips', this)">Chips</button>
+                            <button class="opt-btn side-btn" onclick="toggleMainOption('side', 'Salad', this)">Salad</button>
+                            <button class="opt-btn side-btn" onclick="toggleMainOption('side', 'Vegetables', this)">Vegetables</button>
+                            <button class="opt-btn side-btn" onclick="toggleMainOption('side', 'Mashed Potatoes', this)">Mashed Potatoes</button>
+                            <button class="opt-btn side-btn" onclick="toggleMainOption('side', 'Greek salad', this)" style="grid-column: span 2; background: #e8f8f5;">Greek salad</button>
+                        </div>
+                    </div>
+
+                    <div class="opt-box" style="border-top: 4px solid #f39c12;">
+                        <div class="opt-title">🥣 Sauce</div>
+                        <div class="opt-grid-3col">
+                            <button class="opt-btn sauce-btn" onclick="toggleMainOption('sauce', 'Gravy', this)">Gravy</button>
+                            <button class="opt-btn sauce-btn" onclick="toggleMainOption('sauce', 'Pepper', this)">Pepper</button>
+                            <button class="opt-btn sauce-btn" onclick="toggleMainOption('sauce', 'Mushroom', this)">Mushroom</button>
+                        </div>
+                    </div>
+
+                    <div class="opt-box" style="margin-top: auto;">
+                        <button class="opt-btn btn-no-opt" onclick="openNoOptModal()">🚫 No Ingredients (Exclusion)</button>
+                    </div>
+                `;
+            } else if (cat === 'sunday') {
+                panel.innerHTML = `
+                    <div class="opt-box" style="border-top: 4px solid #2980b9;">
+                        <div class="opt-title">🔥 How to Cook</div>
+                        <div class="opt-grid-2col">
+                            <button class="opt-btn cook-btn" onclick="selectSundayOption('cook', 'Blue', this)">Blue</button>
+                            <button class="opt-btn cook-btn" onclick="selectSundayOption('cook', 'Rare', this)">Rare</button>
+                            <button class="opt-btn cook-btn" onclick="selectSundayOption('cook', 'Medium Rare', this)">Medium Rare</button>
+                            <button class="opt-btn cook-btn" onclick="selectSundayOption('cook', 'Medium', this)">Medium</button>
+                            <button class="opt-btn cook-btn" onclick="selectSundayOption('cook', 'Medium Well', this)">Medium Well</button>
+                            <button class="opt-btn cook-btn" onclick="selectSundayOption('cook', 'Well Done', this)">Well Done</button>
+                        </div>
+                    </div>
+
+                    <div class="opt-box" style="border-top: 4px solid #27ae60;">
+                        <div class="opt-title">🥗 One free side</div>
+                        <div class="opt-grid-2col">
+                            <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Chips', this)">Chips</button>
+                            <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Salad', this)">Salad</button>
+                            <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Vegetables', this)">Vegetables</button>
+                            <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Mashed Potatoes', this)">Mashed Potatoes</button>
+                        </div>
+                    </div>
+
+                    <div class="opt-box" style="border-top: 4px solid #f39c12;">
+                        <div class="opt-title">🥣 Sauce</div>
+                        <div class="opt-grid-3col">
+                            <button class="opt-btn sunday-sauce-btn" onclick="selectSundayOption('sauce', 'Gravy', this)">Gravy</button>
+                            <button class="opt-btn sunday-sauce-btn" onclick="selectSundayOption('sauce', 'Pepper', this)">Pepper</button>
+                            <button class="opt-btn sunday-sauce-btn" onclick="selectSundayOption('sauce', 'Mushroom', this)">Mushroom</button>
+                        </div>
+                    </div>
+
+                    <div class="opt-box" style="margin-top: auto;">
+                        <button class="opt-btn btn-no-opt" onclick="openNoOptModal()">🚫 No Ingredients (Exclusion)</button>
+                    </div>
+                `;
+            } else if (cat === 'burger') {
+                panel.innerHTML = `
+                    <div class="opt-box" style="border-top: 4px solid #f39c12;">
+                        <div class="opt-title">➕ Burger Extra</div>
+                        <div class="opt-grid-2col">
+                            <button class="opt-btn burger-extra-btn" onclick="toggleBurgerExtra('Fried Egg', 3, this)">Fried Egg</button>
+                            <button class="opt-btn burger-extra-btn" onclick="toggleBurgerExtra('Bacon', 4, this)">Bacon</button>
+                            <button class="opt-btn burger-extra-btn" onclick="toggleBurgerExtra('Ham', 4, this)">Ham</button>
+                            <button class="opt-btn burger-extra-btn" onclick="toggleBurgerExtra('Extra Meat', 5, this)" style="background: #fadbd8;">Extra Meat</button>
+                        </div>
+                    </div>
+
+                    <div class="opt-box" style="margin-top: auto;">
+                        <button class="opt-btn btn-no-opt" onclick="openNoOptModal()">🚫 No Ingredients (Exclusion)</button>
+                    </div>
+                `;
+            } else if (cat === 'entree' || cat === 'pizza' || cat === 'chef') {
+                panel.innerHTML = `
+                    <div class="opt-box" style="margin-top: auto;">
+                        <button class="opt-btn btn-no-opt" onclick="openNoOptModal()">🚫 No Ingredients (Exclusion)</button>
+                    </div>`;
+            } else {
+                panel.innerHTML = `
+                    <div class="opt-box" style="border-top: 4px solid #2980b9;">
+                        <div class="opt-title">🥩 2. Choose Meat</div>
+                        <div class="opt-grid-2col">
+                            <button class="opt-btn meat-btn" onclick="selectMeat('Chicken', 0, this)">Chicken</button>
+                            <button class="opt-btn meat-btn" onclick="selectMeat('Beef', 0, this)">Beef</button>
+                            <button class="opt-btn meat-btn" onclick="selectMeat('Pork', 0, this)">Pork</button>
+                            <button class="opt-btn meat-btn" onclick="selectMeat('Vegetables', 0, this)">Veggie</button>
+                            <button class="opt-btn meat-btn" onclick="selectMeat('Tofu', 0, this)">Tofu</button>
+                            <button class="opt-btn meat-btn" onclick="selectMeat('Crispy Pork Belly', 5, this)" style="background: #fadbd8;">Crispy Pork</button>
+                            <button class="opt-btn meat-btn" onclick="selectMeat('Prawn', 5, this)" style="background: #fadbd8; grid-column: span 2;">Prawn</button>
+                        </div>
+                    </div>
+
+                    <div class="opt-box" style="border-top: 4px solid #f39c12;">
+                        <div class="opt-title">➕ 3. Choose Extra</div>
+                        <div class="opt-grid-2col">
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Jasmine Rice', 5, this)">Jasmine Rice</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Fried Egg', 3, this)">Fried Egg</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Roti', 4, this)">Roti</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Bacon', 4, this)">Bacon</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Ham', 4, this)" style="grid-column: span 2;">Ham</button>
+                        </div>
+                    </div>
+
+                    <div class="opt-box" style="margin-top: auto;">
+                        <button class="opt-btn btn-no-opt" onclick="openNoOptModal()">🚫 No Ingredients (Exclusion)</button>
+                    </div>
+                `;
+            }
+        }
+
+        function selectMenu(name, price, type, el) {
+            selectedMenu = name;
+            currentBasePrice = price;
+            selectedMeat = null;
+            meatExtraPrice = 0;
+            selectedCooking = null;
+            selectedSides = [];
+            selectedSauces = [];
+            selectedBurgerExtras = [];
+            window.currentExtras = [];
+            sundaySides = [];
+            sundaySauces = [];
+            selectedNoIngredients = [];
+
+            document.querySelectorAll('.item-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+
+            if (type === 'bulk') {
+                isBulkOptionSelected = true;
+                openBulkModal();
+                return;
+            }
+
+            isBulkOptionSelected = false;
+            updatePaymentButtonsDisplay();
+
+            if (type === 'standard') {
+                addToCartLunchDinner(true);
+            } else if (type === 'direct') {
+                addToCartDirectly(true);
+            } else if (type === 'main') {
+                addToCartMain(true);
+            } else if (type === 'burger') {
+                addToCartBurger(true);
+            } else if (type === 'ken_pizza') {
+                addToCartKenPizza(true);
+            } else if (type === 'sunday') {
+                addToCartSunday(true);
+            }
+        }
+
+        function openBulkModal() {
+            document.getElementById('bulk-price-input').value = '';
+            document.getElementById('bulk-modal').style.display = 'flex';
+        }
+
+        function closeBulkModal() {
+            document.getElementById('bulk-modal').style.display = 'none';
+        }
+
+        function pressBulkNumpad(val) {
+            let input = document.getElementById('bulk-price-input');
+            let curr = input.value;
+
+            if (val === 'C') {
+                input.value = '';
+            } else if (val === 'DEL') {
+                input.value = curr.slice(0, -1);
+            } else {
+                input.value = curr + val;
+            }
+        }
+
+        function setBulkPreset(amount) {
+            document.getElementById('bulk-price-input').value = amount;
+        }
+
+        function confirmBulkOption() {
+            let userPrice = parseFloat(document.getElementById('bulk-price-input').value);
+            if (isNaN(userPrice) || userPrice <= 0) {
+                alert("Please enter a valid amount!");
+                return;
+            }
+            currentBasePrice = userPrice;
+            closeBulkModal();
+            addToCartBulk();
+            updatePaymentButtonsDisplay();
+        }
+
+        function updatePaymentButtonsDisplay() {
+            let cashBtn = document.getElementById('btn-pay-cash');
+            let cardBtn = document.getElementById('btn-pay-card');
+            let bulkBtn = document.getElementById('btn-pay-bulk');
+
+            if (isBulkOptionSelected) {
+                cashBtn.style.display = 'none';
+                cardBtn.style.display = 'none';
+                bulkBtn.style.display = 'block';
+            } else {
+                cashBtn.style.display = 'block';
+                cardBtn.style.display = 'block';
+                bulkBtn.style.display = 'none';
+            }
+        }
+
+        function addToCartBulk() {
+            cart.push({
+                title: "Bulk Option",
+                details: null,
+                price: currentBasePrice,
+                isBulk: true
+            });
+            activeCartIndex = cart.length - 1;
+            updateCartUI();
+        }
+
+        function toggleBurgerExtra(name, price, el) {
+            if (!selectedMenu) return;
+            let idx = selectedBurgerExtras.findIndex(i => i.name === name);
+            if (idx > -1) {
+                selectedBurgerExtras.splice(idx, 1);
+                el.classList.remove('selected');
+            } else {
+                selectedBurgerExtras.push({ name, price });
+                el.classList.add('selected');
+            }
+            addToCartBurger(false);
+        }
+
+        function addToCartBurger(isNew) {
+            if (!selectedMenu) return;
+
+            let extraTotal = 0;
+            let details = [];
+            selectedBurgerExtras.forEach(ex => {
+                extraTotal += ex.price;
+                details.push(`Extra: ${ex.name}`);
+            });
+
+            if (selectedNoIngredients.length > 0) {
+                details.push(`NO: ${selectedNoIngredients.join(', ')}`);
+            }
+
+            let finalPrice = currentBasePrice + extraTotal;
+            let mainTitle = `[Burger] ${selectedMenu}`;
+
+            let itemObj = { 
+                title: mainTitle, 
+                details: details.length > 0 ? details : null, 
+                price: finalPrice 
+            };
+
+            if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
+                cart.push(itemObj);
+                activeCartIndex = cart.length - 1;
+            } else {
+                cart[activeCartIndex] = itemObj;
+            }
+            updateCartUI();
+        }
+
+        function toggleExtra(name, price, el) {
+            if (!selectedMenu) return;
+            if (!window.currentExtras) window.currentExtras = [];
+
+            let idx = window.currentExtras.findIndex(i => i.name === name);
+            if (idx > -1) {
+                window.currentExtras.splice(idx, 1);
+                el.classList.remove('selected');
+            } else {
+                window.currentExtras.push({ name, price });
+                el.classList.add('selected');
+            }
+            addToCartLunchDinner(false);
+        }
+
+        function selectSundayOption(category, value, el) {
+            if (!selectedMenu) return;
+
+            if (category === 'cook') {
+                selectedCooking = value;
+                document.querySelectorAll('.cook-btn').forEach(b => b.classList.remove('selected'));
+                el.classList.add('selected');
+            } else if (category === 'side') {
+                let idx = sundaySides.indexOf(value);
+                if (idx > -1) {
+                    sundaySides.splice(idx, 1);
+                    el.classList.remove('selected');
+                } else {
+                    sundaySides.push(value);
+                    el.classList.add('selected');
+                }
+            } else if (category === 'sauce') {
+                let idx = sundaySauces.indexOf(value);
+                if (idx > -1) {
+                    sundaySauces.splice(idx, 1);
+                    el.classList.remove('selected');
+                } else {
+                    sundaySauces.push(value);
+                    el.classList.add('selected');
+                }
+            }
+            addToCartSunday(false);
+        }
+
+        function addToCartSunday(isNew) {
+            if (!selectedMenu) return;
+
+            let extraPrice = 0;
+            let titleText = `${selectedMenu}`;
+            let details = [];
+
+            if (selectedCooking) details.push(`Cook: ${selectedCooking}`);
+
+            if (sundaySides.length > 0) {
+                details.push(`Sides: ${sundaySides.join(', ')}`);
+                if (sundaySides.length > 1) {
+                    extraPrice += (sundaySides.length - 1) * 5;
+                }
+            }
+
+            if (sundaySauces.length > 0) {
+                details.push(`Sauce: ${sundaySauces.join(', ')}`);
+                extraPrice += sundaySauces.length * 3;
+            }
+
+            if (selectedNoIngredients.length > 0) {
+                details.push(`NO: ${selectedNoIngredients.join(', ')}`);
+            }
+
+            let finalPrice = currentBasePrice + extraPrice;
+
+            let itemObj = { 
+                title: titleText, 
+                details: details.length > 0 ? details : null, 
+                price: finalPrice 
+            };
+
+            if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
+                cart.push(itemObj);
+                activeCartIndex = cart.length - 1;
+            } else {
+                cart[activeCartIndex] = itemObj;
+            }
+            updateCartUI();
+        }
+
+        function addToCartKenPizza(isNew) {
+            let itemText = `Ken Pizza (Chicken, Pepperoni, Mushroom, Capsicum, Pineapple and Cheese)`;
+            let details = [];
+            if (selectedNoIngredients.length > 0) {
+                details.push(`NO: ${selectedNoIngredients.join(', ')}`);
+            }
+            let itemObj = { title: itemText, details: details.length > 0 ? details : null, price: currentBasePrice };
+            
+            if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
+                cart.push(itemObj);
+                activeCartIndex = cart.length - 1;
+            } else {
+                cart[activeCartIndex] = itemObj;
+            }
+            updateCartUI();
+        }
+
+        function selectMainOption(category, value, el) {
+            if (!selectedMenu) return;
+            if (category === 'cook') {
+                selectedCooking = value;
+                document.querySelectorAll('.cook-btn').forEach(b => b.classList.remove('selected'));
+                el.classList.add('selected');
+            }
+            addToCartMain(false);
+        }
+
+        function toggleMainOption(category, value, el) {
+            if (!selectedMenu) return;
+
+            if (category === 'side') {
+                let idx = selectedSides.indexOf(value);
+                if (idx > -1) {
+                    selectedSides.splice(idx, 1);
+                    el.classList.remove('selected');
+                } else {
+                    selectedSides.push(value);
+                    el.classList.add('selected');
+                }
+            } else if (category === 'sauce') {
+                let idx = selectedSauces.indexOf(value);
+                if (idx > -1) {
+                    selectedSauces.splice(idx, 1);
+                    el.classList.remove('selected');
+                } else {
+                    selectedSauces.push(value);
+                    el.classList.add('selected');
+                }
+            }
+            addToCartMain(false);
+        }
+
+        function addToCartMain(isNew) {
+            if (!selectedMenu) return;
+
+            let extraPrice = 0;
+            let details = [];
+
+            if (selectedCooking) details.push(`Cook: ${selectedCooking}`);
+
+            if (selectedSides.length > 0) {
+                details.push(`Sides: ${selectedSides.join(', ')}`);
+                
+                let greekSaladCount = 0;
+                let otherSidesCount = 0;
+
+                selectedSides.forEach(side => {
+                    if (side === 'Greek salad') {
+                        greekSaladCount++;
+                    } else {
+                        otherSidesCount++;
+                    }
+                });
+
+                // ค่า Greek salad เพิ่ม 3 เหรียญต่อจาน
+                extraPrice += greekSaladCount * 3;
+
+                // รวมจำนวน Side ทั้งหมดเพื่อคิดราคาเพิ่มกรณีเกิน 2 อย่างขึ้นไป (เพิ่ม 5 เหรียญต่ออย่างที่เกิน)
+                let totalSidesCount = selectedSides.length;
+                if (totalSidesCount > 2) {
+                    extraPrice += (totalSidesCount - 2) * 5;
+                }
+            }
+
+            if (selectedSauces.length > 0) {
+                details.push(`Sauce: ${selectedSauces.join(', ')}`);
+                if (selectedSauces.length > 1) {
+                    extraPrice += (selectedSauces.length - 1) * 3;
+                }
+            }
+
+            if (selectedNoIngredients.length > 0) {
+                details.push(`NO: ${selectedNoIngredients.join(', ')}`);
+            }
+
+            let finalPrice = currentBasePrice + extraPrice;
+            let mainTitle = `${selectedMenu}`;
+
+            let itemObj = { 
+                title: mainTitle, 
+                details: details.length > 0 ? details : null, 
+                price: finalPrice 
+            };
+
+            if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
+                cart.push(itemObj);
+                activeCartIndex = cart.length - 1;
+            } else {
+                cart[activeCartIndex] = itemObj;
+            }
+            updateCartUI();
+        }
+
+        function selectMeat(name, price, el) {
+            if (!selectedMenu) return;
+
+            selectedMeat = name;
+            meatExtraPrice = price;
+
+            document.querySelectorAll('.meat-btn').forEach(b => b.classList.remove('selected'));
+            el.classList.add('selected');
+
+            addToCartLunchDinner(false);
+        }
+
+        function addToCartLunchDinner(isNew) {
+            if (!selectedMenu) return;
+
+            let extraTotal = 0;
+            let details = [];
+
+            if (selectedMeat) {
+                details.push(`Meat: ${selectedMeat}`);
+            }
+
+            if (window.currentExtras && window.currentExtras.length > 0) {
+                window.currentExtras.forEach(ex => {
+                    extraTotal += ex.price;
+                    details.push(`Extra: ${ex.name}`);
+                });
+            }
+
+            if (selectedNoIngredients.length > 0) {
+                details.push(`NO: ${selectedNoIngredients.join(', ')}`);
+            }
+
+            let finalPrice = currentBasePrice + meatExtraPrice + extraTotal;
+            
+            let modeTag = currentMode === 'lunch' ? '[Lunch]' : (currentMode === 'dinner' ? '[Dinner]' : '');
+            let mainTitle = `${modeTag} ${selectedMenu}`.trim();
+
+            let itemObj = { 
+                title: mainTitle, 
+                details: details.length > 0 ? details : null, 
+                price: finalPrice 
+            };
+
+            if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
+                cart.push(itemObj);
+                activeCartIndex = cart.length - 1;
+            } else {
+                cart[activeCartIndex] = itemObj;
+            }
+
+            updateCartUI();
+        }
+
+        function addToCartDirectly(isNew) {
+            if (!selectedMenu) return;
+
+            let extraTotal = 0;
+            let details = [];
+
+            if (window.currentExtras && window.currentExtras.length > 0) {
+                window.currentExtras.forEach(ex => {
+                    extraTotal += ex.price;
+                    details.push(`Extra: ${ex.name}`);
+                });
+            }
+
+            if (selectedNoIngredients.length > 0) {
+                details.push(`NO: ${selectedNoIngredients.join(', ')}`);
+            }
+
+            let finalPrice = currentBasePrice + extraTotal;
+            let mainTitle = `${selectedMenu}`;
+
+            let itemObj = { 
+                title: mainTitle, 
+                details: details.length > 0 ? details : null, 
+                price: finalPrice 
+            };
+
+            if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
+                cart.push(itemObj);
+                activeCartIndex = cart.length - 1;
+            } else {
+                cart[activeCartIndex] = itemObj;
+            }
+
+            updateCartUI();
+        }
+
+        function resetSelection() {
+            selectedMenu = null;
+            selectedMeat = null;
+            meatExtraPrice = 0;
+            selectedCooking = null;
+            selectedSides = [];
+            selectedSauces = [];
+            selectedBurgerExtras = [];
+            window.currentExtras = [];
+            sundaySides = [];
+            sundaySauces = [];
+            selectedNoIngredients = [];
+            activeCartIndex = null;
+
+            document.querySelectorAll('.item-card').forEach(c => c.classList.remove('selected'));
+            document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('.no-opt-item').forEach(b => b.classList.remove('selected'));
+        }
+
+        function removeCartItem(index, event) {
+            if (event) event.stopPropagation();
+            cart.splice(index, 1);
+            if (activeCartIndex === index) {
+                activeCartIndex = null;
+            } else if (activeCartIndex > index) {
+                activeCartIndex--;
+            }
+            if (cart.length === 0) {
+                isBulkOptionSelected = false;
+                updatePaymentButtonsDisplay();
+            }
+            updateCartUI();
+        }
+
+        function editCartItemPrice(index) {
+            let currentPrice = cart[index].price;
+            let newPriceStr = prompt(`Edit price for "${cart[index].title}":`, currentPrice);
+            if (newPriceStr !== null) {
+                let parsedPrice = parseFloat(newPriceStr);
+                if (!isNaN(parsedPrice) && parsedPrice >= 0) {
+                    cart[index].price = parsedPrice;
+                    updateCartUI();
+                } else {
+                    alert("Invalid price amount.");
+                }
+            }
+        }
+
+        function updateCartUI() {
+            let cartListHtml = '';
+            total = 0;
+            
+            cart.forEach((item, index) => {
+                let detailsHtml = '';
+                if (item.details) {
+                    detailsHtml = item.details.map(d => `<div class="cart-sub-detail">• ${d}</div>`).join('');
+                }
+                cartListHtml += `
+                    <div class="cart-item" onclick="editCartItemPrice(${index})">
+                        <div class="cart-item-details">
+                            <span class="cart-item-title">${item.title}</span>
+                            ${detailsHtml}
+                        </div>
+                        <div class="cart-item-right">
+                            <b>$${item.price}</b>
+                            <button class="btn-delete-item" onclick="removeCartItem(${index}, event)" title="Delete Item">✕</button>
+                        </div>
+                    </div>`;
+                total += item.price;
+            });
+
+            document.getElementById('cart-list').innerHTML = cartListHtml || 'No items ordered yet';
+            document.getElementById('total-amount').innerText = total;
+        }
+
+        function initiateCashCheckout(paymentType) {
+            if (cart.length === 0) return;
+            pendingCashType = paymentType;
+            document.getElementById('cash-modal-total').innerText = total;
+            document.getElementById('cash-received-input').value = '';
+            document.getElementById('cash-change-amount').innerText = '0.00';
+            document.getElementById('cash-modal').style.display = 'flex';
+        }
+
+        function closeCashModal() {
+            document.getElementById('cash-modal').style.display = 'none';
+        }
+
+        // On-screen Numpad Handlers
+        function pressNumpad(val) {
+            let input = document.getElementById('cash-received-input');
+            let curr = input.value;
+
+            if (val === 'C') {
+                input.value = '';
+            } else if (val === 'DEL') {
+                input.value = curr.slice(0, -1);
+            } else {
+                input.value = curr + val;
+            }
+            calculateChange();
+        }
+
+        function setPresetCash(amount) {
+            let input = document.getElementById('cash-received-input');
+            if (amount === 'exact') {
+                input.value = total;
+            } else {
+                input.value = amount;
+            }
+            calculateChange();
+        }
+
+        function calculateChange() {
+            let received = parseFloat(document.getElementById('cash-received-input').value) || 0;
+            let change = received - total;
+            document.getElementById('cash-change-amount').innerText = change >= 0 ? change.toFixed(2) : '0.00';
+        }
+
+        function confirmCashCheckout() {
+            let received = parseFloat(document.getElementById('cash-received-input').value) || 0;
+            if (received < total) {
+                alert("Received amount is less than total due!");
+                return;
+            }
+            closeCashModal();
+            checkoutOrder(pendingCashType);
+        }
+
+        function checkoutOrder(paymentType) {
+            if (cart.length === 0) return;
+
+            let currentKey = getTodayDateKey();
+            if (!allStats[currentKey]) {
+                allStats[currentKey] = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
+            }
+            if (!allOrderLogs[currentKey]) {
+                allOrderLogs[currentKey] = [];
+            }
+
+            let orderNum = allOrderLogs[currentKey].length + 1;
+            let timeStr = new Date().toLocaleTimeString('en-AU', { hour12: false });
+
+            let newOrderLog = {
+                orderNo: orderNum,
+                time: timeStr,
+                paymentType: paymentType,
+                items: JSON.parse(JSON.stringify(cart)),
+                totalAmount: total
+            };
+
+            allOrderLogs[currentKey].push(newOrderLog);
+            localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
+
+            if (paymentType === 'Cash') {
+                allStats[currentKey].cashCount += 1;
+                allStats[currentKey].cashTotal += total;
+            } else if (paymentType === 'Card') {
+                allStats[currentKey].cardCount += 1;
+                allStats[currentKey].cardTotal += total;
+            } else if (paymentType === 'Bulk Cash') {
+                allStats[currentKey].bulkCount += 1;
+                allStats[currentKey].bulkTotal += total;
+            }
+
+            localStorage.setItem('pos_all_daily_stats', JSON.stringify(allStats));
+            dailyStats = allStats[currentKey];
+            updateDailyReportUI();
+
+            printKitchenDocket(newOrderLog);
+            clearCart();
+        }
+
+        function printKitchenDocket(orderLog) {
+            let itemsHtml = orderLog.items.map(item => {
+                let subDetails = item.details ? item.details.map(d => `<div style="padding-left:10px; font-size:11px;">- ${d}</div>`).join('') : '';
+                return `<div><b>${item.title}</b> ${subDetails}</div>`;
+            }).join('<br>');
+
+            let docketHtml = `
+                <div style="font-family: monospace; width: 280px; padding: 5px; font-size: 12px;">
+                    <div style="text-align: right; font-weight: bold; font-size: 11px;">
+                        Order No: #${orderLog.orderNo}<br>
+                        Time: ${orderLog.time}
+                    </div>
+                    <div style="text-align: center; font-weight: bold; font-size: 14px; margin-top: 5px;">
+                        THE EXCLUSIVE THAI KITCHEN<br>
+                        --- KITCHEN DOCKET ---
+                    </div>
+                    <hr style="border-top: 1px dashed #000;">
+                    <div>${itemsHtml}</div>
+                    <hr style="border-top: 1px dashed #000;">
+                    <div style="text-align: right; font-weight: bold;">
+                        Payment: ${orderLog.paymentType}<br>
+                        Total: $${orderLog.totalAmount}
+                    </div>
+                </div>
+            `;
+
+            let printArea = document.getElementById('printable-receipt');
+            printArea.innerHTML = docketHtml;
+            
+            setTimeout(() => {
+                try {
+                    window.print();
+                } catch (e) {
+                    console.log("Printer not connected or offline, order proceeds normally.");
+                }
+            }, 100);
+        }
+
+        function updateDailyReportUI() {
+            document.getElementById('daily-cash-count').innerText = dailyStats.cashCount;
+            document.getElementById('daily-cash-amount').innerText = dailyStats.cashTotal;
+            
+            document.getElementById('daily-card-count').innerText = dailyStats.cardCount;
+            document.getElementById('daily-card-amount').innerText = dailyStats.cardTotal;
+
+            document.getElementById('daily-bulk-count').innerText = dailyStats.bulkCount;
+            document.getElementById('daily-bulk-amount').innerText = dailyStats.bulkTotal;
+
+            let grandTotalCount = dailyStats.cashCount + dailyStats.cardCount + dailyStats.bulkCount;
+            let grandTotalSales = dailyStats.cashTotal + dailyStats.cardTotal + dailyStats.bulkTotal;
+
+            document.getElementById('daily-orders-count').innerText = grandTotalCount;
+            document.getElementById('daily-total-amount').innerText = grandTotalSales;
+        }
+
+        function clearCart() {
+            cart = [];
+            isBulkOptionSelected = false;
+            updatePaymentButtonsDisplay();
+            resetSelection();
+            updateCartUI();
+        }
+
+        function openNoOptModal() {
+            document.getElementById('no-opt-modal').style.display = 'flex';
+        }
+
+        function closeNoOptModal() {
+            document.getElementById('no-opt-modal').style.display = 'none';
+        }
+
+        function toggleNoIngredient(name, el) {
+            let idx = selectedNoIngredients.indexOf(name);
+            if (idx > -1) {
+                selectedNoIngredients.splice(idx, 1);
+                el.classList.remove('selected');
+            } else {
+                selectedNoIngredients.push(name);
+                el.classList.add('selected');
+            }
+        }
+
+        function applyNoIngredients() {
+            closeNoOptModal();
+            if (currentMode === 'burger') addToCartBurger(false);
+            else if (currentMode === 'sunday') addToCartSunday(false);
+            else if (currentMode === 'main') addToCartMain(false);
+            else if (currentMode === 'lunch' || currentMode === 'dinner') addToCartLunchDinner(false);
+            else addToCartDirectly(false);
+        }
+
+        function openReportModal() {
+            document.getElementById('auth-modal').style.display = 'flex';
+            document.getElementById('auth-pass-input').value = '';
+            document.getElementById('auth-pass-input').focus();
+        }
+
+        function closeAuthModal() {
+            document.getElementById('auth-modal').style.display = 'none';
+        }
+
+        function verifyPassword() {
+            let inputPass = document.getElementById('auth-pass-input').value;
+            if (inputPass === systemPassword) {
+                closeAuthModal();
+                document.getElementById('report-modal').style.display = 'flex';
+                let todayStr = getTodayDateKey();
+                document.getElementById('report-date-picker').value = todayStr;
+                loadReportByDate(todayStr);
+            } else {
+                alert("Incorrect Password!");
+            }
+        }
+
+        function closeReportModal() {
+            document.getElementById('report-modal').style.display = 'none';
+        }
+
+        function openChPassModal() {
+            document.getElementById('chpass-modal').style.display = 'flex';
+        }
+
+        function closeChPassModal() {
+            document.getElementById('chpass-modal').style.display = 'none';
+        }
+
+        function submitChangePassword() {
+            let user = document.getElementById('chpass-user-input').value;
+            let oldPass = document.getElementById('chpass-old-input').value;
+            let newPass = document.getElementById('chpass-new-input').value;
+
+            if (user === 'Lek.Tetk' && oldPass === systemPassword) {
+                if (newPass.trim() !== '') {
+                    systemPassword = newPass;
+                    localStorage.setItem('pos_system_password', systemPassword);
+                    alert("Password successfully updated!");
+                    closeChPassModal();
+                } else {
+                    alert("New password cannot be empty!");
+                }
+            } else {
+                alert("Invalid Username or Current Password!");
+            }
+        }
+
+        function deleteCashRecords() {
+            let dateStr = document.getElementById('report-date-picker').value;
+            if (confirm(`Are you sure you want to delete normal Cash records for ${dateStr}? (Bulk Cash will be preserved)`)) {
+                if (allStats[dateStr]) {
+                    allStats[dateStr].cashCount = 0;
+                    allStats[dateStr].cashTotal = 0;
+                    localStorage.setItem('pos_all_daily_stats', JSON.stringify(allStats));
+                    
+                    if (dateStr === todayKey) {
+                        dailyStats = allStats[todayKey];
+                        updateDailyReportUI();
+                    }
+                    loadReportByDate(dateStr);
+                }
+            }
+        }
+
+        function loadReportByDate(dateStr) {
+            let stats = allStats[dateStr] || { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
+            let totalCnt = stats.cashCount + stats.cardCount + stats.bulkCount;
+            let totalAmt = stats.cashTotal + stats.cardTotal + stats.bulkTotal;
+
+            let logs = allOrderLogs[dateStr] || [];
+            let logsHtml = '';
+
+            logs.forEach(log => {
+                let itemsList = log.items.map(it => {
+                    let detailsStr = it.details ? ` (${it.details.join(', ')})` : '';
+                    return `• ${it.title}${detailsStr} - $${it.price}`;
+                }).join('<br>');
+
+                logsHtml += `
+                    <div style="background: #fff; border: 1px solid #ccc; padding: 6px; border-radius: 4px; margin-top: 4px;">
+                        <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 2px;">
+                            <span>Order #${log.orderNo} (${log.time})</span>
+                            <span>${log.paymentType}: $${log.totalAmount}</span>
+                        </div>
+                        <div style="font-size: 11px; color: #444; margin-top: 4px;">
+                            ${itemsList}
+                        </div>
+                    </div>
+                `;
+            });
+
+            let html = `
+                <div><b>📅 Date:</b> ${dateStr}</div>
+                <div>💵 Cash: <b>${stats.cashCount} bills</b> (<b>$${stats.cashTotal}</b>)</div>
+                <div>💳 Card: <b>${stats.cardCount} bills</b> (<b>$${stats.cardTotal}</b>)</div>
+                <div>💵 Bulk Cash: <b>${stats.bulkCount} bills</b> (<b>$${stats.bulkTotal}</b>)</div>
+                <div style="border-top: 1px solid #ccc; padding-top: 4px; margin-top: 2px;">
+                    <b>Grand Total:</b> <span style="color: #c0392b; font-size: 14px;"><b>$${totalAmt}</b> (${totalCnt} bills)</span>
+                </div>
+                <hr style="margin: 8px 0;">
+                <div style="font-weight: bold;">📜 Detailed Order Logs:</div>
+                <div style="max-height: 180px; overflow-y: auto;">
+                    ${logsHtml || '<div style="font-size: 11px; color: #777;">No order logs recorded.</div>'}
+                </div>
+            `;
+            document.getElementById('report-details-content').innerHTML = html;
+        }
+
+        function printDailySummaryReport() {
+            let dateStr = document.getElementById('report-date-picker').value;
+            let stats = allStats[dateStr] || { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
+            let totalCnt = stats.cashCount + stats.cardCount + stats.bulkCount;
+            let totalAmt = stats.cashTotal + stats.cardTotal + stats.bulkTotal;
+
+            let printArea = document.getElementById('printable-receipt');
+            printArea.innerHTML = `
+                <div style="font-family: monospace; width: 280px; padding: 10px; font-size: 12px;">
+                    <center>
+                        <h3>THE EXCLUSIVE THAI KITCHEN</h3>
+                        <p>DAILY SALES SUMMARY REPORT<br>Date: ${dateStr}</p>
+                    </center>
+                    <hr style="border-top: 1px dashed #000;">
+                    <p>Cash (${stats.cashCount} bills): $${stats.cashTotal}</p>
+                    <p>Card (${stats.cardCount} bills): $${stats.cardTotal}</p>
+                    <p>Bulk Cash (${stats.bulkCount} bills): $${stats.bulkTotal}</p>
+                    <hr style="border-top: 1px dashed #000;">
+                    <p><b>Total Orders: ${totalCnt}</b></p>
+                    <p><b>Grand Total: $${totalAmt}</b></p>
+                    <hr style="border-top: 1px dashed #000;">
+                </div>
+            `;
+            setTimeout(() => {
+                window.print();
+            }, 100);
+        }
+
+        switchCategory('lunch');
+    </script>
+</body>
+</html>

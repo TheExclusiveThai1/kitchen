@@ -26,7 +26,7 @@
             color: white;
             padding: 6px 12px;
             border-radius: 6px;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             height: 42px;
         }
         .header-left {
@@ -51,7 +51,7 @@
         .header-right-area {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
         .header-time {
             font-size: 13px;
@@ -68,10 +68,67 @@
             font-size: 12px;
             font-weight: bold;
         }
-        .fullscreen-btn:hover {
-            background: #d35400;
+        .fullscreen-btn:hover { background: #d35400; }
+
+        .pass-toggle-btn {
+            background: #34495e;
+            color: #f1c40f;
+            border: 1px solid #f1c40f;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
         }
-        
+
+        /* Active Kitchen Orders Bar */
+        .kitchen-bar-container {
+            background: #d5dbdb;
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            min-height: 40px;
+            overflow-x: auto;
+        }
+        .kitchen-bar-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #2c3e50;
+            white-space: nowrap;
+        }
+        .kitchen-orders-list {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex: 1;
+        }
+        .table-order-badge {
+            background: #e67e22;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            animation: pulse 2s infinite;
+        }
+        .table-order-badge:hover { background: #d35400; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+
         .pos-container {
             display: flex;
             flex-direction: column;
@@ -555,6 +612,26 @@
             border-color: #8e44ad;
         }
         .numpad-btn.preset:hover { background: #e8daef; }
+
+        /* Table Selection Grid */
+        .table-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .table-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 14px 0;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+        }
+        .table-btn:hover { background: #2980b9; }
     </style>
 </head>
 <body>
@@ -566,8 +643,17 @@
             <div class="restaurant-title">🍽️ The Exclusive Thai Kitchen</div>
         </div>
         <div class="header-right-area">
+            <button class="pass-toggle-btn" id="pass-toggle-btn" onclick="togglePasswordProtection()">⚙️ Pass Protect: ON</button>
             <button class="fullscreen-btn" onclick="toggleFullScreen()" title="Toggle Fullscreen">⛶ Full Screen</button>
             <div class="header-time" id="clock-display">--:--:--</div>
+        </div>
+    </div>
+
+    <!-- Active Kitchen Orders Bar (Between Header and Menu) -->
+    <div class="kitchen-bar-container">
+        <div class="kitchen-bar-title">👨‍🍳 Active Orders:</div>
+        <div class="kitchen-orders-list" id="kitchen-active-orders">
+            <span style="font-size: 11px; color: #7f8c8d;">No active kitchen orders</span>
         </div>
     </div>
 
@@ -610,7 +696,7 @@
                     <div class="cart-actions" id="cart-actions-box">
                         <div class="cart-actions-row">
                             <button class="btn-pay-cash" id="btn-pay-cash" onclick="initiateCashCheckout('Cash')">💵 Cash</button>
-                            <button class="btn-pay-card" id="btn-pay-card" onclick="checkoutOrder('Card')">💳 Card</button>
+                            <button class="btn-pay-card" id="btn-pay-card" onclick="initiateCardCheckout()">💳 Card</button>
                             <button class="btn-pay-split" id="btn-pay-split" onclick="initiateSplitCheckout()">🔀 Split</button>
                         </div>
                         <button class="btn-pay-bulk" id="btn-pay-bulk" onclick="initiateCashCheckout('Bulk Cash')">💵 Bulk Cash</button>
@@ -641,6 +727,32 @@
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    <!-- Modal: Select Table Number (1 - 20) -->
+    <div class="modal-overlay" id="table-modal">
+        <div class="modal-content" style="width: 380px;">
+            <div class="modal-header">
+                <span>🪑 Select Table Number</span>
+                <button class="close-modal" onclick="closeTableModal()">✕</button>
+            </div>
+            <div style="font-size: 13px; color: #555; text-align: center;">Choose table number to confirm order:</div>
+            <div class="table-grid" id="table-select-grid"></div>
+        </div>
+    </div>
+
+    <!-- Modal: Active Kitchen Order View -->
+    <div class="modal-overlay" id="kitchen-order-modal">
+        <div class="modal-content" style="width: 400px;">
+            <div class="modal-header">
+                <span id="kitchen-modal-title">🍽️ Order Details</span>
+                <button class="close-modal" onclick="closeKitchenModal()">✕</button>
+            </div>
+            <div class="report-details-box" id="kitchen-modal-body"></div>
+            <div class="modal-actions">
+                <button class="btn-modal-action" style="background: #27ae60; padding: 12px; font-size: 16px;" onclick="markKitchenOrderDone()">✅ Done (Complete Order)</button>
+            </div>
         </div>
     </div>
 
@@ -840,8 +952,8 @@
                 <button class="close-modal" onclick="closeReportModal()">✕</button>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                <input type="date" id="report-date-picker" onchange="loadReportByDate(this.value)" style="flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
-                <button style="background: #8e44ad; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;" onclick="openChPassModal()">Change Pass</button>
+                <input type="date" id="report-date-picker" onclick="this.showPicker()" onchange="loadReportByDate(this.value)" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer;">
+                <button style="background: #8e44ad; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold;" onclick="openChPassModal()">Change Pass</button>
             </div>
             <div class="report-details-box" id="report-details-content"></div>
             <div class="modal-actions">
@@ -1038,13 +1150,16 @@
         let selectedNoIngredients = [];
 
         let isBulkOptionSelected = false;
-        let pendingCashType = 'Cash';
+        let pendingPaymentType = 'Cash';
+        let pendingCashPaid = 0;
+        let pendingCardPaid = 0;
 
         let cart = [];
         let total = 0;
         let activeCartIndex = null;
 
         let systemPassword = localStorage.getItem('pos_system_password') || '8989';
+        let isPassProtectionEnabled = JSON.parse(localStorage.getItem('pos_pass_protect_enabled') ?? 'true');
 
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
@@ -1079,6 +1194,7 @@
         let todayKey = getTodayDateKey();
         let allStats = JSON.parse(localStorage.getItem('pos_all_daily_stats')) || {};
         let allOrderLogs = JSON.parse(localStorage.getItem('pos_all_order_logs')) || {};
+        let activeKitchenOrders = JSON.parse(localStorage.getItem('pos_active_kitchen_orders')) || [];
 
         if (!allStats[todayKey]) {
             allStats[todayKey] = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
@@ -1091,6 +1207,25 @@
         }
 
         let dailyStats = allStats[todayKey];
+
+        function togglePasswordProtection() {
+            isPassProtectionEnabled = !isPassProtectionEnabled;
+            localStorage.setItem('pos_pass_protect_enabled', JSON.stringify(isPassProtectionEnabled));
+            updatePassProtectBtnUI();
+        }
+
+        function updatePassProtectBtnUI() {
+            let btn = document.getElementById('pass-toggle-btn');
+            if (isPassProtectionEnabled) {
+                btn.innerText = "⚙️ Pass Protect: ON";
+                btn.style.color = "#f1c40f";
+                btn.style.borderColor = "#f1c40f";
+            } else {
+                btn.innerText = "⚙️ Pass Protect: OFF";
+                btn.style.color = "#e74c3c";
+                btn.style.borderColor = "#e74c3c";
+            }
+        }
 
         function switchCategory(cat) {
             currentMode = cat;
@@ -1384,7 +1519,11 @@
         }
 
         function toggleBurgerExtra(name, price, el) {
-            if (!selectedMenu) return;
+            if (!selectedMenu) {
+                cart.push({ title: `Extra: ${name}`, details: null, price: price });
+                updateCartUI();
+                return;
+            }
             let idx = selectedBurgerExtras.findIndex(i => i.name === name);
             if (idx > -1) {
                 selectedBurgerExtras.splice(idx, 1);
@@ -1429,7 +1568,11 @@
         }
 
         function toggleExtra(name, price, el) {
-            if (!selectedMenu) return;
+            if (!selectedMenu) {
+                cart.push({ title: `${name}`, details: null, price: price });
+                updateCartUI();
+                return;
+            }
 
             let idx = windowExtras.findIndex(i => i.name === name);
             if (idx > -1) {
@@ -1675,7 +1818,11 @@
         }
 
         function selectMeat(name, price, el) {
-            if (!selectedMenu) return;
+            if (!selectedMenu) {
+                cart.push({ title: `Meat: ${name}`, details: null, price: price });
+                updateCartUI();
+                return;
+            }
 
             selectedMeat = name;
             meatExtraPrice = price;
@@ -1841,7 +1988,7 @@
 
         function initiateCashCheckout(paymentType) {
             if (cart.length === 0) return;
-            pendingCashType = paymentType;
+            pendingPaymentType = paymentType;
             document.getElementById('cash-modal-total').innerText = total;
             document.getElementById('cash-received-input').value = '';
             document.getElementById('cash-change-amount').innerText = '0.00';
@@ -1889,7 +2036,13 @@
                 return;
             }
             closeCashModal();
-            checkoutOrder(pendingCashType);
+            openTableSelectionModal();
+        }
+
+        function initiateCardCheckout() {
+            if (cart.length === 0) return;
+            pendingPaymentType = 'Card';
+            openTableSelectionModal();
         }
 
         function initiateSplitCheckout() {
@@ -1930,12 +2083,37 @@
                 alert("Please enter a valid Cash amount that is less than Total Due!");
                 return;
             }
-            let cardPaid = total - cashPaid;
+            pendingCashPaid = cashPaid;
+            pendingCardPaid = total - cashPaid;
+            pendingPaymentType = 'Split';
             closeSplitModal();
-            checkoutSplitOrder(cashPaid, cardPaid);
+            openTableSelectionModal();
         }
 
-        function checkoutSplitOrder(cashAmount, cardAmount) {
+        function openTableSelectionModal() {
+            let gridHtml = '';
+            for (let i = 1; i <= 20; i++) {
+                gridHtml += `<button class="table-btn" onclick="confirmOrderWithTable(${i})">Table ${i}</button>`;
+            }
+            document.getElementById('table-select-grid').innerHTML = gridHtml;
+            document.getElementById('table-modal').style.display = 'flex';
+        }
+
+        function closeTableModal() {
+            document.getElementById('table-modal').style.display = 'none';
+        }
+
+        function confirmOrderWithTable(tableNum) {
+            closeTableModal();
+
+            if (pendingPaymentType === 'Split') {
+                checkoutSplitOrder(pendingCashPaid, pendingCardPaid, tableNum);
+            } else {
+                checkoutOrder(pendingPaymentType, tableNum);
+            }
+        }
+
+        function checkoutSplitOrder(cashAmount, cardAmount, tableNum) {
             let currentKey = getTodayDateKey();
             if (!allStats[currentKey]) {
                 allStats[currentKey] = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
@@ -1949,6 +2127,7 @@
 
             let newOrderLog = {
                 orderNo: orderNum,
+                tableNo: tableNum,
                 time: timeStr,
                 paymentType: `Split ($${cashAmount} Cash / $${cardAmount} Card)`,
                 items: JSON.parse(JSON.stringify(cart)),
@@ -1967,10 +2146,15 @@
             dailyStats = allStats[currentKey];
             updateDailyReportUI();
 
+            // Add to active kitchen orders
+            activeKitchenOrders.push(newOrderLog);
+            localStorage.setItem('pos_active_kitchen_orders', JSON.stringify(activeKitchenOrders));
+            renderActiveKitchenOrders();
+
             clearCart();
         }
 
-        function checkoutOrder(paymentType) {
+        function checkoutOrder(paymentType, tableNum) {
             if (cart.length === 0) return;
 
             let currentKey = getTodayDateKey();
@@ -1986,6 +2170,7 @@
 
             let newOrderLog = {
                 orderNo: orderNum,
+                tableNo: tableNum,
                 time: timeStr,
                 paymentType: paymentType,
                 items: JSON.parse(JSON.stringify(cart)),
@@ -2010,7 +2195,67 @@
             dailyStats = allStats[currentKey];
             updateDailyReportUI();
 
+            // Add to active kitchen orders
+            activeKitchenOrders.push(newOrderLog);
+            localStorage.setItem('pos_active_kitchen_orders', JSON.stringify(activeKitchenOrders));
+            renderActiveKitchenOrders();
+
             clearCart();
+        }
+
+        function renderActiveKitchenOrders() {
+            let container = document.getElementById('kitchen-active-orders');
+            if (!activeKitchenOrders || activeKitchenOrders.length === 0) {
+                container.innerHTML = `<span style="font-size: 11px; color: #7f8c8d;">No active kitchen orders</span>`;
+                return;
+            }
+
+            let html = '';
+            activeKitchenOrders.forEach((ord, index) => {
+                html += `
+                    <button class="table-order-badge" onclick="openKitchenOrderModal(${index})">
+                        <span>🪑 Table ${ord.tableNo}</span>
+                        <span style="font-size: 10px; opacity: 0.8;">(${ord.time})</span>
+                    </button>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        let selectedKitchenOrderIndex = null;
+
+        function openKitchenOrderModal(index) {
+            selectedKitchenOrderIndex = index;
+            let ord = activeKitchenOrders[index];
+
+            document.getElementById('kitchen-modal-title').innerText = `🍽️ Table ${ord.tableNo} (Order #${ord.orderNo})`;
+
+            let itemsList = ord.items.map(it => {
+                let detailsStr = it.details ? `<br><span style="font-size: 12px; color: #555; padding-left: 10px;">• ${it.details.join('<br>• ')}</span>` : '';
+                return `<div style="padding: 4px 0; border-bottom: 1px solid #eee;"><b>${it.title}</b>${detailsStr}</div>`;
+            }).join('');
+
+            let bodyHtml = `
+                <div style="font-size: 13px; font-weight: bold; color: #2c3e50;">Time: ${ord.time} | Total: $${ord.totalAmount}</div>
+                <hr style="margin: 6px 0;">
+                <div style="font-size: 13px;">${itemsList}</div>
+            `;
+
+            document.getElementById('kitchen-modal-body').innerHTML = bodyHtml;
+            document.getElementById('kitchen-order-modal').style.display = 'flex';
+        }
+
+        function closeKitchenModal() {
+            document.getElementById('kitchen-order-modal').style.display = 'none';
+        }
+
+        function markKitchenOrderDone() {
+            if (selectedKitchenOrderIndex !== null && selectedKitchenOrderIndex < activeKitchenOrders.length) {
+                activeKitchenOrders.splice(selectedKitchenOrderIndex, 1);
+                localStorage.setItem('pos_active_kitchen_orders', JSON.stringify(activeKitchenOrders));
+                renderActiveKitchenOrders();
+                closeKitchenModal();
+            }
         }
 
         function updateDailyReportUI() {
@@ -2052,7 +2297,7 @@
                 contentHtml += `
                     <div style="background: #fff; border: 1px solid #ccc; padding: 8px; border-radius: 4px; margin-top: 6px;">
                         <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 3px;">
-                            <span>Order #${log.orderNo} (${log.time})</span>
+                            <span>Order #${log.orderNo} [Table ${log.tableNo || '-'}] (${log.time})</span>
                             <span style="color: #c0392b;">$${log.totalAmount} (${log.paymentType})</span>
                         </div>
                         <div style="font-size: 11px; color: #444; margin-top: 4px; margin-bottom: 6px;">
@@ -2159,9 +2404,13 @@
         }
 
         function openReportModal() {
-            document.getElementById('auth-modal').style.display = 'flex';
-            document.getElementById('auth-pass-input').value = '';
-            document.getElementById('auth-pass-input').focus();
+            if (isPassProtectionEnabled) {
+                document.getElementById('auth-modal').style.display = 'flex';
+                document.getElementById('auth-pass-input').value = '';
+                document.getElementById('auth-pass-input').focus();
+            } else {
+                showReportDirectly();
+            }
         }
 
         function closeAuthModal() {
@@ -2172,13 +2421,17 @@
             let inputPass = document.getElementById('auth-pass-input').value;
             if (inputPass === systemPassword) {
                 closeAuthModal();
-                document.getElementById('report-modal').style.display = 'flex';
-                let todayStr = getTodayDateKey();
-                document.getElementById('report-date-picker').value = todayStr;
-                loadReportByDate(todayStr);
+                showReportDirectly();
             } else {
                 alert("Incorrect Password!");
             }
+        }
+
+        function showReportDirectly() {
+            document.getElementById('report-modal').style.display = 'flex';
+            let todayStr = getTodayDateKey();
+            document.getElementById('report-date-picker').value = todayStr;
+            loadReportByDate(todayStr);
         }
 
         function closeReportModal() {
@@ -2254,7 +2507,7 @@
                 logsHtml += `
                     <div style="background: #fff; border: 1px solid #ccc; padding: 6px; border-radius: 4px; margin-top: 4px;">
                         <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 2px;">
-                            <span>Order #${log.orderNo} (${log.time})</span>
+                            <span>Order #${log.orderNo} [Table ${log.tableNo || '-'}] (${log.time})</span>
                             <span>${log.paymentType}: $${log.totalAmount}</span>
                         </div>
                         <div style="font-size: 11px; color: #444; margin-top: 4px;">
@@ -2284,6 +2537,8 @@
         window.onload = function() {
             updateClock();
             updateDailyReportUI();
+            updatePassProtectBtnUI();
+            renderActiveKitchenOrders();
             switchCategory('lunch');
         };
     </script>

@@ -343,11 +343,32 @@
         .cart-item-title {
             font-weight: bold;
             color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+        }
+        .cart-item-title-text {
+            flex: 1;
+        }
+        .cart-item-title-price {
+            font-weight: bold;
+            color: #c0392b;
+            min-width: 45px;
+            text-align: right;
         }
         .cart-sub-detail {
             font-size: 12px;
             color: #555;
             padding-left: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .cart-sub-text {
+            flex: 1;
+        }
+        .cart-sub-price {
+            min-width: 45px;
+            text-align: right;
+            color: #555;
         }
         .cart-item-right {
             display: flex;
@@ -649,7 +670,7 @@
         </div>
     </div>
 
-    <!-- Active Kitchen Orders Bar (Between Header and Menu) -->
+    <!-- Active Kitchen Orders Bar -->
     <div class="kitchen-bar-container">
         <div class="kitchen-bar-title">👨‍🍳 Active Orders:</div>
         <div class="kitchen-orders-list" id="kitchen-active-orders">
@@ -771,7 +792,7 @@
         </div>
     </div>
 
-    <!-- Modal: Split Payment (Cash + Card) -->
+    <!-- Modal: Split Payment -->
     <div class="modal-overlay" id="split-modal">
         <div class="modal-content" style="width: 360px;">
             <div class="modal-header">
@@ -1137,8 +1158,7 @@
         let currentBasePrice = 0;
 
         let selectedMenu = null;
-        let selectedMeat = null;
-        let meatExtraPrice = 0;
+        let selectedMeats = [];
         
         let selectedCooking = null;
         let selectedSides = [];
@@ -1380,15 +1400,15 @@
             } else {
                 panel.innerHTML = `
                     <div class="opt-box" style="border-top: 4px solid #2980b9;">
-                        <div class="opt-title">🥩 2. Choose Meat</div>
+                        <div class="opt-title">🥩 2. Choose Meat (Multi-Select)</div>
                         <div class="opt-grid-2col">
-                            <button class="opt-btn meat-btn" onclick="selectMeat('Chicken', 0, this)">Chicken</button>
-                            <button class="opt-btn meat-btn" onclick="selectMeat('Beef', 0, this)">Beef</button>
-                            <button class="opt-btn meat-btn" onclick="selectMeat('Pork', 0, this)">Pork</button>
-                            <button class="opt-btn meat-btn" onclick="selectMeat('Vegetables', 0, this)">Veggie</button>
-                            <button class="opt-btn meat-btn" onclick="selectMeat('Tofu', 0, this)">Tofu</button>
-                            <button class="opt-btn meat-btn" onclick="selectMeat('Crispy Pork Belly', 5, this)" style="background: #fadbd8;">Crispy Pork</button>
-                            <button class="opt-btn meat-btn" onclick="selectMeat('Prawn', 5, this)" style="background: #fadbd8; grid-column: span 2;">Prawn</button>
+                            <button class="opt-btn meat-btn" onclick="toggleMeat('Chicken', 0, this)">Chicken</button>
+                            <button class="opt-btn meat-btn" onclick="toggleMeat('Beef', 0, this)">Beef</button>
+                            <button class="opt-btn meat-btn" onclick="toggleMeat('Pork', 0, this)">Pork</button>
+                            <button class="opt-btn meat-btn" onclick="toggleMeat('Vegetables', 0, this)">Veggie</button>
+                            <button class="opt-btn meat-btn" onclick="toggleMeat('Tofu', 0, this)">Tofu</button>
+                            <button class="opt-btn meat-btn" onclick="toggleMeat('Crispy Pork Belly', 5, this)" style="background: #fadbd8;">Crispy Pork</button>
+                            <button class="opt-btn meat-btn" onclick="toggleMeat('Prawn', 5, this)" style="background: #fadbd8; grid-column: span 2;">Prawn</button>
                         </div>
                     </div>
 
@@ -1414,8 +1434,7 @@
         function selectMenu(name, price, type, el) {
             selectedMenu = name;
             currentBasePrice = price;
-            selectedMeat = null;
-            meatExtraPrice = 0;
+            selectedMeats = [];
             selectedCooking = null;
             selectedSides = [];
             selectedSauces = [];
@@ -1510,8 +1529,8 @@
         function addToCartBulk() {
             cart.push({
                 title: "Bulk Option",
-                details: null,
                 price: currentBasePrice,
+                details: [],
                 isBulk: true
             });
             activeCartIndex = cart.length - 1;
@@ -1520,7 +1539,7 @@
 
         function toggleBurgerExtra(name, price, el) {
             if (!selectedMenu) {
-                cart.push({ title: `Extra: ${name}`, details: null, price: price });
+                cart.push({ title: `Extra: ${name}`, price: price, details: [{text: name, price: price}] });
                 updateCartUI();
                 return;
             }
@@ -1542,11 +1561,13 @@
             let details = [];
             selectedBurgerExtras.forEach(ex => {
                 extraTotal += ex.price;
-                details.push(`Extra: ${ex.name}`);
+                details.push({ text: `Extra: ${ex.name}`, price: ex.price });
             });
 
             if (selectedNoIngredients.length > 0) {
-                details.push(`NO: ${selectedNoIngredients.join(', ')}`);
+                selectedNoIngredients.forEach(noItem => {
+                    details.push({ text: `NO: ${noItem}`, price: 0 });
+                });
             }
 
             let finalPrice = currentBasePrice + extraTotal;
@@ -1554,8 +1575,8 @@
 
             let itemObj = { 
                 title: mainTitle, 
-                details: details.length > 0 ? details : null, 
-                price: finalPrice 
+                price: finalPrice,
+                details: details
             };
 
             if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
@@ -1569,7 +1590,7 @@
 
         function toggleExtra(name, price, el) {
             if (!selectedMenu) {
-                cart.push({ title: `${name}`, details: null, price: price });
+                cart.push({ title: `${name}`, price: price, details: [{text: name, price: price}] });
                 updateCartUI();
                 return;
             }
@@ -1626,21 +1647,16 @@
             let titleText = `${selectedMenu}`;
             let details = [];
 
-            if (selectedCooking) details.push(`Cook: ${selectedCooking}`);
+            if (selectedCooking) details.push({ text: `Cook: ${selectedCooking}`, price: 0 });
 
             if (sundaySides.length > 0) {
-                details.push(`Sides: ${sundaySides.join(', ')}`);
-                
                 let freeQuota = 1;
                 let greekSaladExtraCount = 0;
                 let regularSidesCount = 0;
 
                 sundaySides.forEach(side => {
-                    if (side === 'Greek salad') {
-                        greekSaladExtraCount++;
-                    } else {
-                        regularSidesCount++;
-                    }
+                    if (side === 'Greek salad') greekSaladExtraCount++;
+                    else regularSidesCount++;
                 });
 
                 let remainingFree = freeQuota;
@@ -1661,25 +1677,29 @@
                     chargeableGreek = 0;
                 }
 
-                extraPrice += chargeableRegular * 5;
-                extraPrice += chargeableGreek * 3;
+                let sideCost = (chargeableRegular * 5) + (chargeableGreek * 3);
+                extraPrice += sideCost;
+                details.push({ text: `Sides: ${sundaySides.join(', ')}`, price: sideCost });
             }
 
             if (sundaySauces.length > 0) {
-                details.push(`Sauce: ${sundaySauces.join(', ')}`);
-                extraPrice += sundaySauces.length * 3;
+                let sauceCost = sundaySauces.length * 3;
+                extraPrice += sauceCost;
+                details.push({ text: `Sauce: ${sundaySauces.join(', ')}`, price: sauceCost });
             }
 
             if (selectedNoIngredients.length > 0) {
-                details.push(`NO: ${selectedNoIngredients.join(', ')}`);
+                selectedNoIngredients.forEach(noItem => {
+                    details.push({ text: `NO: ${noItem}`, price: 0 });
+                });
             }
 
             let finalPrice = currentBasePrice + extraPrice;
 
             let itemObj = { 
                 title: titleText, 
-                details: details.length > 0 ? details : null, 
-                price: finalPrice 
+                price: finalPrice,
+                details: details
             };
 
             if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
@@ -1695,9 +1715,11 @@
             let itemText = `Ken Pizza (Chicken, Pepperoni, Mushroom, Capsicum, Pineapple and Cheese)`;
             let details = [];
             if (selectedNoIngredients.length > 0) {
-                details.push(`NO: ${selectedNoIngredients.join(', ')}`);
+                selectedNoIngredients.forEach(noItem => {
+                    details.push({ text: `NO: ${noItem}`, price: 0 });
+                });
             }
-            let itemObj = { title: itemText, details: details.length > 0 ? details : null, price: currentBasePrice };
+            let itemObj = { title: itemText, price: currentBasePrice, details: details };
             
             if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
                 cart.push(itemObj);
@@ -1749,21 +1771,16 @@
             let extraPrice = 0;
             let details = [];
 
-            if (selectedCooking) details.push(`Cook: ${selectedCooking}`);
+            if (selectedCooking) details.push({ text: `Cook: ${selectedCooking}`, price: 0 });
 
             if (selectedSides.length > 0) {
-                details.push(`Sides: ${selectedSides.join(', ')}`);
-                
                 let freeQuota = 2;
                 let greekSaladExtraCount = 0;
                 let regularSidesCount = 0;
 
                 selectedSides.forEach(side => {
-                    if (side === 'Greek salad') {
-                        greekSaladExtraCount++;
-                    } else {
-                        regularSidesCount++;
-                    }
+                    if (side === 'Greek salad') greekSaladExtraCount++;
+                    else regularSidesCount++;
                 });
 
                 let remainingFree = freeQuota;
@@ -1784,19 +1801,24 @@
                     chargeableGreek = 0;
                 }
 
-                extraPrice += chargeableRegular * 5;
-                extraPrice += chargeableGreek * 3;
+                let sideCost = (chargeableRegular * 5) + (chargeableGreek * 3);
+                extraPrice += sideCost;
+                details.push({ text: `Sides: ${selectedSides.join(', ')}`, price: sideCost });
             }
 
             if (selectedSauces.length > 0) {
-                details.push(`Sauce: ${selectedSauces.join(', ')}`);
+                let sauceCost = 0;
                 if (selectedSauces.length > 1) {
-                    extraPrice += (selectedSauces.length - 1) * 3;
+                    sauceCost = (selectedSauces.length - 1) * 3;
+                    extraPrice += sauceCost;
                 }
+                details.push({ text: `Sauce: ${selectedSauces.join(', ')}`, price: sauceCost });
             }
 
             if (selectedNoIngredients.length > 0) {
-                details.push(`NO: ${selectedNoIngredients.join(', ')}`);
+                selectedNoIngredients.forEach(noItem => {
+                    details.push({ text: `NO: ${noItem}`, price: 0 });
+                });
             }
 
             let finalPrice = currentBasePrice + extraPrice;
@@ -1804,8 +1826,8 @@
 
             let itemObj = { 
                 title: mainTitle, 
-                details: details.length > 0 ? details : null, 
-                price: finalPrice 
+                price: finalPrice,
+                details: details
             };
 
             if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
@@ -1817,18 +1839,21 @@
             updateCartUI();
         }
 
-        function selectMeat(name, price, el) {
+        function toggleMeat(name, baseMeatPrice, el) {
             if (!selectedMenu) {
-                cart.push({ title: `Meat: ${name}`, details: null, price: price });
+                cart.push({ title: `Meat: ${name}`, price: baseMeatPrice, details: [{text: name, price: baseMeatPrice}] });
                 updateCartUI();
                 return;
             }
 
-            selectedMeat = name;
-            meatExtraPrice = price;
-
-            document.querySelectorAll('.meat-btn').forEach(b => b.classList.remove('selected'));
-            el.classList.add('selected');
+            let idx = selectedMeats.findIndex(m => m.name === name);
+            if (idx > -1) {
+                selectedMeats.splice(idx, 1);
+                el.classList.remove('selected');
+            } else {
+                selectedMeats.push({ name: name, basePrice: baseMeatPrice });
+                el.classList.add('selected');
+            }
 
             addToCartLunchDinner(false);
         }
@@ -1839,30 +1864,40 @@
             let extraTotal = 0;
             let details = [];
 
-            if (selectedMeat) {
-                details.push(`Meat: ${selectedMeat}`);
+            if (selectedMeats.length > 0) {
+                selectedMeats.forEach((m, idx) => {
+                    if (idx === 0) {
+                        extraTotal += m.basePrice;
+                        details.push({ text: `Meat: ${m.name}`, price: m.basePrice });
+                    } else {
+                        extraTotal += 5;
+                        details.push({ text: `Extra Meat: ${m.name}`, price: 5 });
+                    }
+                });
             }
 
             if (windowExtras && windowExtras.length > 0) {
                 windowExtras.forEach(ex => {
                     extraTotal += ex.price;
-                    details.push(`Extra: ${ex.name}`);
+                    details.push({ text: `Extra: ${ex.name}`, price: ex.price });
                 });
             }
 
             if (selectedNoIngredients.length > 0) {
-                details.push(`NO: ${selectedNoIngredients.join(', ')}`);
+                selectedNoIngredients.forEach(noItem => {
+                    details.push({ text: `NO: ${noItem}`, price: 0 });
+                });
             }
 
-            let finalPrice = currentBasePrice + meatExtraPrice + extraTotal;
+            let finalPrice = currentBasePrice + extraTotal;
             
             let modeTag = currentMode === 'lunch' ? '[Lunch]' : (currentMode === 'dinner' ? '[Dinner]' : (currentMode === 'chef' ? '[Chef]' : ''));
             let mainTitle = `${modeTag} ${selectedMenu}`.trim();
 
             let itemObj = { 
                 title: mainTitle, 
-                details: details.length > 0 ? details : null, 
-                price: finalPrice 
+                price: finalPrice,
+                details: details
             };
 
             if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
@@ -1884,12 +1919,14 @@
             if (windowExtras && windowExtras.length > 0) {
                 windowExtras.forEach(ex => {
                     extraTotal += ex.price;
-                    details.push(`Extra: ${ex.name}`);
+                    details.push({ text: `Extra: ${ex.name}`, price: ex.price });
                 });
             }
 
             if (selectedNoIngredients.length > 0) {
-                details.push(`NO: ${selectedNoIngredients.join(', ')}`);
+                selectedNoIngredients.forEach(noItem => {
+                    details.push({ text: `NO: ${noItem}`, price: 0 });
+                });
             }
 
             let finalPrice = currentBasePrice + extraTotal;
@@ -1897,8 +1934,8 @@
 
             let itemObj = { 
                 title: mainTitle, 
-                details: details.length > 0 ? details : null, 
-                price: finalPrice 
+                price: finalPrice,
+                details: details
             };
 
             if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
@@ -1913,8 +1950,7 @@
 
         function resetSelection() {
             selectedMenu = null;
-            selectedMeat = null;
-            meatExtraPrice = 0;
+            selectedMeats = [];
             selectedCooking = null;
             selectedSides = [];
             selectedSauces = [];
@@ -1965,17 +2001,22 @@
             
             cart.forEach((item, index) => {
                 let detailsHtml = '';
-                if (item.details) {
-                    detailsHtml = item.details.map(d => `<div class="cart-sub-detail">• ${d}</div>`).join('');
+                if (item.details && item.details.length > 0) {
+                    detailsHtml = item.details.map(d => {
+                        let priceDisplay = d.price > 0 ? `$${d.price}` : '';
+                        return `<div class="cart-sub-detail"><span class="cart-sub-text">• ${d.text}</span><span class="cart-sub-price">${priceDisplay}</span></div>`;
+                    }).join('');
                 }
                 cartListHtml += `
                     <div class="cart-item" onclick="editCartItemPrice(${index})">
                         <div class="cart-item-details">
-                            <span class="cart-item-title">${item.title}</span>
+                            <div class="cart-item-title">
+                                <span class="cart-item-title-text">${item.title}</span>
+                                <span class="cart-item-title-price">$${item.price}</span>
+                            </div>
                             ${detailsHtml}
                         </div>
                         <div class="cart-item-right">
-                            <b>$${item.price}</b>
                             <button class="btn-delete-item" onclick="removeCartItem(${index}, event)" title="Delete Item">✕</button>
                         </div>
                     </div>`;
@@ -2146,7 +2187,6 @@
             dailyStats = allStats[currentKey];
             updateDailyReportUI();
 
-            // Add to active kitchen orders
             activeKitchenOrders.push(newOrderLog);
             localStorage.setItem('pos_active_kitchen_orders', JSON.stringify(activeKitchenOrders));
             renderActiveKitchenOrders();
@@ -2195,7 +2235,6 @@
             dailyStats = allStats[currentKey];
             updateDailyReportUI();
 
-            // Add to active kitchen orders
             activeKitchenOrders.push(newOrderLog);
             localStorage.setItem('pos_active_kitchen_orders', JSON.stringify(activeKitchenOrders));
             renderActiveKitchenOrders();
@@ -2231,8 +2270,11 @@
             document.getElementById('kitchen-modal-title').innerText = `🍽️ Table ${ord.tableNo} (Order #${ord.orderNo})`;
 
             let itemsList = ord.items.map(it => {
-                let detailsStr = it.details ? `<br><span style="font-size: 12px; color: #555; padding-left: 10px;">• ${it.details.join('<br>• ')}</span>` : '';
-                return `<div style="padding: 4px 0; border-bottom: 1px solid #eee;"><b>${it.title}</b>${detailsStr}</div>`;
+                let detailsStr = '';
+                if (it.details && it.details.length > 0) {
+                    detailsStr = '<br>' + it.details.map(d => `<span style="font-size: 12px; color: #555; padding-left: 10px; display:inline-block; width:100%;">• ${d.text}</span>`).join('');
+                }
+                return `<div style="padding: 4px 0; border-bottom: 1px solid #eee;"><b>${it.title}</b> ($${it.price})${detailsStr}</div>`;
             }).join('');
 
             let bodyHtml = `
@@ -2290,7 +2332,10 @@
 
             logs.forEach((log, index) => {
                 let itemsList = log.items.map(it => {
-                    let detailsStr = it.details ? ` (${it.details.join(', ')})` : '';
+                    let detailsStr = '';
+                    if (it.details && it.details.length > 0) {
+                        detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
+                    }
                     return `• ${it.title}${detailsStr} - $${it.price}`;
                 }).join('<br>');
 
@@ -2500,7 +2545,10 @@
 
             logs.forEach(log => {
                 let itemsList = log.items.map(it => {
-                    let detailsStr = it.details ? ` (${it.details.join(', ')})` : '';
+                    let detailsStr = '';
+                    if (it.details && it.details.length > 0) {
+                        detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
+                    }
                     return `• ${it.title}${detailsStr} - $${it.price}`;
                 }).join('<br>');
 

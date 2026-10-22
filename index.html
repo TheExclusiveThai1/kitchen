@@ -48,10 +48,28 @@
             font-weight: bold;
             letter-spacing: 0.5px;
         }
+        .header-right-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
         .header-time {
             font-size: 13px;
             font-weight: bold;
             color: #f1c40f;
+        }
+        .fullscreen-btn {
+            background: #e67e22;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .fullscreen-btn:hover {
+            background: #d35400;
         }
         
         .pos-container {
@@ -122,20 +140,21 @@
         .sub-header { 
             background: #34495e; 
             color: white; 
-            padding: 4px 8px; 
+            padding: 6px 10px; 
             border-radius: 4px; 
-            font-size: 13px; 
+            font-size: 14px; 
             font-weight: bold; 
+            margin-top: 4px;
         }
 
         .item-grid { 
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
-            gap: 6px; 
+            gap: 8px; 
         }
         .item-card { 
             background: #fff; 
-            padding: 10px 4px; 
+            padding: 16px 8px; 
             border-radius: 6px; 
             border: 2px solid #bdc3c7; 
             cursor: pointer; 
@@ -144,24 +163,25 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            min-height: 65px;
         }
         .item-card:hover { border-color: #3498db; background: #ebf5fb; }
         .item-card.selected { border-color: #e67e22; background: #fef5e7; box-shadow: 0 0 5px rgba(230,126,34,0.5); }
-        .item-title { font-weight: bold; color: #2c3e50; font-size: 12px; line-height: 1.2; }
+        .item-title { font-weight: bold; color: #2c3e50; font-size: 14px; line-height: 1.3; }
 
         /* Options Column */
         .col-options {
             flex: 1.6;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
             height: 100%;
             overflow-y: auto;
         }
 
         .opt-box {
             background: white;
-            padding: 8px;
+            padding: 10px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             display: flex;
@@ -169,22 +189,22 @@
         }
 
         .opt-title {
-            font-size: 13px;
+            font-size: 14px;
             font-weight: bold;
             color: #2c3e50;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
 
         .opt-grid-2col {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 5px;
+            gap: 8px;
         }
 
         .opt-grid-3col {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 5px;
+            gap: 8px;
         }
 
         .opt-btn { 
@@ -194,9 +214,10 @@
             font-weight: bold; 
             cursor: pointer; 
             text-align: center; 
-            font-size: 12px; 
+            font-size: 13px; 
             color: #2c3e50; 
-            padding: 7px 4px;
+            padding: 12px 6px;
+            min-height: 48px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -208,6 +229,9 @@
             background: #e74c3c;
             color: white;
             border-color: #c0392b;
+            font-size: 14px;
+            padding: 12px 6px;
+            min-height: 48px;
         }
         .btn-no-opt:hover { background: #c0392b; }
 
@@ -300,8 +324,13 @@
         
         .cart-actions {
             display: flex;
-            gap: 6px;
+            flex-direction: column;
+            gap: 4px;
             margin-bottom: 6px;
+        }
+        .cart-actions-row {
+            display: flex;
+            gap: 4px;
         }
         .btn-pay-cash { 
             background: #27ae60; 
@@ -329,11 +358,24 @@
         }
         .btn-pay-card:hover { background: #1f618d; }
 
+        .btn-pay-split { 
+            background: #d35400; 
+            color: white; 
+            border: none; 
+            flex: 1; 
+            padding: 10px 4px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 13px; 
+        }
+        .btn-pay-split:hover { background: #ba4a00; }
+
         .btn-pay-bulk {
             background: #8e44ad;
             color: white;
             border: none;
-            flex: 1;
+            width: 100%;
             padding: 10px 4px;
             border-radius: 6px;
             cursor: pointer; 
@@ -343,24 +385,38 @@
         }
         .btn-pay-bulk:hover { background: #732d91; }
 
+        .btn-past-orders {
+            background: #7f8c8d;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 7px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+        .btn-past-orders:hover { background: #707b7c; }
+
         /* Daily Report Box */
         .daily-report-box {
             background: #eaf2f8;
             border: 1px solid #2980b9;
             padding: 6px 8px;
             border-radius: 6px;
-            font-size: 12px;
+            font-size: 11px;
             color: #2c3e50;
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 2px;
         }
         .daily-report-header {
             font-weight: bold;
             display: flex;
             justify-content: space-between;
             border-bottom: 1px solid #bdc3c7;
-            padding-bottom: 3px;
+            padding-bottom: 2px;
             margin-bottom: 2px;
         }
         .daily-report-row {
@@ -452,9 +508,9 @@
         .no-opt-item {
             background: #fdfefe;
             border: 1px solid #bdc3c7;
-            padding: 6px;
+            padding: 8px;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: bold;
             cursor: pointer;
             text-align: center;
@@ -466,7 +522,7 @@
         }
         .no-opt-section-title {
             font-weight: bold;
-            font-size: 12px;
+            font-size: 13px;
             color: #2c3e50;
             border-bottom: 1px solid #eee;
             padding-bottom: 2px;
@@ -499,12 +555,6 @@
             border-color: #8e44ad;
         }
         .numpad-btn.preset:hover { background: #e8daef; }
-
-        @media print {
-            body * { visibility: hidden; }
-            #printable-receipt, #printable-receipt * { visibility: visible; }
-            #printable-receipt { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
-        }
     </style>
 </head>
 <body>
@@ -515,7 +565,10 @@
             <button class="menu-toggle-btn" onclick="openReportModal()" title="Daily Sales & Report">☰</button>
             <div class="restaurant-title">🍽️ The Exclusive Thai Kitchen</div>
         </div>
-        <div class="header-time" id="clock-display">--:--:--</div>
+        <div class="header-right-area">
+            <button class="fullscreen-btn" onclick="toggleFullScreen()" title="Toggle Fullscreen">⛶ Full Screen</button>
+            <div class="header-time" id="clock-display">--:--:--</div>
+        </div>
     </div>
 
     <div class="pos-container">
@@ -536,7 +589,7 @@
             
             <!-- Column 1: Menu Items -->
             <div class="col-menu">
-                <div class="section-header-title" id="mode-title">🍳 1. Select Menu (Lunch Special)</div>
+                <div class="section-header-title" id="mode-title">🍳 1. Select Menu</div>
                 <div class="menu-scroll-area" id="menu-container-box"></div>
             </div>
 
@@ -552,9 +605,14 @@
                 <div>
                     <div class="cart-total">Total: $<span id="total-amount">0</span></div>
                     
-                    <div class="cart-actions">
-                        <button class="btn-pay-cash" id="btn-pay-cash" onclick="initiateCashCheckout('Cash')">💵 Cash</button>
-                        <button class="btn-pay-card" id="btn-pay-card" onclick="checkoutOrder('Card')">💳 Card</button>
+                    <button class="btn-past-orders" onclick="openPastOrdersModal()">📋 View & Edit Past Orders</button>
+
+                    <div class="cart-actions" id="cart-actions-box">
+                        <div class="cart-actions-row">
+                            <button class="btn-pay-cash" id="btn-pay-cash" onclick="initiateCashCheckout('Cash')">💵 Cash</button>
+                            <button class="btn-pay-card" id="btn-pay-card" onclick="checkoutOrder('Card')">💳 Card</button>
+                            <button class="btn-pay-split" id="btn-pay-split" onclick="initiateSplitCheckout()">🔀 Split</button>
+                        </div>
                         <button class="btn-pay-bulk" id="btn-pay-bulk" onclick="initiateCashCheckout('Bulk Cash')">💵 Bulk Cash</button>
                     </div>
 
@@ -586,7 +644,66 @@
         </div>
     </div>
 
-    <!-- Modal: Bulk Option Custom Price Input with On-screen Numpad -->
+    <!-- Modal: Past Orders & Edit -->
+    <div class="modal-overlay" id="past-orders-modal">
+        <div class="modal-content" style="width: 500px;">
+            <div class="modal-header">
+                <span>📋 Past Orders (Edit / Reorder)</span>
+                <button class="close-modal" onclick="closePastOrdersModal()">✕</button>
+            </div>
+            <div style="font-size: 12px; color: #555;">Select an order to load back into your cart for editing or re-submission:</div>
+            <div class="report-details-box" id="past-orders-list-content" style="max-height: 320px; overflow-y: auto;"></div>
+            <div class="modal-actions">
+                <button class="btn-modal-close" onclick="closePastOrdersModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Split Payment (Cash + Card) -->
+    <div class="modal-overlay" id="split-modal">
+        <div class="modal-content" style="width: 360px;">
+            <div class="modal-header">
+                <span>🔀 Split Payment (Cash + Card)</span>
+                <button class="close-modal" onclick="closeSplitModal()">✕</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="font-size: 14px; display: flex; justify-content: space-between;">
+                    <span>Total Due:</span>
+                    <b style="color: #c0392b; font-size: 18px;">$<span id="split-modal-total">0</span></b>
+                </div>
+                <div>
+                    <label style="font-size: 12px; font-weight: bold;">Cash Paid ($):</label>
+                    <input type="number" id="split-cash-input" oninput="calculateSplit()" placeholder="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 18px; font-weight: bold; text-align: right;" readonly>
+                </div>
+
+                <div class="numpad-container">
+                    <button class="numpad-btn" onclick="pressSplitNumpad('7')">7</button>
+                    <button class="numpad-btn" onclick="pressSplitNumpad('8')">8</button>
+                    <button class="numpad-btn" onclick="pressSplitNumpad('9')">9</button>
+                    
+                    <button class="numpad-btn" onclick="pressSplitNumpad('4')">4</button>
+                    <button class="numpad-btn" onclick="pressSplitNumpad('5')">5</button>
+                    <button class="numpad-btn" onclick="pressSplitNumpad('6')">6</button>
+                    
+                    <button class="numpad-btn" onclick="pressSplitNumpad('1')">1</button>
+                    <button class="numpad-btn" onclick="pressSplitNumpad('2')">2</button>
+                    <button class="numpad-btn" onclick="pressSplitNumpad('3')">3</button>
+                    
+                    <button class="numpad-btn" style="background: #fadbd8; color: #c0392b;" onclick="pressSplitNumpad('C')">C</button>
+                    <button class="numpad-btn" onclick="pressSplitNumpad('0')">0</button>
+                    <button class="numpad-btn" onclick="pressSplitNumpad('DEL')">⌫</button>
+                </div>
+
+                <div style="font-size: 14px; display: flex; justify-content: space-between; background: #eaf2f8; padding: 8px; border-radius: 4px; margin-top: 2px;">
+                    <span>Card Balance Due:</span>
+                    <b style="color: #2980b9; font-size: 18px;">$<span id="split-card-amount">0.00</span></b>
+                </div>
+                <button class="btn-modal-action" style="background: #d35400; padding: 10px; font-size: 15px; margin-top: 4px;" onclick="confirmSplitCheckout()">Confirm Split Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Bulk Option Custom Price Input -->
     <div class="modal-overlay" id="bulk-modal">
         <div class="modal-content" style="width: 360px;">
             <div class="modal-header">
@@ -599,14 +716,12 @@
                     <input type="number" id="bulk-price-input" placeholder="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 18px; font-weight: bold; text-align: right;" readonly>
                 </div>
 
-                <!-- Quick Preset Amounts -->
                 <div class="numpad-container" style="grid-template-columns: repeat(3, 1fr);">
                     <button class="numpad-btn preset" onclick="setBulkPreset(20)">$20</button>
                     <button class="numpad-btn preset" onclick="setBulkPreset(50)">$50</button>
                     <button class="numpad-btn preset" onclick="setBulkPreset(100)">$100</button>
                 </div>
 
-                <!-- On-Screen Numpad -->
                 <div class="numpad-container">
                     <button class="numpad-btn" onclick="pressBulkNumpad('7')">7</button>
                     <button class="numpad-btn" onclick="pressBulkNumpad('8')">8</button>
@@ -630,7 +745,7 @@
         </div>
     </div>
 
-    <!-- Modal: Cash Payment & Change Calculator Pop-up with On-screen Numpad -->
+    <!-- Modal: Cash Payment -->
     <div class="modal-overlay" id="cash-modal">
         <div class="modal-content" style="width: 360px;">
             <div class="modal-header">
@@ -647,7 +762,6 @@
                     <input type="number" id="cash-received-input" oninput="calculateChange()" placeholder="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 18px; font-weight: bold; text-align: right;" readonly>
                 </div>
 
-                <!-- Quick Banknote Preset Buttons -->
                 <div class="numpad-container" style="grid-template-columns: repeat(3, 1fr);">
                     <button class="numpad-btn preset" onclick="setPresetCash('exact')">Exact</button>
                     <button class="numpad-btn preset" onclick="setPresetCash(5)">$5</button>
@@ -657,7 +771,6 @@
                     <button class="numpad-btn preset" onclick="setPresetCash(100)">$100</button>
                 </div>
 
-                <!-- On-Screen Numpad -->
                 <div class="numpad-container">
                     <button class="numpad-btn" onclick="pressNumpad('7')">7</button>
                     <button class="numpad-btn" onclick="pressNumpad('8')">8</button>
@@ -680,7 +793,7 @@
                     <span>Change Due:</span>
                     <b style="color: #27ae60; font-size: 18px;">$<span id="cash-change-amount">0.00</span></b>
                 </div>
-                <button class="btn-modal-action" style="background: #27ae60; padding: 10px; font-size: 15px; margin-top: 4px;" onclick="confirmCashCheckout()">Confirm Payment & Print</button>
+                <button class="btn-modal-action" style="background: #27ae60; padding: 10px; font-size: 15px; margin-top: 4px;" onclick="confirmCashCheckout()">Confirm Payment</button>
             </div>
         </div>
     </div>
@@ -733,7 +846,6 @@
             <div class="report-details-box" id="report-details-content"></div>
             <div class="modal-actions">
                 <button class="btn-modal-action" style="background: #e74c3c;" onclick="deleteCashRecords()">Delete Cash</button>
-                <button class="btn-modal-action" onclick="printDailySummaryReport()">🖨️ Summary Print</button>
                 <button class="btn-modal-close" onclick="closeReportModal()">Close</button>
             </div>
         </div>
@@ -777,76 +889,7 @@
         </div>
     </div>
 
-    <div id="printable-receipt" style="display: none;"></div>
-
     <script>
-        let currentMode = 'lunch'; 
-        let currentBasePrice = 0;
-
-        let selectedMenu = null;
-        let selectedMeat = null;
-        let meatExtraPrice = 0;
-        
-        let selectedCooking = null;
-        let selectedSides = [];
-        let selectedSauces = [];
-        let selectedBurgerExtras = [];
-        let sundaySides = [];
-        let sundaySauces = [];
-        let selectedNoIngredients = [];
-
-        let isBulkOptionSelected = false;
-        let pendingCashType = 'Cash';
-
-        let cart = [];
-        let total = 0;
-        let activeCartIndex = null;
-
-        let systemPassword = localStorage.getItem('pos_system_password') || '8989';
-
-        function updateClock() {
-            let now = new Date();
-            document.getElementById('clock-display').innerText = now.toLocaleString('en-AU', { 
-                hour12: false, 
-                year: 'numeric', month: '2-digit', day: '2-digit',
-                hour: '2-digit', minute: '2-digit', second: '2-digit' 
-            });
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        function getTodayDateKey() {
-            let d = new Date();
-            let year = d.getFullYear();
-            let month = String(d.getMonth() + 1).padStart(2, '0');
-            let day = String(d.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-
-        let todayKey = getTodayDateKey();
-        let allStats = JSON.parse(localStorage.getItem('pos_all_daily_stats')) || {};
-        let allOrderLogs = JSON.parse(localStorage.getItem('pos_all_order_logs')) || {};
-
-        if (!allStats[todayKey]) {
-            allStats[todayKey] = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
-            localStorage.setItem('pos_all_daily_stats', JSON.stringify(allStats));
-        }
-
-        if (!allOrderLogs[todayKey]) {
-            allOrderLogs[todayKey] = [];
-            localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
-        }
-
-        let dailyStats = allStats[todayKey];
-        updateDailyReportUI();
-
-        setInterval(() => {
-            let currentKey = getTodayDateKey();
-            if (currentKey !== todayKey) {
-                location.reload();
-            }
-        }, 60000);
-
         const menuData = {
             lunch: `
                 <div class="sub-header">🔥 WOK FRIED</div>
@@ -934,13 +977,13 @@
             chef: `
                 <div class="sub-header">⭐ CHEF RECOMMENDED</div>
                 <div class="item-grid">
-                    <div class="item-card" onclick="selectMenu('Crispy Salt & Pepper Tofu', 15, 'direct', this)"><div class="item-title">Salt & Pepper Tofu</div></div>
-                    <div class="item-card" onclick="selectMenu('Fried Chicken Salad', 23, 'direct', this)"><div class="item-title">Fried Chicken Salad</div></div>
-                    <div class="item-card" onclick="selectMenu('Teriyaki Chicken', 23, 'direct', this)"><div class="item-title">Teriyaki Chicken</div></div>
-                    <div class="item-card" onclick="selectMenu('Broccoli King Prawns', 25, 'direct', this)"><div class="item-title">Broccoli King Prawns</div></div>
-                    <div class="item-card" onclick="selectMenu('Pork Belly Basil', 25, 'direct', this)"><div class="item-title">Pork Belly Basil</div></div>
-                    <div class="item-card" onclick="selectMenu('Pork Belly Chinese Broccoli', 25, 'direct', this)"><div class="item-title">Pork Belly Ch. Broccoli</div></div>
-                    <div class="item-card" onclick="selectMenu('Tom Yum Soup', 21, 'direct', this)"><div class="item-title">Tom Yum Soup</div></div>
+                    <div class="item-card" onclick="selectMenu('Crispy Salt & Pepper Tofu', 15, 'standard', this)"><div class="item-title">Salt & Pepper Tofu</div></div>
+                    <div class="item-card" onclick="selectMenu('Fried Chicken Salad', 23, 'standard', this)"><div class="item-title">Fried Chicken Salad</div></div>
+                    <div class="item-card" onclick="selectMenu('Teriyaki Chicken', 23, 'standard', this)"><div class="item-title">Teriyaki Chicken</div></div>
+                    <div class="item-card" onclick="selectMenu('Broccoli King Prawns', 25, 'standard', this)"><div class="item-title">Broccoli King Prawns</div></div>
+                    <div class="item-card" onclick="selectMenu('Pork Belly Basil', 25, 'standard', this)"><div class="item-title">Pork Belly Basil</div></div>
+                    <div class="item-card" onclick="selectMenu('Pork Belly Chinese Broccoli', 25, 'standard', this)"><div class="item-title">Pork Belly Ch. Broccoli</div></div>
+                    <div class="item-card" onclick="selectMenu('Tom Yum Soup', 21, 'standard', this)"><div class="item-title">Tom Yum Soup</div></div>
                 </div>
             `,
             burger: `
@@ -969,14 +1012,85 @@
             sunday: `
                 <div class="sub-header">🥩 SUNDAY SPECIAL</div>
                 <div class="item-grid">
-                    <div class="item-card" onclick="selectMenu('Rump steak', 7, 'sunday', this)" style="background: #e8f8f5; border-color: #27ae60; grid-column: span 3;"><div class="item-title" style="color: #1e8449;">🥩 Rump steak ($7)</div></div>
+                    <div class="item-card" onclick="selectMenu('Rump steak', 7, 'sunday', this)" style="background: #e8f8f5; border-color: #27ae60; grid-column: span 3; min-height: 75px;"><div class="item-title" style="color: #1e8449; font-size: 16px;">🥩 Rump steak ($7)</div></div>
                 </div>
                 <div style="border-top: 1px dashed #bdc3c7; margin: 6px 0;"></div>
                 <div class="item-grid">
-                    <div class="item-card" onclick="selectMenu('Bulk Option', 0, 'bulk', this)" style="background: #f3e5f5; border-color: #8e44ad; grid-column: span 3;"><div class="item-title" style="color: #732d91;">📦 Bulk Option</div></div>
+                    <div class="item-card" onclick="selectMenu('Bulk Option', 0, 'bulk', this)" style="background: #f3e5f5; border-color: #8e44ad; grid-column: span 3; min-height: 75px;"><div class="item-title" style="color: #732d91; font-size: 16px;">📦 Bulk Option</div></div>
                 </div>
             `
         };
+
+        let currentMode = 'lunch'; 
+        let currentBasePrice = 0;
+
+        let selectedMenu = null;
+        let selectedMeat = null;
+        let meatExtraPrice = 0;
+        
+        let selectedCooking = null;
+        let selectedSides = [];
+        let selectedSauces = [];
+        let selectedBurgerExtras = [];
+        let windowExtras = [];
+        let sundaySides = [];
+        let sundaySauces = [];
+        let selectedNoIngredients = [];
+
+        let isBulkOptionSelected = false;
+        let pendingCashType = 'Cash';
+
+        let cart = [];
+        let total = 0;
+        let activeCartIndex = null;
+
+        let systemPassword = localStorage.getItem('pos_system_password') || '8989';
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`Error: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function updateClock() {
+            let now = new Date();
+            document.getElementById('clock-display').innerText = now.toLocaleString('en-AU', { 
+                hour12: false, 
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit', second: '2-digit' 
+            });
+        }
+        setInterval(updateClock, 1000);
+
+        function getTodayDateKey() {
+            let d = new Date();
+            let year = d.getFullYear();
+            let month = String(d.getMonth() + 1).padStart(2, '0');
+            let day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        let todayKey = getTodayDateKey();
+        let allStats = JSON.parse(localStorage.getItem('pos_all_daily_stats')) || {};
+        let allOrderLogs = JSON.parse(localStorage.getItem('pos_all_order_logs')) || {};
+
+        if (!allStats[todayKey]) {
+            allStats[todayKey] = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
+            localStorage.setItem('pos_all_daily_stats', JSON.stringify(allStats));
+        }
+
+        if (!allOrderLogs[todayKey]) {
+            allOrderLogs[todayKey] = [];
+            localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
+        }
+
+        let dailyStats = allStats[todayKey];
 
         function switchCategory(cat) {
             currentMode = cat;
@@ -990,10 +1104,11 @@
 
             renderOptionsPanel(cat);
 
+            let containerBox = document.getElementById('menu-container-box');
             if (menuData[cat]) {
-                document.getElementById('menu-container-box').innerHTML = menuData[cat];
+                containerBox.innerHTML = menuData[cat];
             } else {
-                document.getElementById('menu-container-box').innerHTML = `<div class="sub-header">Menu coming soon</div>`;
+                containerBox.innerHTML = `<div class="sub-header">Menu coming soon</div>`;
             }
 
             resetSelection();
@@ -1055,12 +1170,13 @@
                     </div>
 
                     <div class="opt-box" style="border-top: 4px solid #27ae60;">
-                        <div class="opt-title">🥗 One free side</div>
+                        <div class="opt-title">🥗 Side</div>
                         <div class="opt-grid-2col">
                             <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Chips', this)">Chips</button>
                             <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Salad', this)">Salad</button>
                             <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Vegetables', this)">Vegetables</button>
                             <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Mashed Potatoes', this)">Mashed Potatoes</button>
+                            <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Greek salad', this)" style="grid-column: span 2; background: #e8f8f5;">Greek salad</button>
                         </div>
                     </div>
 
@@ -1093,7 +1209,35 @@
                         <button class="opt-btn btn-no-opt" onclick="openNoOptModal()">🚫 No Ingredients (Exclusion)</button>
                     </div>
                 `;
-            } else if (cat === 'entree' || cat === 'pizza' || cat === 'chef') {
+            } else if (cat === 'entree') {
+                panel.innerHTML = `
+                    <div class="opt-box" style="border-top: 4px solid #27ae60;">
+                        <div class="opt-title">🥣 Extra Sauce</div>
+                        <div class="opt-grid-2col">
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Mushroom Sauce', 3, this)">Mushroom Sauce</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Pepper Sauce', 3, this)">Pepper Sauce</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Plain Gravy', 3, this)">Plain Gravy</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Aioli', 3, this)">Aioli</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Mayonnaise', 3, this)">Mayonnaise</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Sour Cream', 3, this)">Sour Cream</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Sweet Chili Sauce', 3, this)">Sweet Chili</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Sweet Chili & Sour Cream', 3, this)">Sweet Chili & Sour</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Chilli Mayo', 3, this)" style="grid-column: span 2;">Chilli Mayo</button>
+                        </div>
+                    </div>
+
+                    <div class="opt-box" style="border-top: 4px solid #8e44ad;">
+                        <div class="opt-title">📦 Container</div>
+                        <div class="opt-grid-1col">
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Plastic Container', 1, this)">Plastic Container</button>
+                        </div>
+                    </div>
+
+                    <div class="opt-box" style="margin-top: auto;">
+                        <button class="opt-btn btn-no-opt" onclick="openNoOptModal()">🚫 No Ingredients (Exclusion)</button>
+                    </div>
+                `;
+            } else if (cat === 'pizza') {
                 panel.innerHTML = `
                     <div class="opt-box" style="margin-top: auto;">
                         <button class="opt-btn btn-no-opt" onclick="openNoOptModal()">🚫 No Ingredients (Exclusion)</button>
@@ -1120,7 +1264,8 @@
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Fried Egg', 3, this)">Fried Egg</button>
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Roti', 4, this)">Roti</button>
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Bacon', 4, this)">Bacon</button>
-                            <button class="opt-btn extra-btn" onclick="toggleExtra('Ham', 4, this)" style="grid-column: span 2;">Ham</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Ham', 4, this)">Ham</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Extra Meat', 5, this)" style="background: #fadbd8; grid-column: span 2;">Extra Meat</button>
                         </div>
                     </div>
 
@@ -1140,7 +1285,7 @@
             selectedSides = [];
             selectedSauces = [];
             selectedBurgerExtras = [];
-            window.currentExtras = [];
+            windowExtras = [];
             sundaySides = [];
             sundaySauces = [];
             selectedNoIngredients = [];
@@ -1213,16 +1358,17 @@
         function updatePaymentButtonsDisplay() {
             let cashBtn = document.getElementById('btn-pay-cash');
             let cardBtn = document.getElementById('btn-pay-card');
+            let splitBtn = document.getElementById('btn-pay-split');
             let bulkBtn = document.getElementById('btn-pay-bulk');
 
             if (isBulkOptionSelected) {
-                cashBtn.style.display = 'none';
-                cardBtn.style.display = 'none';
-                bulkBtn.style.display = 'block';
+                if (cashBtn) cashBtn.parentElement.style.display = 'none';
+                if (splitBtn) splitBtn.style.display = 'none';
+                if (bulkBtn) bulkBtn.style.display = 'block';
             } else {
-                cashBtn.style.display = 'block';
-                cardBtn.style.display = 'block';
-                bulkBtn.style.display = 'none';
+                if (cashBtn) cashBtn.parentElement.style.display = 'flex';
+                if (splitBtn) splitBtn.style.display = 'block';
+                if (bulkBtn) bulkBtn.style.display = 'none';
             }
         }
 
@@ -1284,17 +1430,21 @@
 
         function toggleExtra(name, price, el) {
             if (!selectedMenu) return;
-            if (!window.currentExtras) window.currentExtras = [];
 
-            let idx = window.currentExtras.findIndex(i => i.name === name);
+            let idx = windowExtras.findIndex(i => i.name === name);
             if (idx > -1) {
-                window.currentExtras.splice(idx, 1);
+                windowExtras.splice(idx, 1);
                 el.classList.remove('selected');
             } else {
-                window.currentExtras.push({ name, price });
+                windowExtras.push({ name, price });
                 el.classList.add('selected');
             }
-            addToCartLunchDinner(false);
+
+            if (currentMode === 'entree') {
+                addToCartDirectly(false);
+            } else {
+                addToCartLunchDinner(false);
+            }
         }
 
         function selectSundayOption(category, value, el) {
@@ -1337,9 +1487,39 @@
 
             if (sundaySides.length > 0) {
                 details.push(`Sides: ${sundaySides.join(', ')}`);
-                if (sundaySides.length > 1) {
-                    extraPrice += (sundaySides.length - 1) * 5;
+                
+                let freeQuota = 1;
+                let greekSaladExtraCount = 0;
+                let regularSidesCount = 0;
+
+                sundaySides.forEach(side => {
+                    if (side === 'Greek salad') {
+                        greekSaladExtraCount++;
+                    } else {
+                        regularSidesCount++;
+                    }
+                });
+
+                let remainingFree = freeQuota;
+                let chargeableRegular = 0;
+                let chargeableGreek = 0;
+
+                if (regularSidesCount >= remainingFree) {
+                    chargeableRegular = regularSidesCount - remainingFree;
+                    remainingFree = 0;
+                } else {
+                    remainingFree -= regularSidesCount;
+                    chargeableRegular = 0;
                 }
+
+                if (greekSaladExtraCount >= remainingFree) {
+                    chargeableGreek = greekSaladExtraCount - remainingFree;
+                } else {
+                    chargeableGreek = 0;
+                }
+
+                extraPrice += chargeableRegular * 5;
+                extraPrice += chargeableGreek * 3;
             }
 
             if (sundaySauces.length > 0) {
@@ -1431,25 +1611,38 @@
             if (selectedSides.length > 0) {
                 details.push(`Sides: ${selectedSides.join(', ')}`);
                 
-                let greekSaladCount = 0;
-                let otherSidesCount = 0;
+                let freeQuota = 2;
+                let greekSaladExtraCount = 0;
+                let regularSidesCount = 0;
 
                 selectedSides.forEach(side => {
                     if (side === 'Greek salad') {
-                        greekSaladCount++;
+                        greekSaladExtraCount++;
                     } else {
-                        otherSidesCount++;
+                        regularSidesCount++;
                     }
                 });
 
-                // ค่า Greek salad เพิ่ม 3 เหรียญต่อจาน
-                extraPrice += greekSaladCount * 3;
+                let remainingFree = freeQuota;
+                let chargeableRegular = 0;
+                let chargeableGreek = 0;
 
-                // รวมจำนวน Side ทั้งหมดเพื่อคิดราคาเพิ่มกรณีเกิน 2 อย่างขึ้นไป (เพิ่ม 5 เหรียญต่ออย่างที่เกิน)
-                let totalSidesCount = selectedSides.length;
-                if (totalSidesCount > 2) {
-                    extraPrice += (totalSidesCount - 2) * 5;
+                if (regularSidesCount >= remainingFree) {
+                    chargeableRegular = regularSidesCount - remainingFree;
+                    remainingFree = 0;
+                } else {
+                    remainingFree -= regularSidesCount;
+                    chargeableRegular = 0;
                 }
+
+                if (greekSaladExtraCount >= remainingFree) {
+                    chargeableGreek = greekSaladExtraCount - remainingFree;
+                } else {
+                    chargeableGreek = 0;
+                }
+
+                extraPrice += chargeableRegular * 5;
+                extraPrice += chargeableGreek * 3;
             }
 
             if (selectedSauces.length > 0) {
@@ -1503,8 +1696,8 @@
                 details.push(`Meat: ${selectedMeat}`);
             }
 
-            if (window.currentExtras && window.currentExtras.length > 0) {
-                window.currentExtras.forEach(ex => {
+            if (windowExtras && windowExtras.length > 0) {
+                windowExtras.forEach(ex => {
                     extraTotal += ex.price;
                     details.push(`Extra: ${ex.name}`);
                 });
@@ -1516,7 +1709,7 @@
 
             let finalPrice = currentBasePrice + meatExtraPrice + extraTotal;
             
-            let modeTag = currentMode === 'lunch' ? '[Lunch]' : (currentMode === 'dinner' ? '[Dinner]' : '');
+            let modeTag = currentMode === 'lunch' ? '[Lunch]' : (currentMode === 'dinner' ? '[Dinner]' : (currentMode === 'chef' ? '[Chef]' : ''));
             let mainTitle = `${modeTag} ${selectedMenu}`.trim();
 
             let itemObj = { 
@@ -1541,8 +1734,8 @@
             let extraTotal = 0;
             let details = [];
 
-            if (window.currentExtras && window.currentExtras.length > 0) {
-                window.currentExtras.forEach(ex => {
+            if (windowExtras && windowExtras.length > 0) {
+                windowExtras.forEach(ex => {
                     extraTotal += ex.price;
                     details.push(`Extra: ${ex.name}`);
                 });
@@ -1579,7 +1772,7 @@
             selectedSides = [];
             selectedSauces = [];
             selectedBurgerExtras = [];
-            window.currentExtras = [];
+            windowExtras = [];
             sundaySides = [];
             sundaySauces = [];
             selectedNoIngredients = [];
@@ -1659,7 +1852,6 @@
             document.getElementById('cash-modal').style.display = 'none';
         }
 
-        // On-screen Numpad Handlers
         function pressNumpad(val) {
             let input = document.getElementById('cash-received-input');
             let curr = input.value;
@@ -1698,6 +1890,84 @@
             }
             closeCashModal();
             checkoutOrder(pendingCashType);
+        }
+
+        function initiateSplitCheckout() {
+            if (cart.length === 0) return;
+            document.getElementById('split-modal-total').innerText = total;
+            document.getElementById('split-cash-input').value = '';
+            document.getElementById('split-card-amount').innerText = total.toFixed(2);
+            document.getElementById('split-modal').style.display = 'flex';
+        }
+
+        function closeSplitModal() {
+            document.getElementById('split-modal').style.display = 'none';
+        }
+
+        function pressSplitNumpad(val) {
+            let input = document.getElementById('split-cash-input');
+            let curr = input.value;
+
+            if (val === 'C') {
+                input.value = '';
+            } else if (val === 'DEL') {
+                input.value = curr.slice(0, -1);
+            } else {
+                input.value = curr + val;
+            }
+            calculateSplit();
+        }
+
+        function calculateSplit() {
+            let cashPaid = parseFloat(document.getElementById('split-cash-input').value) || 0;
+            let cardBal = total - cashPaid;
+            document.getElementById('split-card-amount').innerText = cardBal > 0 ? cardBal.toFixed(2) : '0.00';
+        }
+
+        function confirmSplitCheckout() {
+            let cashPaid = parseFloat(document.getElementById('split-cash-input').value) || 0;
+            if (cashPaid <= 0 || cashPaid >= total) {
+                alert("Please enter a valid Cash amount that is less than Total Due!");
+                return;
+            }
+            let cardPaid = total - cashPaid;
+            closeSplitModal();
+            checkoutSplitOrder(cashPaid, cardPaid);
+        }
+
+        function checkoutSplitOrder(cashAmount, cardAmount) {
+            let currentKey = getTodayDateKey();
+            if (!allStats[currentKey]) {
+                allStats[currentKey] = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
+            }
+            if (!allOrderLogs[currentKey]) {
+                allOrderLogs[currentKey] = [];
+            }
+
+            let orderNum = allOrderLogs[currentKey].length + 1;
+            let timeStr = new Date().toLocaleTimeString('en-AU', { hour12: false });
+
+            let newOrderLog = {
+                orderNo: orderNum,
+                time: timeStr,
+                paymentType: `Split ($${cashAmount} Cash / $${cardAmount} Card)`,
+                items: JSON.parse(JSON.stringify(cart)),
+                totalAmount: total
+            };
+
+            allOrderLogs[currentKey].push(newOrderLog);
+            localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
+
+            allStats[currentKey].cashCount += 1;
+            allStats[currentKey].cashTotal += cashAmount;
+            allStats[currentKey].cardCount += 1;
+            allStats[currentKey].cardTotal += cardAmount;
+
+            localStorage.setItem('pos_all_daily_stats', JSON.stringify(allStats));
+            dailyStats = allStats[currentKey];
+            updateDailyReportUI();
+
+            clearCart();
         }
 
         function checkoutOrder(paymentType) {
@@ -1740,60 +2010,21 @@
             dailyStats = allStats[currentKey];
             updateDailyReportUI();
 
-            printKitchenDocket(newOrderLog);
             clearCart();
         }
 
-        function printKitchenDocket(orderLog) {
-            let itemsHtml = orderLog.items.map(item => {
-                let subDetails = item.details ? item.details.map(d => `<div style="padding-left:10px; font-size:11px;">- ${d}</div>`).join('') : '';
-                return `<div><b>${item.title}</b> ${subDetails}</div>`;
-            }).join('<br>');
-
-            let docketHtml = `
-                <div style="font-family: monospace; width: 280px; padding: 5px; font-size: 12px;">
-                    <div style="text-align: right; font-weight: bold; font-size: 11px;">
-                        Order No: #${orderLog.orderNo}<br>
-                        Time: ${orderLog.time}
-                    </div>
-                    <div style="text-align: center; font-weight: bold; font-size: 14px; margin-top: 5px;">
-                        THE EXCLUSIVE THAI KITCHEN<br>
-                        --- KITCHEN DOCKET ---
-                    </div>
-                    <hr style="border-top: 1px dashed #000;">
-                    <div>${itemsHtml}</div>
-                    <hr style="border-top: 1px dashed #000;">
-                    <div style="text-align: right; font-weight: bold;">
-                        Payment: ${orderLog.paymentType}<br>
-                        Total: $${orderLog.totalAmount}
-                    </div>
-                </div>
-            `;
-
-            let printArea = document.getElementById('printable-receipt');
-            printArea.innerHTML = docketHtml;
-            
-            setTimeout(() => {
-                try {
-                    window.print();
-                } catch (e) {
-                    console.log("Printer not connected or offline, order proceeds normally.");
-                }
-            }, 100);
-        }
-
         function updateDailyReportUI() {
-            document.getElementById('daily-cash-count').innerText = dailyStats.cashCount;
-            document.getElementById('daily-cash-amount').innerText = dailyStats.cashTotal;
+            document.getElementById('daily-cash-count').innerText = dailyStats.cashCount || 0;
+            document.getElementById('daily-cash-amount').innerText = dailyStats.cashTotal || 0;
             
-            document.getElementById('daily-card-count').innerText = dailyStats.cardCount;
-            document.getElementById('daily-card-amount').innerText = dailyStats.cardTotal;
+            document.getElementById('daily-card-count').innerText = dailyStats.cardCount || 0;
+            document.getElementById('daily-card-amount').innerText = dailyStats.cardTotal || 0;
 
-            document.getElementById('daily-bulk-count').innerText = dailyStats.bulkCount;
-            document.getElementById('daily-bulk-amount').innerText = dailyStats.bulkTotal;
+            document.getElementById('daily-bulk-count').innerText = dailyStats.bulkCount || 0;
+            document.getElementById('daily-bulk-amount').innerText = dailyStats.bulkTotal || 0;
 
-            let grandTotalCount = dailyStats.cashCount + dailyStats.cardCount + dailyStats.bulkCount;
-            let grandTotalSales = dailyStats.cashTotal + dailyStats.cardTotal + dailyStats.bulkTotal;
+            let grandTotalCount = (dailyStats.cashCount || 0) + (dailyStats.cardCount || 0) + (dailyStats.bulkCount || 0);
+            let grandTotalSales = (dailyStats.cashTotal || 0) + (dailyStats.cardTotal || 0) + (dailyStats.bulkTotal || 0);
 
             document.getElementById('daily-orders-count').innerText = grandTotalCount;
             document.getElementById('daily-total-amount').innerText = grandTotalSales;
@@ -1805,6 +2036,98 @@
             updatePaymentButtonsDisplay();
             resetSelection();
             updateCartUI();
+        }
+
+        function openPastOrdersModal() {
+            let currentKey = getTodayDateKey();
+            let logs = allOrderLogs[currentKey] || [];
+            let contentHtml = '';
+
+            logs.forEach((log, index) => {
+                let itemsList = log.items.map(it => {
+                    let detailsStr = it.details ? ` (${it.details.join(', ')})` : '';
+                    return `• ${it.title}${detailsStr} - $${it.price}`;
+                }).join('<br>');
+
+                contentHtml += `
+                    <div style="background: #fff; border: 1px solid #ccc; padding: 8px; border-radius: 4px; margin-top: 6px;">
+                        <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 3px;">
+                            <span>Order #${log.orderNo} (${log.time})</span>
+                            <span style="color: #c0392b;">$${log.totalAmount} (${log.paymentType})</span>
+                        </div>
+                        <div style="font-size: 11px; color: #444; margin-top: 4px; margin-bottom: 6px;">
+                            ${itemsList}
+                        </div>
+                        <button style="background: #2980b9; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;" onclick="loadOrderForEdit(${index})">✏️ Edit Order</button>
+                    </div>
+                `;
+            });
+
+            document.getElementById('past-orders-list-content').innerHTML = contentHtml || '<div style="font-size: 12px; color: #777; text-align: center; padding: 20px;">No past orders recorded for today yet.</div>';
+            document.getElementById('past-orders-modal').style.display = 'flex';
+        }
+
+        function closePastOrdersModal() {
+            document.getElementById('past-orders-modal').style.display = 'none';
+        }
+
+        function loadOrderForEdit(logIndex) {
+            let currentKey = getTodayDateKey();
+            let logs = allOrderLogs[currentKey] || [];
+            let targetOrder = logs[logIndex];
+
+            if (targetOrder) {
+                cart = JSON.parse(JSON.stringify(targetOrder.items));
+                updateCartUI();
+                isBulkOptionSelected = cart.some(it => it.isBulk);
+                updatePaymentButtonsDisplay();
+
+                logs.splice(logIndex, 1);
+                allOrderLogs[currentKey] = logs;
+                localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
+
+                recalculateStatsFromLogs(currentKey);
+
+                closePastOrdersModal();
+                alert("Order loaded into cart for editing successfully!");
+            }
+        }
+
+        function recalculateStatsFromLogs(dateKey) {
+            let logs = allOrderLogs[dateKey] || [];
+            let newStats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
+
+            logs.forEach(log => {
+                if (log.paymentType.includes('Cash') && !log.paymentType.includes('Split')) {
+                    newStats.cashCount += 1;
+                    newStats.cashTotal += log.totalAmount;
+                } else if (log.paymentType.includes('Card') && !log.paymentType.includes('Split')) {
+                    newStats.cardCount += 1;
+                    newStats.cardTotal += log.totalAmount;
+                } else if (log.paymentType.includes('Bulk Cash')) {
+                    newStats.bulkCount += 1;
+                    newStats.bulkTotal += log.totalAmount;
+                } else if (log.paymentType.includes('Split')) {
+                    let parts = log.paymentType.split('/');
+                    if (parts.length === 2) {
+                        let cashPart = parseFloat(parts[0].replace(/[^0-9.]/g, '')) || 0;
+                        let cardPart = parseFloat(parts[1].replace(/[^0-9.]/g, '')) || 0;
+                        if (cashPart > 0) {
+                            newStats.cashCount += 1;
+                            newStats.cashTotal += cashPart;
+                        }
+                        if (cardPart > 0) {
+                            newStats.cardCount += 1;
+                            newStats.cardTotal += cardPart;
+                        }
+                    }
+                }
+            });
+
+            allStats[dateKey] = newStats;
+            localStorage.setItem('pos_all_daily_stats', JSON.stringify(allStats));
+            dailyStats = allStats[dateKey];
+            updateDailyReportUI();
         }
 
         function openNoOptModal() {
@@ -1831,7 +2154,7 @@
             if (currentMode === 'burger') addToCartBurger(false);
             else if (currentMode === 'sunday') addToCartSunday(false);
             else if (currentMode === 'main') addToCartMain(false);
-            else if (currentMode === 'lunch' || currentMode === 'dinner') addToCartLunchDinner(false);
+            else if (currentMode === 'lunch' || currentMode === 'dinner' || currentMode === 'chef') addToCartLunchDinner(false);
             else addToCartDirectly(false);
         }
 
@@ -1908,8 +2231,16 @@
 
         function loadReportByDate(dateStr) {
             let stats = allStats[dateStr] || { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
-            let totalCnt = stats.cashCount + stats.cardCount + stats.bulkCount;
-            let totalAmt = stats.cashTotal + stats.cardTotal + stats.bulkTotal;
+            
+            let bCount = stats.bulkCount || 0;
+            let bTotal = stats.bulkTotal || 0;
+            let cCount = stats.cashCount || 0;
+            let cTotal = stats.cashTotal || 0;
+            let cdCount = stats.cardCount || 0;
+            let cdTotal = stats.cardTotal || 0;
+
+            let totalCnt = cCount + cdCount + bCount;
+            let totalAmt = cTotal + cdTotal + bTotal;
 
             let logs = allOrderLogs[dateStr] || [];
             let logsHtml = '';
@@ -1935,9 +2266,9 @@
 
             let html = `
                 <div><b>📅 Date:</b> ${dateStr}</div>
-                <div>💵 Cash: <b>${stats.cashCount} bills</b> (<b>$${stats.cashTotal}</b>)</div>
-                <div>💳 Card: <b>${stats.cardCount} bills</b> (<b>$${stats.cardTotal}</b>)</div>
-                <div>💵 Bulk Cash: <b>${stats.bulkCount} bills</b> (<b>$${stats.bulkTotal}</b>)</div>
+                <div>💵 Cash: <b>${cCount} bills</b> (<b>$${cTotal}</b>)</div>
+                <div>💳 Card: <b>${cdCount} bills</b> (<b>$${cdTotal}</b>)</div>
+                <div>💵 Bulk Cash: <b>${bCount} bills</b> (<b>$${bTotal}</b>)</div>
                 <div style="border-top: 1px solid #ccc; padding-top: 4px; margin-top: 2px;">
                     <b>Grand Total:</b> <span style="color: #c0392b; font-size: 14px;"><b>$${totalAmt}</b> (${totalCnt} bills)</span>
                 </div>
@@ -1950,35 +2281,11 @@
             document.getElementById('report-details-content').innerHTML = html;
         }
 
-        function printDailySummaryReport() {
-            let dateStr = document.getElementById('report-date-picker').value;
-            let stats = allStats[dateStr] || { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
-            let totalCnt = stats.cashCount + stats.cardCount + stats.bulkCount;
-            let totalAmt = stats.cashTotal + stats.cardTotal + stats.bulkTotal;
-
-            let printArea = document.getElementById('printable-receipt');
-            printArea.innerHTML = `
-                <div style="font-family: monospace; width: 280px; padding: 10px; font-size: 12px;">
-                    <center>
-                        <h3>THE EXCLUSIVE THAI KITCHEN</h3>
-                        <p>DAILY SALES SUMMARY REPORT<br>Date: ${dateStr}</p>
-                    </center>
-                    <hr style="border-top: 1px dashed #000;">
-                    <p>Cash (${stats.cashCount} bills): $${stats.cashTotal}</p>
-                    <p>Card (${stats.cardCount} bills): $${stats.cardTotal}</p>
-                    <p>Bulk Cash (${stats.bulkCount} bills): $${stats.bulkTotal}</p>
-                    <hr style="border-top: 1px dashed #000;">
-                    <p><b>Total Orders: ${totalCnt}</b></p>
-                    <p><b>Grand Total: $${totalAmt}</b></p>
-                    <hr style="border-top: 1px dashed #000;">
-                </div>
-            `;
-            setTimeout(() => {
-                window.print();
-            }, 100);
-        }
-
-        switchCategory('lunch');
+        window.onload = function() {
+            updateClock();
+            updateDailyReportUI();
+            switchCategory('lunch');
+        };
     </script>
 </body>
 </html>

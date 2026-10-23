@@ -112,7 +112,7 @@
             padding: 6px 12px;
             border-radius: 20px;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 13px;
             cursor: pointer;
             white-space: nowrap;
             box-shadow: 0 2px 4px rgba(0,0,0,0.15);
@@ -634,25 +634,35 @@
         }
         .numpad-btn.preset:hover { background: #e8daef; }
 
-        /* Table Selection Grid */
+        /* Large Square Table Selection Grid */
         .table-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
             margin-top: 10px;
         }
         .table-btn {
             background: #3498db;
             color: white;
             border: none;
-            border-radius: 6px;
-            padding: 14px 0;
-            font-size: 15px;
+            border-radius: 8px;
+            aspect-ratio: 1 / 1;
+            font-size: 26px;
             font-weight: bold;
             cursor: pointer;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+            transition: transform 0.1s, background-color 0.1s;
         }
-        .table-btn:hover { background: #2980b9; }
+        .table-btn:hover { 
+            background: #2980b9; 
+            transform: scale(1.03);
+        }
+        .table-btn:active {
+            transform: scale(0.97);
+        }
     </style>
 </head>
 <body>
@@ -753,12 +763,11 @@
 
     <!-- Modal: Select Table Number (1 - 20) -->
     <div class="modal-overlay" id="table-modal">
-        <div class="modal-content" style="width: 380px;">
+        <div class="modal-content" style="width: 420px;">
             <div class="modal-header">
-                <span>🪑 Select Table Number</span>
+                <span>🪑 Select Table</span>
                 <button class="close-modal" onclick="closeTableModal()">✕</button>
             </div>
-            <div style="font-size: 13px; color: #555; text-align: center;">Choose table number to confirm order:</div>
             <div class="table-grid" id="table-select-grid"></div>
         </div>
     </div>
@@ -2134,7 +2143,7 @@
         function openTableSelectionModal() {
             let gridHtml = '';
             for (let i = 1; i <= 20; i++) {
-                gridHtml += `<button class="table-btn" onclick="confirmOrderWithTable(${i})">Table ${i}</button>`;
+                gridHtml += `<button class="table-btn" onclick="confirmOrderWithTable(${i})">${i}</button>`;
             }
             document.getElementById('table-select-grid').innerHTML = gridHtml;
             document.getElementById('table-modal').style.display = 'flex';
@@ -2253,8 +2262,8 @@
             activeKitchenOrders.forEach((ord, index) => {
                 html += `
                     <button class="table-order-badge" onclick="openKitchenOrderModal(${index})">
-                        <span>🪑 Table ${ord.tableNo}</span>
-                        <span style="font-size: 10px; opacity: 0.8;">(${ord.time})</span>
+                        <span>🪑 ${ord.tableNo}</span>
+                        <span style="font-size: 10px; opacity: 0.85;">(${ord.time})</span>
                     </button>
                 `;
             });

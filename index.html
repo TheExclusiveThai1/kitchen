@@ -90,7 +90,7 @@
             align-items: center;
             gap: 8px;
             margin-bottom: 6px;
-            min-height: 40px;
+            min-height: 55px;
             overflow-x: auto;
         }
         .kitchen-bar-title {
@@ -105,23 +105,35 @@
             align-items: center;
             flex: 1;
         }
+        /* Updated Square Badge for Active Orders (Image 2) */
         .table-order-badge {
             background: #e67e22;
             color: white;
             border: none;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 13px;
+            border-radius: 8px;
+            width: 48px;
+            height: 48px;
             cursor: pointer;
-            white-space: nowrap;
             box-shadow: 0 2px 4px rgba(0,0,0,0.15);
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
+            padding: 2px;
             animation: pulse 2s infinite;
         }
         .table-order-badge:hover { background: #d35400; }
+        .badge-table-num {
+            font-size: 18px;
+            font-weight: bold;
+            line-height: 1;
+        }
+        .badge-time-str {
+            font-size: 9px;
+            opacity: 0.9;
+            margin-top: 2px;
+            line-height: 1;
+        }
 
         @keyframes pulse {
             0% { transform: scale(1); }
@@ -634,11 +646,11 @@
         }
         .numpad-btn.preset:hover { background: #e8daef; }
 
-        /* Large Square Table Selection Grid */
+        /* Table Selection Grid (5 Columns x 4 Rows for Image 1 Request) */
         .table-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
             margin-top: 10px;
         }
         .table-btn {
@@ -647,7 +659,7 @@
             border: none;
             border-radius: 8px;
             aspect-ratio: 1 / 1;
-            font-size: 26px;
+            font-size: 30px;
             font-weight: bold;
             cursor: pointer;
             display: flex;
@@ -658,10 +670,10 @@
         }
         .table-btn:hover { 
             background: #2980b9; 
-            transform: scale(1.03);
+            transform: scale(1.04);
         }
         .table-btn:active {
-            transform: scale(0.97);
+            transform: scale(0.96);
         }
     </style>
 </head>
@@ -763,7 +775,7 @@
 
     <!-- Modal: Select Table Number (1 - 20) -->
     <div class="modal-overlay" id="table-modal">
-        <div class="modal-content" style="width: 420px;">
+        <div class="modal-content" style="width: 520px;">
             <div class="modal-header">
                 <span>🪑 Select Table</span>
                 <button class="close-modal" onclick="closeTableModal()">✕</button>
@@ -2251,6 +2263,7 @@
             clearCart();
         }
 
+        /* Render Active Orders with Vertical Square Badge Layout (Image 2 Request) */
         function renderActiveKitchenOrders() {
             let container = document.getElementById('kitchen-active-orders');
             if (!activeKitchenOrders || activeKitchenOrders.length === 0) {
@@ -2262,8 +2275,8 @@
             activeKitchenOrders.forEach((ord, index) => {
                 html += `
                     <button class="table-order-badge" onclick="openKitchenOrderModal(${index})">
-                        <span>🪑 ${ord.tableNo}</span>
-                        <span style="font-size: 10px; opacity: 0.85;">(${ord.time})</span>
+                        <span class="badge-table-num">${ord.tableNo}</span>
+                        <span class="badge-time-str">${ord.time}</span>
                     </button>
                 `;
             });

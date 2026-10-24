@@ -10,14 +10,15 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+        // 🟢 ใส่ Firebase Config จริงของคุณ Alex จากหน้าจอตรงนี้เรียบร้อยแล้วครับ
         const firebaseConfig = {
-            apiKey: "AIzaSyBl4Qe7bE0Gg...",
+            apiKey: "AIzaSyCkm45aTNMieP5Si1rBGwWh7o60mVMwN9w",
             authDomain: "exclusive-thai-pos.firebaseapp.com",
             databaseURL: "https://exclusive-thai-pos-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "exclusive-thai-pos",
             storageBucket: "exclusive-thai-pos.appspot.com",
-            messagingSenderId: "1073837920155",
-            appId: "1:1073837920155:web:abcdef123456789"
+            messagingSenderId: "1007101959108",
+            appId: "1:1007101959108:web:4995fc13f0bfd68b35e291"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -56,57 +57,14 @@
             margin-bottom: 4px;
             height: 42px;
         }
-        .header-left {
-            display: flex;
-            align-items: center;
-        }
-        .menu-toggle-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            margin-right: 12px;
-            display: flex;
-            align-items: center;
-        }
-        .restaurant-title {
-            font-size: 16px;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-        .header-right-area {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .header-time {
-            font-size: 13px;
-            font-weight: bold;
-            color: #f1c40f;
-        }
-        .fullscreen-btn {
-            background: #e67e22;
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
-        }
+        .header-left { display: flex; align-items: center; }
+        .menu-toggle-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; margin-right: 12px; display: flex; align-items: center; }
+        .restaurant-title { font-size: 16px; font-weight: bold; letter-spacing: 0.5px; }
+        .header-right-area { display: flex; align-items: center; gap: 10px; }
+        .header-time { font-size: 13px; font-weight: bold; color: #f1c40f; }
+        .fullscreen-btn { background: #e67e22; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .fullscreen-btn:hover { background: #d35400; }
-
-        .pass-toggle-btn {
-            background: #34495e;
-            color: #f1c40f;
-            border: 1px solid #f1c40f;
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: bold;
-        }
+        .pass-toggle-btn { background: #34495e; color: #f1c40f; border: 1px solid #f1c40f; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
 
         /* Active Kitchen Orders Bar */
         .kitchen-bar-container {
@@ -120,19 +78,9 @@
             min-height: 55px;
             overflow-x: auto;
         }
-        .kitchen-bar-title {
-            font-size: 12px;
-            font-weight: bold;
-            color: #2c3e50;
-            white-space: nowrap;
-        }
-        .kitchen-orders-list {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            flex: 1;
-        }
-        /* Square Badge for Active Orders */
+        .kitchen-bar-title { font-size: 12px; font-weight: bold; color: #2c3e50; white-space: nowrap; }
+        .kitchen-orders-list { display: flex; gap: 6px; align-items: center; flex: 1; }
+        
         .table-order-badge {
             background: #e67e22;
             color: white;
@@ -150,563 +98,101 @@
             animation: pulse 2s infinite;
         }
         .table-order-badge:hover { background: #d35400; }
-        .badge-table-num {
-            font-size: 18px;
-            font-weight: bold;
-            line-height: 1;
-        }
-        .badge-time-str {
-            font-size: 9px;
-            opacity: 0.9;
-            margin-top: 2px;
-            line-height: 1;
-        }
+        .badge-table-num { font-size: 18px; font-weight: bold; line-height: 1; }
+        .badge-time-str { font-size: 9px; opacity: 0.9; margin-top: 2px; line-height: 1; }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.03); }
-            100% { transform: scale(1); }
-        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
 
-        .pos-container {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            gap: 6px;
-            min-height: 0;
-        }
-
-        /* Category Grid */
-        .category-grid { 
-            display: flex; 
-            gap: 6px; 
-            height: 38px;
-        }
-        .cat-btn { 
-            background: #34495e; 
-            color: white; 
-            border: none; 
-            padding: 0 6px; 
-            border-radius: 6px; 
-            font-size: 11px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            flex: 1;
-            white-space: nowrap;
-        }
+        .pos-container { display: flex; flex-direction: column; flex: 1; gap: 6px; min-height: 0; }
+        .category-grid { display: flex; gap: 6px; height: 38px; }
+        .cat-btn { background: #34495e; color: white; border: none; padding: 0 6px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; flex: 1; white-space: nowrap; }
         .cat-btn.active { background: #e67e22; }
 
-        /* Main Layout */
-        .main-layout { 
-            display: flex; 
-            gap: 10px; 
-            flex: 1;
-            min-height: 0;
-        }
-
-        /* Menu Column */
-        .col-menu {
-            flex: 2.2;
-            background: white;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        .section-header-title {
-            font-size: 15px;
-            font-weight: bold;
-            color: #2c3e50;
-            border-bottom: 2px solid #e67e22;
-            padding-bottom: 4px;
-            margin-bottom: 6px;
-        }
-
-        .menu-scroll-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            overflow-y: auto;
-        }
-
-        .sub-header { 
-            background: #34495e; 
-            color: white; 
-            padding: 6px 10px; 
-            border-radius: 4px; 
-            font-size: 14px; 
-            font-weight: bold; 
-            margin-top: 4px;
-        }
-
-        .item-grid { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 8px; 
-        }
-        .item-card { 
-            background: #fff; 
-            padding: 16px 8px; 
-            border-radius: 6px; 
-            border: 2px solid #bdc3c7; 
-            cursor: pointer; 
-            text-align: center; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 65px;
-        }
+        .main-layout { display: flex; gap: 10px; flex: 1; min-height: 0; }
+        .col-menu { flex: 2.2; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; height: 100%; }
+        .section-header-title { font-size: 15px; font-weight: bold; color: #2c3e50; border-bottom: 2px solid #e67e22; padding-bottom: 4px; margin-bottom: 6px; }
+        .menu-scroll-area { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+        .sub-header { background: #34495e; color: white; padding: 6px 10px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-top: 4px; }
+        .item-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .item-card { background: #fff; padding: 16px 8px; border-radius: 6px; border: 2px solid #bdc3c7; cursor: pointer; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 65px; }
         .item-card:hover { border-color: #3498db; background: #ebf5fb; }
         .item-card.selected { border-color: #e67e22; background: #fef5e7; box-shadow: 0 0 5px rgba(230,126,34,0.5); }
         .item-title { font-weight: bold; color: #2c3e50; font-size: 14px; line-height: 1.3; }
 
-        /* Options Column */
-        .col-options {
-            flex: 1.6;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            height: 100%;
-            overflow-y: auto;
-        }
-
-        .opt-box {
-            background: white;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .opt-title {
-            font-size: 14px;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 6px;
-        }
-
-        .opt-grid-2col {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-        }
-
-        .opt-grid-3col {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
-
-        .opt-btn { 
-            background: #ecf0f1; 
-            border: 2px solid #bdc3c7; 
-            border-radius: 6px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            text-align: center; 
-            font-size: 13px; 
-            color: #2c3e50; 
-            padding: 12px 6px;
-            min-height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .col-options { flex: 1.6; display: flex; flex-direction: column; gap: 8px; height: 100%; overflow-y: auto; }
+        .opt-box { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+        .opt-title { font-size: 14px; font-weight: bold; color: #2c3e50; margin-bottom: 6px; }
+        .opt-grid-2col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .opt-grid-3col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .opt-btn { background: #ecf0f1; border: 2px solid #bdc3c7; border-radius: 6px; font-weight: bold; cursor: pointer; text-align: center; font-size: 13px; color: #2c3e50; padding: 12px 6px; min-height: 48px; display: flex; align-items: center; justify-content: center; }
         .opt-btn:hover { background: #d5dbdb; }
         .opt-btn.selected { background: #e67e22; color: white; border-color: #d35400; }
-        
-        .btn-no-opt {
-            background: #e74c3c;
-            color: white;
-            border-color: #c0392b;
-            font-size: 14px;
-            padding: 12px 6px;
-            min-height: 48px;
-        }
+        .btn-no-opt { background: #e74c3c; color: white; border-color: #c0392b; font-size: 14px; padding: 12px 6px; min-height: 48px; }
         .btn-no-opt:hover { background: #c0392b; }
 
-        /* Cart Column */
-        .col-cart {
-            flex: 1.2;
-            background: white;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 100%;
-        }
-
-        .cart-title {
-            font-size: 15px;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 6px;
-            border-bottom: 2px solid #27ae60;
-            padding-bottom: 4px;
-        }
-
-        .cart-list-box { 
-            flex: 1; 
-            overflow-y: auto; 
-            border: 1px solid #eee; 
-            padding: 6px; 
-            border-radius: 4px; 
-            margin-bottom: 6px;
-        }
-        .cart-item { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: flex-start;
-            margin-bottom: 6px; 
-            border-bottom: 1px solid #f0f0f0; 
-            padding-bottom: 4px; 
-            font-size: 13px; 
-            cursor: pointer;
-        }
+        .col-cart { flex: 1.2; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+        .cart-title { font-size: 15px; font-weight: bold; color: #2c3e50; margin-bottom: 6px; border-bottom: 2px solid #27ae60; padding-bottom: 4px; }
+        .cart-list-box { flex: 1; overflow-y: auto; border: 1px solid #eee; padding: 6px; border-radius: 4px; margin-bottom: 6px; }
+        .cart-item { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; border-bottom: 1px solid #f0f0f0; padding-bottom: 4px; font-size: 13px; cursor: pointer; }
         .cart-item:hover { background-color: #f8f9fa; }
-        .cart-item-details {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            flex: 1;
-            padding-right: 4px;
-        }
-        .cart-item-title {
-            font-weight: bold;
-            color: #2c3e50;
-            display: flex;
-            justify-content: space-between;
-        }
-        .cart-item-title-text {
-            flex: 1;
-        }
-        .cart-item-title-price {
-            font-weight: bold;
-            color: #c0392b;
-            min-width: 45px;
-            text-align: right;
-        }
-        .cart-sub-detail {
-            font-size: 12px;
-            color: #555;
-            padding-left: 8px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .cart-sub-text {
-            flex: 1;
-        }
-        .cart-sub-price {
-            min-width: 45px;
-            text-align: right;
-            color: #555;
-        }
-        .cart-item-right {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .btn-delete-item {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            width: 20px;
-            height: 20px;
-            font-size: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-            font-weight: bold;
-        }
+        .cart-item-details { display: flex; flex-direction: column; gap: 2px; flex: 1; padding-right: 4px; }
+        .cart-item-title { font-weight: bold; color: #2c3e50; display: flex; justify-content: space-between; }
+        .cart-item-title-text { flex: 1; }
+        .cart-item-title-price { font-weight: bold; color: #c0392b; min-width: 45px; text-align: right; }
+        .cart-sub-detail { font-size: 12px; color: #555; padding-left: 8px; display: flex; justify-content: space-between; }
+        .cart-sub-text { flex: 1; }
+        .cart-sub-price { min-width: 45px; text-align: right; color: #555; }
+        .cart-item-right { display: flex; align-items: center; gap: 6px; }
+        .btn-delete-item { background: #e74c3c; color: white; border: none; border-radius: 4px; width: 20px; height: 20px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; font-weight: bold; }
         .btn-delete-item:hover { background: #c0392b; }
 
-        .cart-total { 
-            font-size: 18px; 
-            font-weight: bold; 
-            text-align: right; 
-            margin-bottom: 8px; 
-            color: #c0392b; 
-        }
-        
-        .cart-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            margin-bottom: 6px;
-        }
-        .cart-actions-row {
-            display: flex;
-            gap: 4px;
-        }
-        .btn-pay-cash { 
-            background: #27ae60; 
-            color: white; 
-            border: none; 
-            flex: 1; 
-            padding: 10px 4px; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 13px; 
-        }
+        .cart-total { font-size: 18px; font-weight: bold; text-align: right; margin-bottom: 8px; color: #c0392b; }
+        .cart-actions { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; }
+        .cart-actions-row { display: flex; gap: 4px; }
+        .btn-pay-cash { background: #27ae60; color: white; border: none; flex: 1; padding: 10px 4px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; }
         .btn-pay-cash:hover { background: #219653; }
-
-        .btn-pay-card { 
-            background: #2980b9; 
-            color: white; 
-            border: none; 
-            flex: 1; 
-            padding: 10px 4px; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 13px; 
-        }
+        .btn-pay-card { background: #2980b9; color: white; border: none; flex: 1; padding: 10px 4px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; }
         .btn-pay-card:hover { background: #1f618d; }
-
-        .btn-pay-split { 
-            background: #d35400; 
-            color: white; 
-            border: none; 
-            flex: 1; 
-            padding: 10px 4px; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 13px; 
-        }
+        .btn-pay-split { background: #d35400; color: white; border: none; flex: 1; padding: 10px 4px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; }
         .btn-pay-split:hover { background: #ba4a00; }
-
-        .btn-pay-bulk {
-            background: #8e44ad;
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 10px 4px;
-            border-radius: 6px;
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 13px; 
-            display: none;
-        }
+        .btn-pay-bulk { background: #8e44ad; color: white; border: none; width: 100%; padding: 10px 4px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; display: none; }
         .btn-pay-bulk:hover { background: #732d91; }
-
-        .btn-past-orders {
-            background: #7f8c8d;
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 7px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 12px;
-            margin-bottom: 6px;
-        }
+        .btn-past-orders { background: #7f8c8d; color: white; border: none; width: 100%; padding: 7px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; margin-bottom: 6px; }
         .btn-past-orders:hover { background: #707b7c; }
 
-        /* Daily Report Box */
-        .daily-report-box {
-            background: #eaf2f8;
-            border: 1px solid #2980b9;
-            padding: 6px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            color: #2c3e50;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        .daily-report-header {
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 1px solid #bdc3c7;
-            padding-bottom: 2px;
-            margin-bottom: 2px;
-        }
-        .daily-report-row {
-            display: flex;
-            justify-content: space-between;
-        }
+        .daily-report-box { background: #eaf2f8; border: 1px solid #2980b9; padding: 6px 8px; border-radius: 6px; font-size: 11px; color: #2c3e50; display: flex; flex-direction: column; gap: 2px; }
+        .daily-report-header { font-weight: bold; display: flex; justify-content: space-between; border-bottom: 1px solid #bdc3c7; padding-bottom: 2px; margin-bottom: 2px; }
+        .daily-report-row { display: flex; justify-content: space-between; }
 
-        /* Modal Overlays */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: white;
-            padding: 18px;
-            border-radius: 8px;
-            width: 440px;
-            max-width: 95%;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .modal-header {
-            font-size: 16px;
-            font-weight: bold;
-            color: #2c3e50;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #e67e22;
-            padding-bottom: 6px;
-        }
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
-            color: #7f8c8d;
-        }
-        .report-details-box {
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .modal-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 6px;
-        }
-        .btn-modal-action {
-            background: #34495e;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            flex: 1;
-        }
-        .btn-modal-close {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            flex: 1;
-        }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 18px; border-radius: 8px; width: 440px; max-width: 95%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 10px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { font-size: 16px; font-weight: bold; color: #2c3e50; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e67e22; padding-bottom: 6px; }
+        .close-modal { background: none; border: none; font-size: 18px; cursor: pointer; color: #7f8c8d; }
+        .report-details-box { background: #f8f9fa; border: 1px solid #ddd; padding: 10px; border-radius: 6px; font-size: 12px; display: flex; flex-direction: column; gap: 6px; }
+        .modal-actions { display: flex; gap: 8px; margin-top: 6px; }
+        .btn-modal-action { background: #34495e; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; flex: 1; }
+        .btn-modal-close { background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; flex: 1; }
 
-        .no-opt-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 6px;
-        }
-        .no-opt-item {
-            background: #fdfefe;
-            border: 1px solid #bdc3c7;
-            padding: 8px;
-            border-radius: 4px;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            text-align: center;
-        }
-        .no-opt-item.selected {
-            background: #e74c3c;
-            color: white;
-            border-color: #c0392b;
-        }
-        .no-opt-section-title {
-            font-weight: bold;
-            font-size: 13px;
-            color: #2c3e50;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 2px;
-            margin-top: 4px;
-        }
+        .no-opt-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+        .no-opt-item { background: #fdfefe; border: 1px solid #bdc3c7; padding: 8px; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; text-align: center; }
+        .no-opt-item.selected { background: #e74c3c; color: white; border-color: #c0392b; }
+        .no-opt-section-title { font-weight: bold; font-size: 13px; color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 2px; margin-top: 4px; }
 
-        /* Numpad Styles */
-        .numpad-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-            margin-top: 4px;
-        }
-        .numpad-btn {
-            background: #f8f9fa;
-            border: 1px solid #bdc3c7;
-            border-radius: 6px;
-            padding: 10px 0;
-            font-size: 16px;
-            font-weight: bold;
-            color: #2c3e50;
-            cursor: pointer;
-            text-align: center;
-        }
+        .numpad-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 4px; }
+        .numpad-btn { background: #f8f9fa; border: 1px solid #bdc3c7; border-radius: 6px; padding: 10px 0; font-size: 16px; font-weight: bold; color: #2c3e50; cursor: pointer; text-align: center; }
         .numpad-btn:hover { background: #e2e6ea; }
         .numpad-btn:active { background: #d6dbe0; }
-        .numpad-btn.preset {
-            background: #f3e5f5;
-            color: #732d91;
-            border-color: #8e44ad;
-        }
+        .numpad-btn.preset { background: #f3e5f5; color: #732d91; border-color: #8e44ad; }
         .numpad-btn.preset:hover { background: #e8daef; }
 
-        /* Table Selection Grid */
-        .table-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
-            margin-top: 10px;
-        }
-        .table-btn {
-            background: #3498db;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            aspect-ratio: 1 / 1;
-            font-size: 30px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
-            transition: transform 0.1s, background-color 0.1s;
-        }
-        .table-btn:hover { 
-            background: #2980b9; 
-            transform: scale(1.04);
-        }
-        .table-btn:active {
-            transform: scale(0.96);
-        }
+        .table-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 10px; }
+        .table-btn { background: #3498db; color: white; border: none; border-radius: 8px; aspect-ratio: 1 / 1; font-size: 30px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 6px rgba(0,0,0,0.15); transition: transform 0.1s, background-color 0.1s; }
+        .table-btn:hover { background: #2980b9; transform: scale(1.04); }
+        .table-btn:active { transform: scale(0.96); }
     </style>
 </head>
 <body>
 
-    <!-- Top Header -->
     <div class="top-header">
         <div class="header-left">
             <button class="menu-toggle-btn" onclick="openReportModal()" title="Daily Sales & Report">☰</button>
@@ -719,7 +205,6 @@
         </div>
     </div>
 
-    <!-- Active Kitchen Orders Bar -->
     <div class="kitchen-bar-container">
         <div class="kitchen-bar-title">👨‍🍳 Active Orders:</div>
         <div class="kitchen-orders-list" id="kitchen-active-orders">
@@ -728,7 +213,6 @@
     </div>
 
     <div class="pos-container">
-        <!-- Category Buttons -->
         <div class="category-grid">
             <button class="cat-btn active" id="btn-lunch" onclick="switchCategory('lunch')">1. Lunch Special</button>
             <button class="cat-btn" id="btn-dinner" onclick="switchCategory('dinner')">2. Dinner</button>
@@ -740,19 +224,14 @@
             <button class="cat-btn" id="btn-sunday" onclick="switchCategory('sunday')">8. Sunday Special ($7)</button>
         </div>
 
-        <!-- Main Layout -->
         <div class="main-layout">
-            
-            <!-- Column 1: Menu Items -->
             <div class="col-menu">
                 <div class="section-header-title" id="mode-title">🍳 1. Select Menu</div>
                 <div class="menu-scroll-area" id="menu-container-box"></div>
             </div>
 
-            <!-- Column 2: Options Panel -->
             <div class="col-options" id="options-panel"></div>
 
-            <!-- Column 3: Cart -->
             <div class="col-cart">
                 <div>
                     <div class="cart-title">🛒 Your Order</div>
@@ -772,7 +251,6 @@
                         <button class="btn-pay-bulk" id="btn-pay-bulk" onclick="initiateCashCheckout('Bulk Cash')">💵 Bulk Cash</button>
                     </div>
 
-                    <!-- Daily Sales Summary Widget -->
                     <div class="daily-report-box">
                         <div class="daily-report-header">
                             <span>📊 Today's Sales Summary</span>
@@ -796,11 +274,10 @@
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <!-- Modal: Select Table Number (1 - 20) -->
+    <!-- Modals -->
     <div class="modal-overlay" id="table-modal">
         <div class="modal-content" style="width: 520px;">
             <div class="modal-header">
@@ -811,7 +288,6 @@
         </div>
     </div>
 
-    <!-- Modal: Active Kitchen Order View -->
     <div class="modal-overlay" id="kitchen-order-modal">
         <div class="modal-content" style="width: 400px;">
             <div class="modal-header">
@@ -825,7 +301,6 @@
         </div>
     </div>
 
-    <!-- Modal: Past Orders & Edit -->
     <div class="modal-overlay" id="past-orders-modal">
         <div class="modal-content" style="width: 500px;">
             <div class="modal-header">
@@ -840,7 +315,6 @@
         </div>
     </div>
 
-    <!-- Modal: Split Payment -->
     <div class="modal-overlay" id="split-modal">
         <div class="modal-content" style="width: 360px;">
             <div class="modal-header">
@@ -856,25 +330,20 @@
                     <label style="font-size: 12px; font-weight: bold;">Cash Paid ($):</label>
                     <input type="number" id="split-cash-input" oninput="calculateSplit()" placeholder="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 18px; font-weight: bold; text-align: right;" readonly>
                 </div>
-
                 <div class="numpad-container">
                     <button class="numpad-btn" onclick="pressSplitNumpad('7')">7</button>
                     <button class="numpad-btn" onclick="pressSplitNumpad('8')">8</button>
                     <button class="numpad-btn" onclick="pressSplitNumpad('9')">9</button>
-                    
                     <button class="numpad-btn" onclick="pressSplitNumpad('4')">4</button>
                     <button class="numpad-btn" onclick="pressSplitNumpad('5')">5</button>
                     <button class="numpad-btn" onclick="pressSplitNumpad('6')">6</button>
-                    
                     <button class="numpad-btn" onclick="pressSplitNumpad('1')">1</button>
                     <button class="numpad-btn" onclick="pressSplitNumpad('2')">2</button>
                     <button class="numpad-btn" onclick="pressSplitNumpad('3')">3</button>
-                    
                     <button class="numpad-btn" style="background: #fadbd8; color: #c0392b;" onclick="pressSplitNumpad('C')">C</button>
                     <button class="numpad-btn" onclick="pressSplitNumpad('0')">0</button>
                     <button class="numpad-btn" onclick="pressSplitNumpad('DEL')">⌫</button>
                 </div>
-
                 <div style="font-size: 14px; display: flex; justify-content: space-between; background: #eaf2f8; padding: 8px; border-radius: 4px; margin-top: 2px;">
                     <span>Card Balance Due:</span>
                     <b style="color: #2980b9; font-size: 18px;">$<span id="split-card-amount">0.00</span></b>
@@ -884,7 +353,6 @@
         </div>
     </div>
 
-    <!-- Modal: Bulk Option Custom Price Input -->
     <div class="modal-overlay" id="bulk-modal">
         <div class="modal-content" style="width: 360px;">
             <div class="modal-header">
@@ -896,37 +364,30 @@
                     <label style="font-size: 12px; font-weight: bold;">Custom Amount ($):</label>
                     <input type="number" id="bulk-price-input" placeholder="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 18px; font-weight: bold; text-align: right;" readonly>
                 </div>
-
                 <div class="numpad-container" style="grid-template-columns: repeat(3, 1fr);">
                     <button class="numpad-btn preset" onclick="setBulkPreset(20)">$20</button>
                     <button class="numpad-btn preset" onclick="setBulkPreset(50)">$50</button>
                     <button class="numpad-btn preset" onclick="setBulkPreset(100)">$100</button>
                 </div>
-
                 <div class="numpad-container">
                     <button class="numpad-btn" onclick="pressBulkNumpad('7')">7</button>
                     <button class="numpad-btn" onclick="pressBulkNumpad('8')">8</button>
                     <button class="numpad-btn" onclick="pressBulkNumpad('9')">9</button>
-                    
                     <button class="numpad-btn" onclick="pressBulkNumpad('4')">4</button>
                     <button class="numpad-btn" onclick="pressBulkNumpad('5')">5</button>
                     <button class="numpad-btn" onclick="pressBulkNumpad('6')">6</button>
-                    
                     <button class="numpad-btn" onclick="pressBulkNumpad('1')">1</button>
                     <button class="numpad-btn" onclick="pressBulkNumpad('2')">2</button>
                     <button class="numpad-btn" onclick="pressBulkNumpad('3')">3</button>
-                    
                     <button class="numpad-btn" style="background: #fadbd8; color: #c0392b;" onclick="pressBulkNumpad('C')">C</button>
                     <button class="numpad-btn" onclick="pressBulkNumpad('0')">0</button>
                     <button class="numpad-btn" onclick="pressBulkNumpad('DEL')">⌫</button>
                 </div>
-
                 <button class="btn-modal-action" style="background: #8e44ad; padding: 10px; font-size: 15px; margin-top: 4px;" onclick="confirmBulkOption()">Confirm Bulk Amount</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal: Cash Payment -->
     <div class="modal-overlay" id="cash-modal">
         <div class="modal-content" style="width: 360px;">
             <div class="modal-header">
@@ -942,7 +403,6 @@
                     <label style="font-size: 12px; font-weight: bold;">Amount Received ($):</label>
                     <input type="number" id="cash-received-input" oninput="calculateChange()" placeholder="0" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 18px; font-weight: bold; text-align: right;" readonly>
                 </div>
-
                 <div class="numpad-container" style="grid-template-columns: repeat(3, 1fr);">
                     <button class="numpad-btn preset" onclick="setPresetCash('exact')">Exact</button>
                     <button class="numpad-btn preset" onclick="setPresetCash(5)">$5</button>
@@ -951,25 +411,20 @@
                     <button class="numpad-btn preset" onclick="setPresetCash(50)">$50</button>
                     <button class="numpad-btn preset" onclick="setPresetCash(100)">$100</button>
                 </div>
-
                 <div class="numpad-container">
                     <button class="numpad-btn" onclick="pressNumpad('7')">7</button>
                     <button class="numpad-btn" onclick="pressNumpad('8')">8</button>
                     <button class="numpad-btn" onclick="pressNumpad('9')">9</button>
-                    
                     <button class="numpad-btn" onclick="pressNumpad('4')">4</button>
                     <button class="numpad-btn" onclick="pressNumpad('5')">5</button>
                     <button class="numpad-btn" onclick="pressNumpad('6')">6</button>
-                    
                     <button class="numpad-btn" onclick="pressNumpad('1')">1</button>
                     <button class="numpad-btn" onclick="pressNumpad('2')">2</button>
                     <button class="numpad-btn" onclick="pressNumpad('3')">3</button>
-                    
                     <button class="numpad-btn" style="background: #fadbd8; color: #c0392b;" onclick="pressNumpad('C')">C</button>
                     <button class="numpad-btn" onclick="pressNumpad('0')">0</button>
                     <button class="numpad-btn" onclick="pressNumpad('DEL')">⌫</button>
                 </div>
-
                 <div style="font-size: 14px; display: flex; justify-content: space-between; background: #eaf2f8; padding: 8px; border-radius: 4px; margin-top: 2px;">
                     <span>Change Due:</span>
                     <b style="color: #27ae60; font-size: 18px;">$<span id="cash-change-amount">0.00</span></b>
@@ -979,7 +434,6 @@
         </div>
     </div>
 
-    <!-- Modal: Security Auth -->
     <div class="modal-overlay" id="auth-modal">
         <div class="modal-content" style="width: 320px;">
             <div class="modal-header">
@@ -994,7 +448,6 @@
         </div>
     </div>
 
-    <!-- Modal: Change Password -->
     <div class="modal-overlay" id="chpass-modal">
         <div class="modal-content" style="width: 340px;">
             <div class="modal-header">
@@ -1013,7 +466,6 @@
         </div>
     </div>
 
-    <!-- Modal: Reports & Logs -->
     <div class="modal-overlay" id="report-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1032,14 +484,12 @@
         </div>
     </div>
 
-    <!-- Modal: "NO" Ingredients Options -->
     <div class="modal-overlay" id="no-opt-modal">
         <div class="modal-content">
             <div class="modal-header">
                 <span>🚫 Select Ingredients to Exclude (NO)</span>
                 <button class="close-modal" onclick="closeNoOptModal()">✕</button>
             </div>
-            
             <div class="no-opt-section-title">🥦 Vegetables Options</div>
             <div class="no-opt-grid">
                 <div class="no-opt-item" onclick="toggleNoIngredient('Onion', this)">Onion</div>
@@ -1053,7 +503,6 @@
                 <div class="no-opt-item" onclick="toggleNoIngredient('Bean sprout', this)">Bean sprout</div>
                 <div class="no-opt-item" onclick="toggleNoIngredient('Bok choy', this)">Bok choy</div>
             </div>
-
             <div class="no-opt-section-title">🍳 Separated Options</div>
             <div class="no-opt-grid">
                 <div class="no-opt-item" onclick="toggleNoIngredient('Egg', this)">Egg</div>
@@ -1063,7 +512,6 @@
                 <div class="no-opt-item" onclick="toggleNoIngredient('Tomato', this)">Tomato</div>
                 <div class="no-opt-item" onclick="toggleNoIngredient('Red onion', this)">Red onion</div>
             </div>
-
             <div class="modal-actions">
                 <button class="btn-modal-action" onclick="applyNoIngredients()">Apply Exclusion</button>
             </div>
@@ -2292,7 +1740,7 @@
             clearCart();
         }
 
-        /* Render Active Orders with Vertical Square Badge Layout */
+        /* Render Active Orders */
         function renderActiveKitchenOrders() {
             let container = document.getElementById('kitchen-active-orders');
             if (!activeKitchenOrders || activeKitchenOrders.length === 0) {
@@ -2343,7 +1791,7 @@
         function markKitchenOrderDone() {
             if (selectedKitchenOrderIndex !== null && activeKitchenKeys[selectedKitchenOrderIndex]) {
                 const key = activeKitchenKeys[selectedKitchenOrderIndex];
-                // 🗑️ ลบออเดอร์ออกจาก Firebase เมื่อกดเสร็จสิ้น (เครื่องอื่นจะหายตามทันที)
+                // ลบออเดอร์ออกจาก Firebase Realtime Database
                 const itemRef = window.fbRef(window.fbDB, 'activeOrders/' + key);
                 window.fbRemove(itemRef);
                 closeKitchenModal();
@@ -2353,10 +1801,8 @@
         function updateDailyReportUI() {
             document.getElementById('daily-cash-count').innerText = dailyStats.cashCount || 0;
             document.getElementById('daily-cash-amount').innerText = dailyStats.cashTotal || 0;
-            
             document.getElementById('daily-card-count').innerText = dailyStats.cardCount || 0;
             document.getElementById('daily-card-amount').innerText = dailyStats.cardTotal || 0;
-
             document.getElementById('daily-bulk-count').innerText = dailyStats.bulkCount || 0;
             document.getElementById('daily-bulk-amount').innerText = dailyStats.bulkTotal || 0;
 
@@ -2470,13 +1916,8 @@
             updateDailyReportUI();
         }
 
-        function openNoOptModal() {
-            document.getElementById('no-opt-modal').style.display = 'flex';
-        }
-
-        function closeNoOptModal() {
-            document.getElementById('no-opt-modal').style.display = 'none';
-        }
+        function openNoOptModal() { document.getElementById('no-opt-modal').style.display = 'flex'; }
+        function closeNoOptModal() { document.getElementById('no-opt-modal').style.display = 'none'; }
 
         function toggleNoIngredient(name, el) {
             let idx = selectedNoIngredients.indexOf(name);
@@ -2508,9 +1949,7 @@
             }
         }
 
-        function closeAuthModal() {
-            document.getElementById('auth-modal').style.display = 'none';
-        }
+        function closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; }
 
         function verifyPassword() {
             let inputPass = document.getElementById('auth-pass-input').value;
@@ -2529,17 +1968,9 @@
             loadReportByDate(todayStr);
         }
 
-        function closeReportModal() {
-            document.getElementById('report-modal').style.display = 'none';
-        }
-
-        function openChPassModal() {
-            document.getElementById('chpass-modal').style.display = 'flex';
-        }
-
-        function closeChPassModal() {
-            document.getElementById('chpass-modal').style.display = 'none';
-        }
+        function closeReportModal() { document.getElementById('report-modal').style.display = 'none'; }
+        function openChPassModal() { document.getElementById('chpass-modal').style.display = 'flex'; }
+        function closeChPassModal() { document.getElementById('chpass-modal').style.display = 'none'; }
 
         function submitChangePassword() {
             let user = document.getElementById('chpass-user-input').value;
@@ -2632,7 +2063,7 @@
             document.getElementById('report-details-content').innerHTML = html;
         }
 
-        // 🔄 ฟังก์ชันเชื่อมต่อและซิงค์ข้อมูล Real-time กับ Firebase
+        // 🔄 ฟังก์ชันเชื่อมต่อและรับข้อมูล Real-time จาก Firebase
         function initRealtimeSync() {
             if (!window.fbDB) {
                 setTimeout(initRealtimeSync, 500);

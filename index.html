@@ -10,7 +10,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // 🟢 ใส่ Firebase Config จริงของคุณ Alex จากหน้าจอตรงนี้เรียบร้อยแล้วครับ
         const firebaseConfig = {
             apiKey: "AIzaSyCkm45aTNMieP5Si1rBGwWh7o60mVMwN9w",
             authDomain: "exclusive-thai-pos.firebaseapp.com",
@@ -45,7 +44,6 @@
             flex-direction: column;
         }
 
-        /* Top Header */
         .top-header {
             display: flex;
             align-items: center;
@@ -66,7 +64,6 @@
         .fullscreen-btn:hover { background: #d35400; }
         .pass-toggle-btn { background: #34495e; color: #f1c40f; border: 1px solid #f1c40f; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
 
-        /* Active Kitchen Orders Bar */
         .kitchen-bar-container {
             background: #d5dbdb;
             padding: 4px 8px;
@@ -672,6 +669,7 @@
         let cart = [];
         let total = 0;
         let activeCartIndex = null;
+        let isRemoteUpdate = false; // Flag สลับสถานะป้องกันการลูปเวลาอัปเดตตะกร้า
 
         let activeKitchenOrders = [];
         let activeKitchenKeys = [];
@@ -682,21 +680,16 @@
 
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    alert(`Error: ${err.message}`);
-                });
+                document.documentElement.requestFullscreen().catch(err => alert(`Error: ${err.message}`));
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
+                if (document.exitFullscreen) document.exitFullscreen();
             }
         }
 
         function updateClock() {
             let now = new Date();
             document.getElementById('clock-display').innerText = now.toLocaleString('en-AU', { 
-                hour12: false, 
-                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour12: false, year: 'numeric', month: '2-digit', day: '2-digit',
                 hour: '2-digit', minute: '2-digit', second: '2-digit' 
             });
         }
@@ -711,20 +704,13 @@
         }
 
         let todayKey = getTodayDateKey();
-        let allStats = JSON.parse(localStorage.getItem('pos_all_daily_stats')) || {};
+        let dailyStats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
         let allOrderLogs = JSON.parse(localStorage.getItem('pos_all_order_logs')) || {};
-
-        if (!allStats[todayKey]) {
-            allStats[todayKey] = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
-            localStorage.setItem('pos_all_daily_stats', JSON.stringify(allStats));
-        }
 
         if (!allOrderLogs[todayKey]) {
             allOrderLogs[todayKey] = [];
             localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
         }
-
-        let dailyStats = allStats[todayKey];
 
         function togglePasswordProtection() {
             isPassProtectionEnabled = !isPassProtectionEnabled;
@@ -750,19 +736,14 @@
             document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
             if(document.getElementById('btn-' + cat)) document.getElementById('btn-' + cat).classList.add('active');
 
-            let titles = {
-                lunch: 'Lunch Special', dinner: 'Dinner', entree: 'Entree', main: 'Main', chef: 'Chef Recommended', burger: 'Burger', pizza: 'Pizza', sunday: 'Sunday Special'
-            };
+            let titles = { lunch: 'Lunch Special', dinner: 'Dinner', entree: 'Entree', main: 'Main', chef: 'Chef Recommended', burger: 'Burger', pizza: 'Pizza', sunday: 'Sunday Special' };
             document.getElementById('mode-title').innerText = `🍳 1. Select Menu (${titles[cat] || cat})`;
 
             renderOptionsPanel(cat);
 
             let containerBox = document.getElementById('menu-container-box');
-            if (menuData[cat]) {
-                containerBox.innerHTML = menuData[cat];
-            } else {
-                containerBox.innerHTML = `<div class="sub-header">Menu coming soon</div>`;
-            }
+            if (menuData[cat]) containerBox.innerHTML = menuData[cat];
+            else containerBox.innerHTML = `<div class="sub-header">Menu coming soon</div>`;
 
             resetSelection();
         }
@@ -783,7 +764,6 @@
                             <button class="opt-btn cook-btn" onclick="selectMainOption('cook', 'Well Done', this)">Well Done</button>
                         </div>
                     </div>
-
                     <div class="opt-box" style="border-top: 4px solid #27ae60;">
                         <div class="opt-title">🥗 Side</div>
                         <div class="opt-grid-2col">
@@ -794,7 +774,6 @@
                             <button class="opt-btn side-btn" onclick="toggleMainOption('side', 'Greek salad', this)" style="grid-column: span 2; background: #e8f8f5;">Greek salad</button>
                         </div>
                     </div>
-
                     <div class="opt-box" style="border-top: 4px solid #f39c12;">
                         <div class="opt-title">🥣 Sauce</div>
                         <div class="opt-grid-3col">
@@ -803,11 +782,9 @@
                             <button class="opt-btn sauce-btn" onclick="toggleMainOption('sauce', 'Mushroom', this)">Mushroom</button>
                         </div>
                     </div>
-
                     <div class="opt-box" style="margin-top: auto;">
                         <button class="opt-btn btn-no-opt" onclick="openNoOptModal()">🚫 No Ingredients (Exclusion)</button>
-                    </div>
-                `;
+                    </div>`;
             } else if (cat === 'sunday') {
                 panel.innerHTML = `
                     <div class="opt-box" style="border-top: 4px solid #2980b9;">
@@ -821,7 +798,6 @@
                             <button class="opt-btn cook-btn" onclick="selectSundayOption('cook', 'Well Done', this)">Well Done</button>
                         </div>
                     </div>
-
                     <div class="opt-box" style="border-top: 4px solid #27ae60;">
                         <div class="opt-title">🥗 Side</div>
                         <div class="opt-grid-2col">
@@ -832,7 +808,6 @@
                             <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Greek salad', this)" style="grid-column: span 2; background: #e8f8f5;">Greek salad</button>
                         </div>
                     </div>
-
                     <div class="opt-box" style="border-top: 4px solid #f39c12;">
                         <div class="opt-title">🥣 Sauce</div>
                         <div class="opt-grid-3col">
@@ -841,11 +816,9 @@
                             <button class="opt-btn sunday-sauce-btn" onclick="selectSundayOption('sauce', 'Mushroom', this)">Mushroom</button>
                         </div>
                     </div>
-
                     <div class="opt-box" style="margin-top: auto;">
                         <button class="opt-btn btn-no-opt" onclick="openNoOptModal()">🚫 No Ingredients (Exclusion)</button>
-                    </div>
-                `;
+                    </div>`;
             } else if (cat === 'burger') {
                 panel.innerHTML = `
                     <div class="opt-box" style="border-top: 4px solid #f39c12;">
@@ -857,11 +830,9 @@
                             <button class="opt-btn burger-extra-btn" onclick="toggleBurgerExtra('Extra Meat', 5, this)" style="background: #fadbd8;">Extra Meat</button>
                         </div>
                     </div>
-
                     <div class="opt-box" style="margin-top: auto;">
                         <button class="opt-btn btn-no-opt" onclick="openNoOptModal()">🚫 No Ingredients (Exclusion)</button>
-                    </div>
-                `;
+                    </div>`;
             } else if (cat === 'entree') {
                 panel.innerHTML = `
                     <div class="opt-box" style="border-top: 4px solid #27ae60;">
@@ -878,18 +849,15 @@
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Chilli Mayo', 3, this)" style="grid-column: span 2;">Chilli Mayo</button>
                         </div>
                     </div>
-
                     <div class="opt-box" style="border-top: 4px solid #8e44ad;">
                         <div class="opt-title">📦 Container</div>
                         <div class="opt-grid-1col">
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Plastic Container', 1, this)">Plastic Container</button>
                         </div>
                     </div>
-
                     <div class="opt-box" style="margin-top: auto;">
                         <button class="opt-btn btn-no-opt" onclick="openNoOptModal()">🚫 No Ingredients (Exclusion)</button>
-                    </div>
-                `;
+                    </div>`;
             } else if (cat === 'pizza') {
                 panel.innerHTML = `
                     <div class="opt-box" style="margin-top: auto;">
@@ -909,7 +877,6 @@
                             <button class="opt-btn meat-btn" onclick="toggleMeat('Prawn', 5, this)" style="background: #fadbd8; grid-column: span 2;">Prawn</button>
                         </div>
                     </div>
-
                     <div class="opt-box" style="border-top: 4px solid #f39c12;">
                         <div class="opt-title">➕ 3. Choose Extra</div>
                         <div class="opt-grid-2col">
@@ -921,11 +888,9 @@
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Extra Meat', 5, this)" style="background: #fadbd8; grid-column: span 2;">Extra Meat</button>
                         </div>
                     </div>
-
                     <div class="opt-box" style="margin-top: auto;">
                         <button class="opt-btn btn-no-opt" onclick="openNoOptModal()">🚫 No Ingredients (Exclusion)</button>
-                    </div>
-                `;
+                    </div>`;
             }
         }
 
@@ -954,19 +919,12 @@
             isBulkOptionSelected = false;
             updatePaymentButtonsDisplay();
 
-            if (type === 'standard') {
-                addToCartLunchDinner(true);
-            } else if (type === 'direct') {
-                addToCartDirectly(true);
-            } else if (type === 'main') {
-                addToCartMain(true);
-            } else if (type === 'burger') {
-                addToCartBurger(true);
-            } else if (type === 'ken_pizza') {
-                addToCartKenPizza(true);
-            } else if (type === 'sunday') {
-                addToCartSunday(true);
-            }
+            if (type === 'standard') addToCartLunchDinner(true);
+            else if (type === 'direct') addToCartDirectly(true);
+            else if (type === 'main') addToCartMain(true);
+            else if (type === 'burger') addToCartBurger(true);
+            else if (type === 'ken_pizza') addToCartKenPizza(true);
+            else if (type === 'sunday') addToCartSunday(true);
         }
 
         function openBulkModal() {
@@ -974,26 +932,17 @@
             document.getElementById('bulk-modal').style.display = 'flex';
         }
 
-        function closeBulkModal() {
-            document.getElementById('bulk-modal').style.display = 'none';
-        }
+        function closeBulkModal() { document.getElementById('bulk-modal').style.display = 'none'; }
 
         function pressBulkNumpad(val) {
             let input = document.getElementById('bulk-price-input');
             let curr = input.value;
-
-            if (val === 'C') {
-                input.value = '';
-            } else if (val === 'DEL') {
-                input.value = curr.slice(0, -1);
-            } else {
-                input.value = curr + val;
-            }
+            if (val === 'C') input.value = '';
+            else if (val === 'DEL') input.value = curr.slice(0, -1);
+            else input.value = curr + val;
         }
 
-        function setBulkPreset(amount) {
-            document.getElementById('bulk-price-input').value = amount;
-        }
+        function setBulkPreset(amount) { document.getElementById('bulk-price-input').value = amount; }
 
         function confirmBulkOption() {
             let userPrice = parseFloat(document.getElementById('bulk-price-input').value);
@@ -1025,12 +974,7 @@
         }
 
         function addToCartBulk() {
-            cart.push({
-                title: "Bulk Option",
-                price: currentBasePrice,
-                details: [],
-                isBulk: true
-            });
+            cart.push({ title: "Bulk Option", price: currentBasePrice, details: [], isBulk: true });
             activeCartIndex = cart.length - 1;
             updateCartUI();
         }
@@ -1054,7 +998,6 @@
 
         function addToCartBurger(isNew) {
             if (!selectedMenu) return;
-
             let extraTotal = 0;
             let details = [];
             selectedBurgerExtras.forEach(ex => {
@@ -1063,19 +1006,12 @@
             });
 
             if (selectedNoIngredients.length > 0) {
-                selectedNoIngredients.forEach(noItem => {
-                    details.push({ text: `NO: ${noItem}`, price: 0 });
-                });
+                selectedNoIngredients.forEach(noItem => details.push({ text: `NO: ${noItem}`, price: 0 }));
             }
 
             let finalPrice = currentBasePrice + extraTotal;
             let mainTitle = `[Burger] ${selectedMenu}`;
-
-            let itemObj = { 
-                title: mainTitle, 
-                price: finalPrice,
-                details: details
-            };
+            let itemObj = { title: mainTitle, price: finalPrice, details: details };
 
             if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
                 cart.push(itemObj);
@@ -1092,7 +1028,6 @@
                 updateCartUI();
                 return;
             }
-
             let idx = windowExtras.findIndex(i => i.name === name);
             if (idx > -1) {
                 windowExtras.splice(idx, 1);
@@ -1102,45 +1037,30 @@
                 el.classList.add('selected');
             }
 
-            if (currentMode === 'entree') {
-                addToCartDirectly(false);
-            } else {
-                addToCartLunchDinner(false);
-            }
+            if (currentMode === 'entree') addToCartDirectly(false);
+            else addToCartLunchDinner(false);
         }
 
         function selectSundayOption(category, value, el) {
             if (!selectedMenu) return;
-
             if (category === 'cook') {
                 selectedCooking = value;
                 document.querySelectorAll('.cook-btn').forEach(b => b.classList.remove('selected'));
                 el.classList.add('selected');
             } else if (category === 'side') {
                 let idx = sundaySides.indexOf(value);
-                if (idx > -1) {
-                    sundaySides.splice(idx, 1);
-                    el.classList.remove('selected');
-                } else {
-                    sundaySides.push(value);
-                    el.classList.add('selected');
-                }
+                if (idx > -1) { sundaySides.splice(idx, 1); el.classList.remove('selected'); }
+                else { sundaySides.push(value); el.classList.add('selected'); }
             } else if (category === 'sauce') {
                 let idx = sundaySauces.indexOf(value);
-                if (idx > -1) {
-                    sundaySauces.splice(idx, 1);
-                    el.classList.remove('selected');
-                } else {
-                    sundaySauces.push(value);
-                    el.classList.add('selected');
-                }
+                if (idx > -1) { sundaySauces.splice(idx, 1); el.classList.remove('selected'); }
+                else { sundaySauces.push(value); el.classList.add('selected'); }
             }
             addToCartSunday(false);
         }
 
         function addToCartSunday(isNew) {
             if (!selectedMenu) return;
-
             let extraPrice = 0;
             let titleText = `${selectedMenu}`;
             let details = [];
@@ -1151,7 +1071,6 @@
                 let freeQuota = 1;
                 let greekSaladExtraCount = 0;
                 let regularSidesCount = 0;
-
                 sundaySides.forEach(side => {
                     if (side === 'Greek salad') greekSaladExtraCount++;
                     else regularSidesCount++;
@@ -1164,16 +1083,9 @@
                 if (regularSidesCount >= remainingFree) {
                     chargeableRegular = regularSidesCount - remainingFree;
                     remainingFree = 0;
-                } else {
-                    remainingFree -= regularSidesCount;
-                    chargeableRegular = 0;
-                }
+                } else remainingFree -= regularSidesCount;
 
-                if (greekSaladExtraCount >= remainingFree) {
-                    chargeableGreek = greekSaladExtraCount - remainingFree;
-                } else {
-                    chargeableGreek = 0;
-                }
+                if (greekSaladExtraCount >= remainingFree) chargeableGreek = greekSaladExtraCount - remainingFree;
 
                 let sideCost = (chargeableRegular * 5) + (chargeableGreek * 3);
                 extraPrice += sideCost;
@@ -1187,25 +1099,17 @@
             }
 
             if (selectedNoIngredients.length > 0) {
-                selectedNoIngredients.forEach(noItem => {
-                    details.push({ text: `NO: ${noItem}`, price: 0 });
-                });
+                selectedNoIngredients.forEach(noItem => details.push({ text: `NO: ${noItem}`, price: 0 }));
             }
 
             let finalPrice = currentBasePrice + extraPrice;
-
-            let itemObj = { 
-                title: titleText, 
-                price: finalPrice,
-                details: details
-            };
+            let itemObj = { title: titleText, price: finalPrice, details: details };
 
             if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
                 cart.push(itemObj);
                 activeCartIndex = cart.length - 1;
-            } else {
-                cart[activeCartIndex] = itemObj;
-            }
+            } else cart[activeCartIndex] = itemObj;
+
             updateCartUI();
         }
 
@@ -1213,18 +1117,15 @@
             let itemText = `Ken Pizza (Chicken, Pepperoni, Mushroom, Capsicum, Pineapple and Cheese)`;
             let details = [];
             if (selectedNoIngredients.length > 0) {
-                selectedNoIngredients.forEach(noItem => {
-                    details.push({ text: `NO: ${noItem}`, price: 0 });
-                });
+                selectedNoIngredients.forEach(noItem => details.push({ text: `NO: ${noItem}`, price: 0 }));
             }
             let itemObj = { title: itemText, price: currentBasePrice, details: details };
             
             if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
                 cart.push(itemObj);
                 activeCartIndex = cart.length - 1;
-            } else {
-                cart[activeCartIndex] = itemObj;
-            }
+            } else cart[activeCartIndex] = itemObj;
+
             updateCartUI();
         }
 
@@ -1240,32 +1141,20 @@
 
         function toggleMainOption(category, value, el) {
             if (!selectedMenu) return;
-
             if (category === 'side') {
                 let idx = selectedSides.indexOf(value);
-                if (idx > -1) {
-                    selectedSides.splice(idx, 1);
-                    el.classList.remove('selected');
-                } else {
-                    selectedSides.push(value);
-                    el.classList.add('selected');
-                }
+                if (idx > -1) { selectedSides.splice(idx, 1); el.classList.remove('selected'); }
+                else { selectedSides.push(value); el.classList.add('selected'); }
             } else if (category === 'sauce') {
                 let idx = selectedSauces.indexOf(value);
-                if (idx > -1) {
-                    selectedSauces.splice(idx, 1);
-                    el.classList.remove('selected');
-                } else {
-                    selectedSauces.push(value);
-                    el.classList.add('selected');
-                }
+                if (idx > -1) { selectedSauces.splice(idx, 1); el.classList.remove('selected'); }
+                else { selectedSauces.push(value); el.classList.add('selected'); }
             }
             addToCartMain(false);
         }
 
         function addToCartMain(isNew) {
             if (!selectedMenu) return;
-
             let extraPrice = 0;
             let details = [];
 
@@ -1275,7 +1164,6 @@
                 let freeQuota = 2;
                 let greekSaladExtraCount = 0;
                 let regularSidesCount = 0;
-
                 selectedSides.forEach(side => {
                     if (side === 'Greek salad') greekSaladExtraCount++;
                     else regularSidesCount++;
@@ -1288,16 +1176,9 @@
                 if (regularSidesCount >= remainingFree) {
                     chargeableRegular = regularSidesCount - remainingFree;
                     remainingFree = 0;
-                } else {
-                    remainingFree -= regularSidesCount;
-                    chargeableRegular = 0;
-                }
+                } else remainingFree -= regularSidesCount;
 
-                if (greekSaladExtraCount >= remainingFree) {
-                    chargeableGreek = greekSaladExtraCount - remainingFree;
-                } else {
-                    chargeableGreek = 0;
-                }
+                if (greekSaladExtraCount >= remainingFree) chargeableGreek = greekSaladExtraCount - remainingFree;
 
                 let sideCost = (chargeableRegular * 5) + (chargeableGreek * 3);
                 extraPrice += sideCost;
@@ -1314,26 +1195,18 @@
             }
 
             if (selectedNoIngredients.length > 0) {
-                selectedNoIngredients.forEach(noItem => {
-                    details.push({ text: `NO: ${noItem}`, price: 0 });
-                });
+                selectedNoIngredients.forEach(noItem => details.push({ text: `NO: ${noItem}`, price: 0 }));
             }
 
             let finalPrice = currentBasePrice + extraPrice;
             let mainTitle = `${selectedMenu}`;
-
-            let itemObj = { 
-                title: mainTitle, 
-                price: finalPrice,
-                details: details
-            };
+            let itemObj = { title: mainTitle, price: finalPrice, details: details };
 
             if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
                 cart.push(itemObj);
                 activeCartIndex = cart.length - 1;
-            } else {
-                cart[activeCartIndex] = itemObj;
-            }
+            } else cart[activeCartIndex] = itemObj;
+
             updateCartUI();
         }
 
@@ -1343,7 +1216,6 @@
                 updateCartUI();
                 return;
             }
-
             let idx = selectedMeats.findIndex(m => m.name === name);
             if (idx > -1) {
                 selectedMeats.splice(idx, 1);
@@ -1352,13 +1224,11 @@
                 selectedMeats.push({ name: name, basePrice: baseMeatPrice });
                 el.classList.add('selected');
             }
-
             addToCartLunchDinner(false);
         }
 
         function addToCartLunchDinner(isNew) {
             if (!selectedMenu) return;
-
             let extraTotal = 0;
             let details = [];
 
@@ -1382,35 +1252,25 @@
             }
 
             if (selectedNoIngredients.length > 0) {
-                selectedNoIngredients.forEach(noItem => {
-                    details.push({ text: `NO: ${noItem}`, price: 0 });
-                });
+                selectedNoIngredients.forEach(noItem => details.push({ text: `NO: ${noItem}`, price: 0 }));
             }
 
             let finalPrice = currentBasePrice + extraTotal;
-            
             let modeTag = currentMode === 'lunch' ? '[Lunch]' : (currentMode === 'dinner' ? '[Dinner]' : (currentMode === 'chef' ? '[Chef]' : ''));
             let mainTitle = `${modeTag} ${selectedMenu}`.trim();
 
-            let itemObj = { 
-                title: mainTitle, 
-                price: finalPrice,
-                details: details
-            };
+            let itemObj = { title: mainTitle, price: finalPrice, details: details };
 
             if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
                 cart.push(itemObj);
                 activeCartIndex = cart.length - 1;
-            } else {
-                cart[activeCartIndex] = itemObj;
-            }
+            } else cart[activeCartIndex] = itemObj;
 
             updateCartUI();
         }
 
         function addToCartDirectly(isNew) {
             if (!selectedMenu) return;
-
             let extraTotal = 0;
             let details = [];
 
@@ -1422,26 +1282,17 @@
             }
 
             if (selectedNoIngredients.length > 0) {
-                selectedNoIngredients.forEach(noItem => {
-                    details.push({ text: `NO: ${noItem}`, price: 0 });
-                });
+                selectedNoIngredients.forEach(noItem => details.push({ text: `NO: ${noItem}`, price: 0 }));
             }
 
             let finalPrice = currentBasePrice + extraTotal;
             let mainTitle = `${selectedMenu}`;
-
-            let itemObj = { 
-                title: mainTitle, 
-                price: finalPrice,
-                details: details
-            };
+            let itemObj = { title: mainTitle, price: finalPrice, details: details };
 
             if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
                 cart.push(itemObj);
                 activeCartIndex = cart.length - 1;
-            } else {
-                cart[activeCartIndex] = itemObj;
-            }
+            } else cart[activeCartIndex] = itemObj;
 
             updateCartUI();
         }
@@ -1467,11 +1318,9 @@
         function removeCartItem(index, event) {
             if (event) event.stopPropagation();
             cart.splice(index, 1);
-            if (activeCartIndex === index) {
-                activeCartIndex = null;
-            } else if (activeCartIndex > index) {
-                activeCartIndex--;
-            }
+            if (activeCartIndex === index) activeCartIndex = null;
+            else if (activeCartIndex > index) activeCartIndex--;
+            
             if (cart.length === 0) {
                 isBulkOptionSelected = false;
                 updatePaymentButtonsDisplay();
@@ -1487,9 +1336,7 @@
                 if (!isNaN(parsedPrice) && parsedPrice >= 0) {
                     cart[index].price = parsedPrice;
                     updateCartUI();
-                } else {
-                    alert("Invalid price amount.");
-                }
+                } else alert("Invalid price amount.");
             }
         }
 
@@ -1523,6 +1370,12 @@
 
             document.getElementById('cart-list').innerHTML = cartListHtml || 'No items ordered yet';
             document.getElementById('total-amount').innerText = total;
+
+            // 🚀 ซิงค์รายการ Cart ปัจจุบันขึ้น Firebase แบบ Realtime (ถ้าไม่ใช่การรับข้อมูลจากคลาวด์)
+            if (!isRemoteUpdate && window.fbDB) {
+                const cartRef = window.fbRef(window.fbDB, 'liveCart');
+                window.fbSet(cartRef, cart);
+            }
         }
 
         function initiateCashCheckout(paymentType) {
@@ -1534,31 +1387,21 @@
             document.getElementById('cash-modal').style.display = 'flex';
         }
 
-        function closeCashModal() {
-            document.getElementById('cash-modal').style.display = 'none';
-        }
+        function closeCashModal() { document.getElementById('cash-modal').style.display = 'none'; }
 
         function pressNumpad(val) {
             let input = document.getElementById('cash-received-input');
             let curr = input.value;
-
-            if (val === 'C') {
-                input.value = '';
-            } else if (val === 'DEL') {
-                input.value = curr.slice(0, -1);
-            } else {
-                input.value = curr + val;
-            }
+            if (val === 'C') input.value = '';
+            else if (val === 'DEL') input.value = curr.slice(0, -1);
+            else input.value = curr + val;
             calculateChange();
         }
 
         function setPresetCash(amount) {
             let input = document.getElementById('cash-received-input');
-            if (amount === 'exact') {
-                input.value = total;
-            } else {
-                input.value = amount;
-            }
+            if (amount === 'exact') input.value = total;
+            else input.value = amount;
             calculateChange();
         }
 
@@ -1592,21 +1435,14 @@
             document.getElementById('split-modal').style.display = 'flex';
         }
 
-        function closeSplitModal() {
-            document.getElementById('split-modal').style.display = 'none';
-        }
+        function closeSplitModal() { document.getElementById('split-modal').style.display = 'none'; }
 
         function pressSplitNumpad(val) {
             let input = document.getElementById('split-cash-input');
             let curr = input.value;
-
-            if (val === 'C') {
-                input.value = '';
-            } else if (val === 'DEL') {
-                input.value = curr.slice(0, -1);
-            } else {
-                input.value = curr + val;
-            }
+            if (val === 'C') input.value = '';
+            else if (val === 'DEL') input.value = curr.slice(0, -1);
+            else input.value = curr + val;
             calculateSplit();
         }
 
@@ -1638,30 +1474,17 @@
             document.getElementById('table-modal').style.display = 'flex';
         }
 
-        function closeTableModal() {
-            document.getElementById('table-modal').style.display = 'none';
-        }
+        function closeTableModal() { document.getElementById('table-modal').style.display = 'none'; }
 
         function confirmOrderWithTable(tableNum) {
             closeTableModal();
-
-            if (pendingPaymentType === 'Split') {
-                checkoutSplitOrder(pendingCashPaid, pendingCardPaid, tableNum);
-            } else {
-                checkoutOrder(pendingPaymentType, tableNum);
-            }
+            if (pendingPaymentType === 'Split') checkoutSplitOrder(pendingCashPaid, pendingCardPaid, tableNum);
+            else checkoutOrder(pendingPaymentType, tableNum);
         }
 
         function checkoutSplitOrder(cashAmount, cardAmount, tableNum) {
             let currentKey = getTodayDateKey();
-            if (!allStats[currentKey]) {
-                allStats[currentKey] = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
-            }
-            if (!allOrderLogs[currentKey]) {
-                allOrderLogs[currentKey] = [];
-            }
-
-            let orderNum = allOrderLogs[currentKey].length + 1;
+            let orderNum = (allOrderLogs[currentKey] ? allOrderLogs[currentKey].length : 0) + 1;
             let timeStr = new Date().toLocaleTimeString('en-AU', { hour12: false });
 
             let newOrderLog = {
@@ -1673,19 +1496,20 @@
                 totalAmount: total
             };
 
+            if (!allOrderLogs[currentKey]) allOrderLogs[currentKey] = [];
             allOrderLogs[currentKey].push(newOrderLog);
             localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
 
-            allStats[currentKey].cashCount += 1;
-            allStats[currentKey].cashTotal += cashAmount;
-            allStats[currentKey].cardCount += 1;
-            allStats[currentKey].cardTotal += cardAmount;
+            // 🚀 อัปเดตยอดขายขึ้น Firebase แบบ Real-time
+            dailyStats.cashCount = (dailyStats.cashCount || 0) + 1;
+            dailyStats.cashTotal = (dailyStats.cashTotal || 0) + cashAmount;
+            dailyStats.cardCount = (dailyStats.cardCount || 0) + 1;
+            dailyStats.cardTotal = (dailyStats.cardTotal || 0) + cardAmount;
 
-            localStorage.setItem('pos_all_daily_stats', JSON.stringify(allStats));
-            dailyStats = allStats[currentKey];
-            updateDailyReportUI();
+            const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
+            window.fbSet(salesRef, dailyStats);
 
-            // 🚀 ส่งข้อมูลขึ้น Firebase Real-time
+            // 🚀 ส่งข้อมูล Active Order ขึ้น Firebase
             const activeRef = window.fbRef(window.fbDB, 'activeOrders');
             window.fbPush(activeRef, newOrderLog);
 
@@ -1696,14 +1520,7 @@
             if (cart.length === 0) return;
 
             let currentKey = getTodayDateKey();
-            if (!allStats[currentKey]) {
-                allStats[currentKey] = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
-            }
-            if (!allOrderLogs[currentKey]) {
-                allOrderLogs[currentKey] = [];
-            }
-
-            let orderNum = allOrderLogs[currentKey].length + 1;
+            let orderNum = (allOrderLogs[currentKey] ? allOrderLogs[currentKey].length : 0) + 1;
             let timeStr = new Date().toLocaleTimeString('en-AU', { hour12: false });
 
             let newOrderLog = {
@@ -1715,32 +1532,32 @@
                 totalAmount: total
             };
 
+            if (!allOrderLogs[currentKey]) allOrderLogs[currentKey] = [];
             allOrderLogs[currentKey].push(newOrderLog);
             localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
 
             if (paymentType === 'Cash') {
-                allStats[currentKey].cashCount += 1;
-                allStats[currentKey].cashTotal += total;
+                dailyStats.cashCount = (dailyStats.cashCount || 0) + 1;
+                dailyStats.cashTotal = (dailyStats.cashTotal || 0) + total;
             } else if (paymentType === 'Card') {
-                allStats[currentKey].cardCount += 1;
-                allStats[currentKey].cardTotal += total;
+                dailyStats.cardCount = (dailyStats.cardCount || 0) + 1;
+                dailyStats.cardTotal = (dailyStats.cardTotal || 0) + total;
             } else if (paymentType === 'Bulk Cash') {
-                allStats[currentKey].bulkCount += 1;
-                allStats[currentKey].bulkTotal += total;
+                dailyStats.bulkCount = (dailyStats.bulkCount || 0) + 1;
+                dailyStats.bulkTotal = (dailyStats.bulkTotal || 0) + total;
             }
 
-            localStorage.setItem('pos_all_daily_stats', JSON.stringify(allStats));
-            dailyStats = allStats[currentKey];
-            updateDailyReportUI();
+            // 🚀 อัปเดตยอดขายขึ้น Firebase แบบ Real-time
+            const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
+            window.fbSet(salesRef, dailyStats);
 
-            // 🚀 ส่งข้อมูลขึ้น Firebase Real-time
+            // 🚀 ส่งข้อมูล Active Order ขึ้น Firebase
             const activeRef = window.fbRef(window.fbDB, 'activeOrders');
             window.fbPush(activeRef, newOrderLog);
 
             clearCart();
         }
 
-        /* Render Active Orders */
         function renderActiveKitchenOrders() {
             let container = document.getElementById('kitchen-active-orders');
             if (!activeKitchenOrders || activeKitchenOrders.length === 0) {
@@ -1784,14 +1601,11 @@
             document.getElementById('kitchen-order-modal').style.display = 'flex';
         }
 
-        function closeKitchenModal() {
-            document.getElementById('kitchen-order-modal').style.display = 'none';
-        }
+        function closeKitchenModal() { document.getElementById('kitchen-order-modal').style.display = 'none'; }
 
         function markKitchenOrderDone() {
             if (selectedKitchenOrderIndex !== null && activeKitchenKeys[selectedKitchenOrderIndex]) {
                 const key = activeKitchenKeys[selectedKitchenOrderIndex];
-                // ลบออเดอร์ออกจาก Firebase Realtime Database
                 const itemRef = window.fbRef(window.fbDB, 'activeOrders/' + key);
                 window.fbRemove(itemRef);
                 closeKitchenModal();
@@ -1829,9 +1643,7 @@
             logs.forEach((log, index) => {
                 let itemsList = log.items.map(it => {
                     let detailsStr = '';
-                    if (it.details && it.details.length > 0) {
-                        detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
-                    }
+                    if (it.details && it.details.length > 0) detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
                     return `• ${it.title}${detailsStr} - $${it.price}`;
                 }).join('<br>');
 
@@ -1853,9 +1665,7 @@
             document.getElementById('past-orders-modal').style.display = 'flex';
         }
 
-        function closePastOrdersModal() {
-            document.getElementById('past-orders-modal').style.display = 'none';
-        }
+        function closePastOrdersModal() { document.getElementById('past-orders-modal').style.display = 'none'; }
 
         function loadOrderForEdit(logIndex) {
             let currentKey = getTodayDateKey();
@@ -1872,48 +1682,9 @@
                 allOrderLogs[currentKey] = logs;
                 localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
 
-                recalculateStatsFromLogs(currentKey);
-
                 closePastOrdersModal();
                 alert("Order loaded into cart for editing successfully!");
             }
-        }
-
-        function recalculateStatsFromLogs(dateKey) {
-            let logs = allOrderLogs[dateKey] || [];
-            let newStats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
-
-            logs.forEach(log => {
-                if (log.paymentType.includes('Cash') && !log.paymentType.includes('Split')) {
-                    newStats.cashCount += 1;
-                    newStats.cashTotal += log.totalAmount;
-                } else if (log.paymentType.includes('Card') && !log.paymentType.includes('Split')) {
-                    newStats.cardCount += 1;
-                    newStats.cardTotal += log.totalAmount;
-                } else if (log.paymentType.includes('Bulk Cash')) {
-                    newStats.bulkCount += 1;
-                    newStats.bulkTotal += log.totalAmount;
-                } else if (log.paymentType.includes('Split')) {
-                    let parts = log.paymentType.split('/');
-                    if (parts.length === 2) {
-                        let cashPart = parseFloat(parts[0].replace(/[^0-9.]/g, '')) || 0;
-                        let cardPart = parseFloat(parts[1].replace(/[^0-9.]/g, '')) || 0;
-                        if (cashPart > 0) {
-                            newStats.cashCount += 1;
-                            newStats.cashTotal += cashPart;
-                        }
-                        if (cardPart > 0) {
-                            newStats.cardCount += 1;
-                            newStats.cardTotal += cardPart;
-                        }
-                    }
-                }
-            });
-
-            allStats[dateKey] = newStats;
-            localStorage.setItem('pos_all_daily_stats', JSON.stringify(allStats));
-            dailyStats = allStats[dateKey];
-            updateDailyReportUI();
         }
 
         function openNoOptModal() { document.getElementById('no-opt-modal').style.display = 'flex'; }
@@ -1921,13 +1692,8 @@
 
         function toggleNoIngredient(name, el) {
             let idx = selectedNoIngredients.indexOf(name);
-            if (idx > -1) {
-                selectedNoIngredients.splice(idx, 1);
-                el.classList.remove('selected');
-            } else {
-                selectedNoIngredients.push(name);
-                el.classList.add('selected');
-            }
+            if (idx > -1) { selectedNoIngredients.splice(idx, 1); el.classList.remove('selected'); }
+            else { selectedNoIngredients.push(name); el.classList.add('selected'); }
         }
 
         function applyNoIngredients() {
@@ -1944,9 +1710,7 @@
                 document.getElementById('auth-modal').style.display = 'flex';
                 document.getElementById('auth-pass-input').value = '';
                 document.getElementById('auth-pass-input').focus();
-            } else {
-                showReportDirectly();
-            }
+            } else showReportDirectly();
         }
 
         function closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; }
@@ -1956,9 +1720,7 @@
             if (inputPass === systemPassword) {
                 closeAuthModal();
                 showReportDirectly();
-            } else {
-                alert("Incorrect Password!");
-            }
+            } else alert("Incorrect Password!");
         }
 
         function showReportDirectly() {
@@ -1983,40 +1745,26 @@
                     localStorage.setItem('pos_system_password', systemPassword);
                     alert("Password successfully updated!");
                     closeChPassModal();
-                } else {
-                    alert("New password cannot be empty!");
-                }
-            } else {
-                alert("Invalid Username or Current Password!");
-            }
+                } else alert("New password cannot be empty!");
+            } else alert("Invalid Username or Current Password!");
         }
 
         function deleteCashRecords() {
             let dateStr = document.getElementById('report-date-picker').value;
-            if (confirm(`Are you sure you want to delete normal Cash records for ${dateStr}? (Bulk Cash will be preserved)`)) {
-                if (allStats[dateStr]) {
-                    allStats[dateStr].cashCount = 0;
-                    allStats[dateStr].cashTotal = 0;
-                    localStorage.setItem('pos_all_daily_stats', JSON.stringify(allStats));
-                    
-                    if (dateStr === todayKey) {
-                        dailyStats = allStats[todayKey];
-                        updateDailyReportUI();
-                    }
-                    loadReportByDate(dateStr);
-                }
+            if (confirm(`Are you sure you want to delete normal Cash records for ${dateStr}?`)) {
+                dailyStats.cashCount = 0;
+                dailyStats.cashTotal = 0;
+                const salesRef = window.fbRef(window.fbDB, 'dailySales/' + dateStr);
+                window.fbSet(salesRef, dailyStats);
+                loadReportByDate(dateStr);
             }
         }
 
         function loadReportByDate(dateStr) {
-            let stats = allStats[dateStr] || { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
-            
-            let bCount = stats.bulkCount || 0;
-            let bTotal = stats.bulkTotal || 0;
-            let cCount = stats.cashCount || 0;
-            let cTotal = stats.cashTotal || 0;
-            let cdCount = stats.cardCount || 0;
-            let cdTotal = stats.cardTotal || 0;
+            let stats = dailyStats;
+            let bCount = stats.bulkCount || 0, bTotal = stats.bulkTotal || 0;
+            let cCount = stats.cashCount || 0, cTotal = stats.cashTotal || 0;
+            let cdCount = stats.cardCount || 0, cdTotal = stats.cardTotal || 0;
 
             let totalCnt = cCount + cdCount + bCount;
             let totalAmt = cTotal + cdTotal + bTotal;
@@ -2027,9 +1775,7 @@
             logs.forEach(log => {
                 let itemsList = log.items.map(it => {
                     let detailsStr = '';
-                    if (it.details && it.details.length > 0) {
-                        detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
-                    }
+                    if (it.details && it.details.length > 0) detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
                     return `• ${it.title}${detailsStr} - $${it.price}`;
                 }).join('<br>');
 
@@ -2039,9 +1785,7 @@
                             <span>Order #${log.orderNo} [Table ${log.tableNo || '-'}] (${log.time})</span>
                             <span>${log.paymentType}: $${log.totalAmount}</span>
                         </div>
-                        <div style="font-size: 11px; color: #444; margin-top: 4px;">
-                            ${itemsList}
-                        </div>
+                        <div style="font-size: 11px; color: #444; margin-top: 4px;">${itemsList}</div>
                     </div>
                 `;
             });
@@ -2063,13 +1807,14 @@
             document.getElementById('report-details-content').innerHTML = html;
         }
 
-        // 🔄 ฟังก์ชันเชื่อมต่อและรับข้อมูล Real-time จาก Firebase
+        // 🔄 ระบบเชื่อมต่อและซิงค์ Realtime ทั้งหมดกับ Firebase
         function initRealtimeSync() {
             if (!window.fbDB) {
                 setTimeout(initRealtimeSync, 500);
                 return;
             }
 
+            // 1. ซิงค์ Active Orders (ปุ่มสีส้มสั่งอาหารเข้าครัว)
             const activeRef = window.fbRef(window.fbDB, 'activeOrders');
             window.fbOnValue(activeRef, (snapshot) => {
                 const data = snapshot.val();
@@ -2082,6 +1827,31 @@
                     });
                 }
                 renderActiveKitchenOrders();
+            });
+
+            // 2. ซิงค์ ตะกร้าสินค้าสด (Live Cart - Your Order) ข้ามเครื่อง
+            const cartRef = window.fbRef(window.fbDB, 'liveCart');
+            window.fbOnValue(cartRef, (snapshot) => {
+                const remoteCart = snapshot.val();
+                if (remoteCart !== null) {
+                    isRemoteUpdate = true;
+                    cart = remoteCart;
+                    updateCartUI();
+                    isRemoteUpdate = false;
+                }
+            });
+
+            // 3. ซิงค์ ยอดขายประจำวัน (Today's Sales Summary) ข้ามเครื่อง
+            const currentKey = getTodayDateKey();
+            const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
+            window.fbOnValue(salesRef, (snapshot) => {
+                const salesData = snapshot.val();
+                if (salesData) {
+                    dailyStats = salesData;
+                } else {
+                    dailyStats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
+                }
+                updateDailyReportUI();
             });
         }
 

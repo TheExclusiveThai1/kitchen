@@ -221,6 +221,7 @@
             <button class="cat-btn" id="btn-sunday" onclick="switchCategory('sunday')">8. Sunday Special ($7)</button>
         </div>
 
+        <!-- 🔧 คืนค่าโครงสร้างหลัก: เมนู, ตัวเลือก และตะกร้าสินค้า -->
         <div class="main-layout">
             <div class="col-menu">
                 <div class="section-header-title" id="mode-title">🍳 1. Select Menu</div>
@@ -1371,7 +1372,6 @@
             document.getElementById('cart-list').innerHTML = cartListHtml || 'No items ordered yet';
             document.getElementById('total-amount').innerText = total;
 
-            // 🚀 ซิงค์รายการ Cart ขึ้น Firebase Realtime Database
             if (!isRemoteUpdate && window.fbDB) {
                 const cartRef = window.fbRef(window.fbDB, 'liveCart');
                 window.fbSet(cartRef, cart);
@@ -1623,18 +1623,15 @@
             document.getElementById('daily-total-amount').innerText = grandTotalSales;
         }
 
-        // 🚀 เคลียร์ตะกร้า พร้อมส่งคำสั่งล้างข้อมูลไปยัง Firebase
         function clearCart() {
             cart = [];
             isBulkOptionSelected = false;
             updatePaymentButtonsDisplay();
             resetSelection();
             
-            // อัปเดต UI ท้องถิ่น
             document.getElementById('cart-list').innerHTML = 'No items ordered yet';
             document.getElementById('total-amount').innerText = '0';
 
-            // ส่งข้อมูลตะกร้าว่างเปล่าไปล้างที่คลาวด์ทันที
             if (window.fbDB) {
                 const cartRef = window.fbRef(window.fbDB, 'liveCart');
                 window.fbSet(cartRef, []);
@@ -1813,14 +1810,12 @@
             document.getElementById('report-details-content').innerHTML = html;
         }
 
-        // 🔄 ระบบเชื่อมต่อและซิงค์ Realtime ทั้งหมดกับ Firebase
         function initRealtimeSync() {
             if (!window.fbDB) {
                 setTimeout(initRealtimeSync, 500);
                 return;
             }
 
-            // 1. ซิงค์ Active Orders (ปุ่มสีส้มสั่งอาหารเข้าครัว)
             const activeRef = window.fbRef(window.fbDB, 'activeOrders');
             window.fbOnValue(activeRef, (snapshot) => {
                 const data = snapshot.val();
@@ -1835,7 +1830,6 @@
                 renderActiveKitchenOrders();
             });
 
-            // 2. ซิงค์ ตะกร้าสินค้าสด (Live Cart - Your Order) ข้ามเครื่อง
             const cartRef = window.fbRef(window.fbDB, 'liveCart');
             window.fbOnValue(cartRef, (snapshot) => {
                 const remoteCart = snapshot.val();
@@ -1846,7 +1840,6 @@
                     cart = [];
                 }
                 
-                // อัปเดต UI ท้องถิ่นโดยไม่ส่งซ้ำ
                 let cartListHtml = '';
                 let cartTotalAmount = 0;
                 
@@ -1886,7 +1879,6 @@
                 isRemoteUpdate = false;
             });
 
-            // 3. ซิงค์ ยอดขายประจำวัน (Today's Sales Summary) ข้ามเครื่อง
             const currentKey = getTodayDateKey();
             const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
             window.fbOnValue(salesRef, (snapshot) => {

@@ -3,7 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Exclusive Thai Kitchen - POS System</title>
+    <title>The Exclusive Thai Kitchen - Realtime POS</title>
+    
+    <!-- Firebase SDK (v10) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBl4Qe7bE0Gg...",
+            authDomain: "exclusive-thai-pos.firebaseapp.com",
+            databaseURL: "https://exclusive-thai-pos-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "exclusive-thai-pos",
+            storageBucket: "exclusive-thai-pos.appspot.com",
+            messagingSenderId: "1073837920155",
+            appId: "1:1073837920155:web:abcdef123456789"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.fbDB = db;
+        window.fbRef = ref;
+        window.fbSet = set;
+        window.fbPush = push;
+        window.fbOnValue = onValue;
+        window.fbRemove = remove;
+    </script>
+
     <style>
         * { box-sizing: border-box; }
         body { 
@@ -105,7 +132,7 @@
             align-items: center;
             flex: 1;
         }
-        /* Updated Square Badge for Active Orders (Image 2) */
+        /* Square Badge for Active Orders */
         .table-order-badge {
             background: #e67e22;
             color: white;
@@ -646,7 +673,7 @@
         }
         .numpad-btn.preset:hover { background: #e8daef; }
 
-        /* Table Selection Grid (5 Columns x 4 Rows for Image 1 Request) */
+        /* Table Selection Grid */
         .table-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -1180,7 +1207,6 @@
 
         let selectedMenu = null;
         let selectedMeats = [];
-        
         let selectedCooking = null;
         let selectedSides = [];
         let selectedSauces = [];
@@ -1198,6 +1224,10 @@
         let cart = [];
         let total = 0;
         let activeCartIndex = null;
+
+        let activeKitchenOrders = [];
+        let activeKitchenKeys = [];
+        let selectedKitchenOrderIndex = null;
 
         let systemPassword = localStorage.getItem('pos_system_password') || '8989';
         let isPassProtectionEnabled = JSON.parse(localStorage.getItem('pos_pass_protect_enabled') ?? 'true');
@@ -1235,7 +1265,6 @@
         let todayKey = getTodayDateKey();
         let allStats = JSON.parse(localStorage.getItem('pos_all_daily_stats')) || {};
         let allOrderLogs = JSON.parse(localStorage.getItem('pos_all_order_logs')) || {};
-        let activeKitchenOrders = JSON.parse(localStorage.getItem('pos_active_kitchen_orders')) || [];
 
         if (!allStats[todayKey]) {
             allStats[todayKey] = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
@@ -2208,9 +2237,9 @@
             dailyStats = allStats[currentKey];
             updateDailyReportUI();
 
-            activeKitchenOrders.push(newOrderLog);
-            localStorage.setItem('pos_active_kitchen_orders', JSON.stringify(activeKitchenOrders));
-            renderActiveKitchenOrders();
+            // 🚀 ส่งข้อมูลขึ้น Firebase Real-time
+            const activeRef = window.fbRef(window.fbDB, 'activeOrders');
+            window.fbPush(activeRef, newOrderLog);
 
             clearCart();
         }
@@ -2256,14 +2285,14 @@
             dailyStats = allStats[currentKey];
             updateDailyReportUI();
 
-            activeKitchenOrders.push(newOrderLog);
-            localStorage.setItem('pos_active_kitchen_orders', JSON.stringify(activeKitchenOrders));
-            renderActiveKitchenOrders();
+            // 🚀 ส่งข้อมูลขึ้น Firebase Real-time
+            const activeRef = window.fbRef(window.fbDB, 'activeOrders');
+            window.fbPush(activeRef, newOrderLog);
 
             clearCart();
         }
 
-        /* Render Active Orders with Vertical Square Badge Layout (Image 2 Request) */
+        /* Render Active Orders with Vertical Square Badge Layout */
         function renderActiveKitchenOrders() {
             let container = document.getElementById('kitchen-active-orders');
             if (!activeKitchenOrders || activeKitchenOrders.length === 0) {
@@ -2282,8 +2311,6 @@
             });
             container.innerHTML = html;
         }
-
-        let selectedKitchenOrderIndex = null;
 
         function openKitchenOrderModal(index) {
             selectedKitchenOrderIndex = index;
@@ -2314,10 +2341,11 @@
         }
 
         function markKitchenOrderDone() {
-            if (selectedKitchenOrderIndex !== null && selectedKitchenOrderIndex < activeKitchenOrders.length) {
-                activeKitchenOrders.splice(selectedKitchenOrderIndex, 1);
-                localStorage.setItem('pos_active_kitchen_orders', JSON.stringify(activeKitchenOrders));
-                renderActiveKitchenOrders();
+            if (selectedKitchenOrderIndex !== null && activeKitchenKeys[selectedKitchenOrderIndex]) {
+                const key = activeKitchenKeys[selectedKitchenOrderIndex];
+                // 🗑️ ลบออเดอร์ออกจาก Firebase เมื่อกดเสร็จสิ้น (เครื่องอื่นจะหายตามทันที)
+                const itemRef = window.fbRef(window.fbDB, 'activeOrders/' + key);
+                window.fbRemove(itemRef);
                 closeKitchenModal();
             }
         }
@@ -2604,11 +2632,33 @@
             document.getElementById('report-details-content').innerHTML = html;
         }
 
+        // 🔄 ฟังก์ชันเชื่อมต่อและซิงค์ข้อมูล Real-time กับ Firebase
+        function initRealtimeSync() {
+            if (!window.fbDB) {
+                setTimeout(initRealtimeSync, 500);
+                return;
+            }
+
+            const activeRef = window.fbRef(window.fbDB, 'activeOrders');
+            window.fbOnValue(activeRef, (snapshot) => {
+                const data = snapshot.val();
+                activeKitchenOrders = [];
+                activeKitchenKeys = [];
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        activeKitchenKeys.push(key);
+                        activeKitchenOrders.push(data[key]);
+                    });
+                }
+                renderActiveKitchenOrders();
+            });
+        }
+
         window.onload = function() {
             updateClock();
             updateDailyReportUI();
             updatePassProtectBtnUI();
-            renderActiveKitchenOrders();
+            initRealtimeSync();
             switchCategory('lunch');
         };
     </script>

@@ -221,7 +221,6 @@
             <button class="cat-btn" id="btn-sunday" onclick="switchCategory('sunday')">8. Sunday Special ($7)</button>
         </div>
 
-        <!-- 🔧 คืนค่าโครงสร้างหลัก: เมนู, ตัวเลือก และตะกร้าสินค้า -->
         <div class="main-layout">
             <div class="col-menu">
                 <div class="section-header-title" id="mode-title">🍳 1. Select Menu</div>
@@ -1491,7 +1490,9 @@
                 orderNo: orderNum,
                 tableNo: tableNum,
                 time: timeStr,
-                paymentType: `Split ($${cashAmount} Cash / $${cardAmount} Card)`,
+                paymentType: `Split`,
+                cashAmount: cashAmount,
+                cardAmount: cardAmount,
                 items: JSON.parse(JSON.stringify(cart)),
                 totalAmount: total
             };
@@ -1650,16 +1651,19 @@
                     return `• ${it.title}${detailsStr} - $${it.price}`;
                 }).join('<br>');
 
+                let paymentText = log.paymentType;
+                if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
+
                 contentHtml += `
                     <div style="background: #fff; border: 1px solid #ccc; padding: 8px; border-radius: 4px; margin-top: 6px;">
                         <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 3px;">
                             <span>Order #${log.orderNo} [Table ${log.tableNo || '-'}] (${log.time})</span>
-                            <span style="color: #c0392b;">$${log.totalAmount} (${log.paymentType})</span>
+                            <span style="color: #c0392b;">$${log.totalAmount} (${paymentText})</span>
                         </div>
                         <div style="font-size: 11px; color: #444; margin-top: 4px; margin-bottom: 6px;">
                             ${itemsList}
                         </div>
-                        <button style="background: #2980b9; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;" onclick="loadOrderForEdit(${index})">✏️ Edit Order</button>
+                        <button style="background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;" onclick="loadOrderForEdit(${index})">✏️ Remove & Edit Order</button>
                     </div>
                 `;
             });
@@ -1670,23 +1674,49 @@
 
         function closePastOrdersModal() { document.getElementById('past-orders-modal').style.display = 'none'; }
 
+        // 🔧 ฟังก์ชันดึงออเดอร์กลับมาแก้ไข พร้อมคำนวณหักลบยอดขายออกจาก Firebase
         function loadOrderForEdit(logIndex) {
             let currentKey = getTodayDateKey();
             let logs = allOrderLogs[currentKey] || [];
             let targetOrder = logs[logIndex];
 
             if (targetOrder) {
+                // 1. นำรายการสินค้ากลับเข้าสู่ตะกร้า
                 cart = JSON.parse(JSON.stringify(targetOrder.items));
                 updateCartUI();
                 isBulkOptionSelected = cart.some(it => it.isBulk);
                 updatePaymentButtonsDisplay();
 
+                // 2. หักลดยอดขายสะสมออกจาก dailyStats
+                if (targetOrder.paymentType === 'Cash') {
+                    dailyStats.cashCount = Math.max(0, (dailyStats.cashCount || 0) - 1);
+                    dailyStats.cashTotal = Math.max(0, (dailyStats.cashTotal || 0) - targetOrder.totalAmount);
+                } else if (targetOrder.paymentType === 'Card') {
+                    dailyStats.cardCount = Math.max(0, (dailyStats.cardCount || 0) - 1);
+                    dailyStats.cardTotal = Math.max(0, (dailyStats.cardTotal || 0) - targetOrder.totalAmount);
+                } else if (targetOrder.paymentType === 'Bulk Cash') {
+                    dailyStats.bulkCount = Math.max(0, (dailyStats.bulkCount || 0) - 1);
+                    dailyStats.bulkTotal = Math.max(0, (dailyStats.bulkTotal || 0) - targetOrder.totalAmount);
+                } else if (targetOrder.paymentType === 'Split') {
+                    dailyStats.cashCount = Math.max(0, (dailyStats.cashCount || 0) - 1);
+                    dailyStats.cashTotal = Math.max(0, (dailyStats.cashTotal || 0) - (targetOrder.cashAmount || 0));
+                    dailyStats.cardCount = Math.max(0, (dailyStats.cardCount || 0) - 1);
+                    dailyStats.cardTotal = Math.max(0, (dailyStats.cardTotal || 0) - (targetOrder.cardAmount || 0));
+                }
+
+                // 3. บันทึก dailyStats ที่หักเงินแล้วขึ้น Firebase ทันที
+                if (window.fbDB) {
+                    const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
+                    window.fbSet(salesRef, dailyStats);
+                }
+
+                // 4. ลบประวัติออเดอร์นี้ออกจาก Local Logs
                 logs.splice(logIndex, 1);
                 allOrderLogs[currentKey] = logs;
                 localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
 
                 closePastOrdersModal();
-                alert("Order loaded into cart for editing successfully!");
+                alert("ลบออเดอร์เดิมออก และคืนยอดเงินหักออกจาก Daily Summary เรียบร้อยครับ!");
             }
         }
 
@@ -1782,11 +1812,14 @@
                     return `• ${it.title}${detailsStr} - $${it.price}`;
                 }).join('<br>');
 
+                let paymentText = log.paymentType;
+                if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
+
                 logsHtml += `
                     <div style="background: #fff; border: 1px solid #ccc; padding: 6px; border-radius: 4px; margin-top: 4px;">
                         <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 2px;">
                             <span>Order #${log.orderNo} [Table ${log.tableNo || '-'}] (${log.time})</span>
-                            <span>${log.paymentType}: $${log.totalAmount}</span>
+                            <span>${paymentText}: $${log.totalAmount}</span>
                         </div>
                         <div style="font-size: 11px; color: #444; margin-top: 4px;">${itemsList}</div>
                     </div>

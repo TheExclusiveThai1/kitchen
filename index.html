@@ -285,15 +285,16 @@
         </div>
     </div>
 
+    <!-- 🔧 ปรับย่อขนาดหน้าต่าง Active Order ให้พอดี ไม่ใหญ่เกินไป -->
     <div class="modal-overlay" id="kitchen-order-modal">
-        <div class="modal-content" style="width: 400px;">
-            <div class="modal-header">
+        <div class="modal-content" style="width: 480px; max-width: 95%;">
+            <div class="modal-header" style="font-size: 18px;">
                 <span id="kitchen-modal-title">🍽️ Order Details</span>
-                <button class="close-modal" onclick="closeKitchenModal()">✕</button>
+                <button class="close-modal" style="font-size: 20px;" onclick="closeKitchenModal()">✕</button>
             </div>
-            <div class="report-details-box" id="kitchen-modal-body"></div>
+            <div class="report-details-box" id="kitchen-modal-body" style="padding: 12px;"></div>
             <div class="modal-actions">
-                <button class="btn-modal-action" style="background: #27ae60; padding: 12px; font-size: 16px;" onclick="markKitchenOrderDone()">✅ Done (Complete Order)</button>
+                <button class="btn-modal-action" style="background: #27ae60; padding: 12px; font-size: 18px;" onclick="markKitchenOrderDone()">✅ Done (Complete Order)</button>
             </div>
         </div>
     </div>
@@ -474,9 +475,10 @@
                 <button style="background: #8e44ad; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold;" onclick="openChPassModal()">Change Pass</button>
             </div>
             <div class="report-details-box" id="report-details-content"></div>
-            <div class="modal-actions">
-                <button class="btn-modal-action" style="background: #e74c3c;" onclick="deleteCashRecords()">Delete Cash</button>
-                <button class="btn-modal-close" onclick="closeReportModal()">Close</button>
+            <div class="modal-actions" style="display: flex; gap: 6px;">
+                <button class="btn-modal-action" style="background: #e74c3c; font-size: 11px; padding: 8px 4px;" onclick="deleteCashRecords()">🗑️ Delete Cash</button>
+                <button class="btn-modal-action" style="background: #2980b9; font-size: 11px; padding: 8px 4px;" onclick="deleteCardRecords()">🗑️ Delete Card</button>
+                <button class="btn-modal-close" style="font-size: 11px; padding: 8px 4px;" onclick="closeReportModal()">Close</button>
             </div>
         </div>
     </div>
@@ -1574,6 +1576,7 @@
             container.innerHTML = html;
         }
 
+        // 🔧 ปรับฟอนต์และระยะห่างใน Pop-up ให้พอดี อ่านง่ายสบายตา
         function openKitchenOrderModal(index) {
             selectedKitchenOrderIndex = index;
             let ord = activeKitchenOrders[index];
@@ -1583,15 +1586,15 @@
             let itemsList = ord.items.map(it => {
                 let detailsStr = '';
                 if (it.details && it.details.length > 0) {
-                    detailsStr = '<br>' + it.details.map(d => `<span style="font-size: 12px; color: #555; padding-left: 10px; display:inline-block; width:100%;">• ${d.text}</span>`).join('');
+                    detailsStr = '<br>' + it.details.map(d => `<span style="font-size: 16px; color: #555; padding-left: 16px; display:inline-block; width:100%;">• ${d.text}</span>`).join('');
                 }
-                return `<div style="padding: 4px 0; border-bottom: 1px solid #eee;"><b>${it.title}</b> ($${it.price})${detailsStr}</div>`;
+                return `<div style="padding: 6px 0; border-bottom: 1px solid #eee;"><b>${it.title}</b> ($${it.price})${detailsStr}</div>`;
             }).join('');
 
             let bodyHtml = `
-                <div style="font-size: 13px; font-weight: bold; color: #2c3e50;">Time: ${ord.time} | Total: $${ord.totalAmount}</div>
-                <hr style="margin: 6px 0;">
-                <div style="font-size: 13px;">${itemsList}</div>
+                <div style="font-size: 18px; font-weight: bold; color: #2c3e50;">Time: ${ord.time} | Total: $${ord.totalAmount}</div>
+                <hr style="margin: 8px 0;">
+                <div style="font-size: 20px; line-height: 1.3;">${itemsList}</div>
             `;
 
             document.getElementById('kitchen-modal-body').innerHTML = bodyHtml;
@@ -1674,20 +1677,17 @@
 
         function closePastOrdersModal() { document.getElementById('past-orders-modal').style.display = 'none'; }
 
-        // 🔧 ฟังก์ชันดึงออเดอร์กลับมาแก้ไข พร้อมคำนวณหักลบยอดขายออกจาก Firebase
         function loadOrderForEdit(logIndex) {
             let currentKey = getTodayDateKey();
             let logs = allOrderLogs[currentKey] || [];
             let targetOrder = logs[logIndex];
 
             if (targetOrder) {
-                // 1. นำรายการสินค้ากลับเข้าสู่ตะกร้า
                 cart = JSON.parse(JSON.stringify(targetOrder.items));
                 updateCartUI();
                 isBulkOptionSelected = cart.some(it => it.isBulk);
                 updatePaymentButtonsDisplay();
 
-                // 2. หักลดยอดขายสะสมออกจาก dailyStats
                 if (targetOrder.paymentType === 'Cash') {
                     dailyStats.cashCount = Math.max(0, (dailyStats.cashCount || 0) - 1);
                     dailyStats.cashTotal = Math.max(0, (dailyStats.cashTotal || 0) - targetOrder.totalAmount);
@@ -1704,19 +1704,16 @@
                     dailyStats.cardTotal = Math.max(0, (dailyStats.cardTotal || 0) - (targetOrder.cardAmount || 0));
                 }
 
-                // 3. บันทึก dailyStats ที่หักเงินแล้วขึ้น Firebase ทันที
                 if (window.fbDB) {
                     const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
                     window.fbSet(salesRef, dailyStats);
                 }
 
-                // 4. ลบประวัติออเดอร์นี้ออกจาก Local Logs
                 logs.splice(logIndex, 1);
                 allOrderLogs[currentKey] = logs;
                 localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
 
                 closePastOrdersModal();
-                alert("ลบออเดอร์เดิมออก และคืนยอดเงินหักออกจาก Daily Summary เรียบร้อยครับ!");
             }
         }
 
@@ -1787,6 +1784,17 @@
             if (confirm(`Are you sure you want to delete normal Cash records for ${dateStr}?`)) {
                 dailyStats.cashCount = 0;
                 dailyStats.cashTotal = 0;
+                const salesRef = window.fbRef(window.fbDB, 'dailySales/' + dateStr);
+                window.fbSet(salesRef, dailyStats);
+                loadReportByDate(dateStr);
+            }
+        }
+
+        function deleteCardRecords() {
+            let dateStr = document.getElementById('report-date-picker').value;
+            if (confirm(`คุณต้องการลบยอดชำระด้วย Card ของวันที่ ${dateStr} ทั้งหมดใช่หรือไม่?`)) {
+                dailyStats.cardCount = 0;
+                dailyStats.cardTotal = 0;
                 const salesRef = window.fbRef(window.fbDB, 'dailySales/' + dateStr);
                 window.fbSet(salesRef, dailyStats);
                 loadReportByDate(dateStr);

@@ -8,7 +8,7 @@
     <!-- Firebase SDK (v10) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, remove, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCkm45aTNMieP5Si1rBGwWh7o60mVMwN9w",
@@ -29,7 +29,6 @@
         window.fbPush = push;
         window.fbOnValue = onValue;
         window.fbRemove = remove;
-        window.fbGet = get;
     </script>
 
     <style>
@@ -107,41 +106,15 @@
         .cat-btn.active { background: #e67e22; }
 
         .main-layout { display: flex; gap: 10px; flex: 1; min-height: 0; }
-        .col-menu { flex: 2.2; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; height: 100%; position: relative; }
+        .col-menu { flex: 2.2; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; height: 100%; }
         .section-header-title { font-size: 15px; font-weight: bold; color: #2c3e50; border-bottom: 2px solid #e67e22; padding-bottom: 4px; margin-bottom: 6px; }
-        .menu-scroll-area { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; padding-bottom: 40px; }
+        .menu-scroll-area { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
         .sub-header { background: #34495e; color: white; padding: 6px 10px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-top: 4px; }
         .item-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .item-card { background: #fff; padding: 16px 8px; border-radius: 6px; border: 2px solid #bdc3c7; cursor: pointer; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 65px; }
         .item-card:hover { border-color: #3498db; background: #ebf5fb; }
         .item-card.selected { border-color: #e67e22; background: #fef5e7; box-shadow: 0 0 5px rgba(230,126,34,0.5); }
         .item-title { font-weight: bold; color: #2c3e50; font-size: 14px; line-height: 1.3; }
-
-        /* Realtime Sunday Special Rump Steak Tracker Widget (Bottom Left) */
-        .rump-tracker-widget {
-            position: absolute;
-            bottom: 8px;
-            left: 8px;
-            background: #27ae60;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            z-index: 10;
-        }
-        .rump-tracker-count {
-            background: #ffffff;
-            color: #27ae60;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 900;
-        }
 
         .col-options { flex: 1.6; display: flex; flex-direction: column; gap: 8px; height: 100%; overflow-y: auto; }
         .opt-box { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
@@ -252,13 +225,6 @@
             <div class="col-menu">
                 <div class="section-header-title" id="mode-title">🍳 1. Select Menu</div>
                 <div class="menu-scroll-area" id="menu-container-box"></div>
-                
-                <!-- 🥩 Realtime Sunday Special Rump Steak Tracker Widget -->
-                <div class="rump-tracker-widget">
-                    <span>🥩 Sunday Steak ($7):</span>
-                    <span class="rump-tracker-count" id="rump-steak-today-count">0</span>
-                    <span>Sold</span>
-                </div>
             </div>
 
             <div class="col-options" id="options-panel"></div>
@@ -319,6 +285,7 @@
         </div>
     </div>
 
+    <!-- 🔧 ปรับย่อขนาดหน้าต่าง Active Order ให้พอดี ไม่ใหญ่เกินไป -->
     <div class="modal-overlay" id="kitchen-order-modal">
         <div class="modal-content" style="width: 480px; max-width: 95%;">
             <div class="modal-header" style="font-size: 18px;">
@@ -694,8 +661,6 @@
         let windowExtras = [];
         let sundaySides = [];
         let sundaySauces = [];
-        let mainExtras = [];
-        let sundayExtras = [];
         let selectedNoIngredients = [];
 
         let isBulkOptionSelected = false;
@@ -711,8 +676,6 @@
         let activeKitchenOrders = [];
         let activeKitchenKeys = [];
         let selectedKitchenOrderIndex = null;
-
-        let todayOrderLogsCache = {};
 
         let systemPassword = localStorage.getItem('pos_system_password') || '8989';
         let isPassProtectionEnabled = JSON.parse(localStorage.getItem('pos_pass_protect_enabled') ?? 'true');
@@ -821,15 +784,6 @@
                             <button class="opt-btn sauce-btn" onclick="toggleMainOption('sauce', 'Mushroom', this)">Mushroom</button>
                         </div>
                     </div>
-                    <div class="opt-box" style="border-top: 4px solid #8e44ad;">
-                        <div class="opt-title">➕ Choose Extra</div>
-                        <div class="opt-grid-2col">
-                            <button class="opt-btn main-extra-btn" onclick="toggleMainExtra('Fried Egg', 3, this)">Fried Egg</button>
-                            <button class="opt-btn main-extra-btn" onclick="toggleMainExtra('Bacon', 4, this)">Bacon</button>
-                            <button class="opt-btn main-extra-btn" onclick="toggleMainExtra('Ham', 4, this)">Ham</button>
-                            <button class="opt-btn main-extra-btn" onclick="toggleMainExtra('Rice', 5, this)">Rice</button>
-                        </div>
-                    </div>
                     <div class="opt-box" style="margin-top: auto;">
                         <button class="opt-btn btn-no-opt" onclick="openNoOptModal()">🚫 No Ingredients (Exclusion)</button>
                     </div>`;
@@ -862,15 +816,6 @@
                             <button class="opt-btn sunday-sauce-btn" onclick="selectSundayOption('sauce', 'Gravy', this)">Gravy</button>
                             <button class="opt-btn sunday-sauce-btn" onclick="selectSundayOption('sauce', 'Pepper', this)">Pepper</button>
                             <button class="opt-btn sunday-sauce-btn" onclick="selectSundayOption('sauce', 'Mushroom', this)">Mushroom</button>
-                        </div>
-                    </div>
-                    <div class="opt-box" style="border-top: 4px solid #8e44ad;">
-                        <div class="opt-title">➕ Sunday Extra</div>
-                        <div class="opt-grid-2col">
-                            <button class="opt-btn sunday-extra-btn" onclick="toggleSundayExtra('Fried Egg', 3, this)">Fried Egg</button>
-                            <button class="opt-btn sunday-extra-btn" onclick="toggleSundayExtra('Bacon', 4, this)">Bacon</button>
-                            <button class="opt-btn sunday-extra-btn" onclick="toggleSundayExtra('Ham', 4, this)">Ham</button>
-                            <button class="opt-btn sunday-extra-btn" onclick="toggleSundayExtra('Rice', 5, this)">Rice</button>
                         </div>
                     </div>
                     <div class="opt-box" style="margin-top: auto;">
@@ -937,7 +882,7 @@
                     <div class="opt-box" style="border-top: 4px solid #f39c12;">
                         <div class="opt-title">➕ 3. Choose Extra</div>
                         <div class="opt-grid-2col">
-                            <button class="opt-btn extra-btn" onclick="toggleExtra('Rice', 5, this)">Rice</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Jasmine Rice', 5, this)">Jasmine Rice</button>
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Fried Egg', 3, this)">Fried Egg</button>
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Roti', 4, this)">Roti</button>
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Bacon', 4, this)">Bacon</button>
@@ -962,8 +907,6 @@
             windowExtras = [];
             sundaySides = [];
             sundaySauces = [];
-            mainExtras = [];
-            sundayExtras = [];
             selectedNoIngredients = [];
 
             document.querySelectorAll('.item-card').forEach(c => c.classList.remove('selected'));
@@ -1053,40 +996,6 @@
                 el.classList.add('selected');
             }
             addToCartBurger(false);
-        }
-
-        function toggleMainExtra(name, price, el) {
-            if (!selectedMenu) {
-                cart.push({ title: `Extra: ${name}`, price: price, details: [{text: name, price: price}] });
-                updateCartUI();
-                return;
-            }
-            let idx = mainExtras.findIndex(i => i.name === name);
-            if (idx > -1) {
-                mainExtras.splice(idx, 1);
-                el.classList.remove('selected');
-            } else {
-                mainExtras.push({ name, price });
-                el.classList.add('selected');
-            }
-            addToCartMain(false);
-        }
-
-        function toggleSundayExtra(name, price, el) {
-            if (!selectedMenu) {
-                cart.push({ title: `Extra: ${name}`, price: price, details: [{text: name, price: price}] });
-                updateCartUI();
-                return;
-            }
-            let idx = sundayExtras.findIndex(i => i.name === name);
-            if (idx > -1) {
-                sundayExtras.splice(idx, 1);
-                el.classList.remove('selected');
-            } else {
-                sundayExtras.push({ name, price });
-                el.classList.add('selected');
-            }
-            addToCartSunday(false);
         }
 
         function addToCartBurger(isNew) {
@@ -1191,19 +1100,12 @@
                 details.push({ text: `Sauce: ${sundaySauces.join(', ')}`, price: sauceCost });
             }
 
-            if (sundayExtras.length > 0) {
-                sundayExtras.forEach(ex => {
-                    extraPrice += ex.price;
-                    details.push({ text: `Extra: ${ex.name}`, price: ex.price });
-                });
-            }
-
             if (selectedNoIngredients.length > 0) {
                 selectedNoIngredients.forEach(noItem => details.push({ text: `NO: ${noItem}`, price: 0 }));
             }
 
             let finalPrice = currentBasePrice + extraPrice;
-            let itemObj = { title: titleText, price: finalPrice, details: details, isSundaySteak: true }; 
+            let itemObj = { title: titleText, price: finalPrice, details: details };
 
             if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
                 cart.push(itemObj);
@@ -1292,13 +1194,6 @@
                     extraPrice += sauceCost;
                 }
                 details.push({ text: `Sauce: ${selectedSauces.join(', ')}`, price: sauceCost });
-            }
-
-            if (mainExtras.length > 0) {
-                mainExtras.forEach(ex => {
-                    extraPrice += ex.price;
-                    details.push({ text: `Extra: ${ex.name}`, price: ex.price });
-                });
             }
 
             if (selectedNoIngredients.length > 0) {
@@ -1414,8 +1309,6 @@
             windowExtras = [];
             sundaySides = [];
             sundaySauces = [];
-            mainExtras = [];
-            sundayExtras = [];
             selectedNoIngredients = [];
             activeCartIndex = null;
 
@@ -1592,9 +1485,11 @@
 
         function checkoutSplitOrder(cashAmount, cardAmount, tableNum) {
             let currentKey = getTodayDateKey();
+            let orderNum = (allOrderLogs[currentKey] ? allOrderLogs[currentKey].length : 0) + 1;
             let timeStr = new Date().toLocaleTimeString('en-AU', { hour12: false });
 
-            let tempNewLog = {
+            let newOrderLog = {
+                orderNo: orderNum,
                 tableNo: tableNum,
                 time: timeStr,
                 paymentType: `Split`,
@@ -1604,11 +1499,20 @@
                 totalAmount: total
             };
 
-            const newLogRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
-            window.fbPush(newLogRef, tempNewLog);
+            if (!allOrderLogs[currentKey]) allOrderLogs[currentKey] = [];
+            allOrderLogs[currentKey].push(newOrderLog);
+            localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
+
+            dailyStats.cashCount = (dailyStats.cashCount || 0) + 1;
+            dailyStats.cashTotal = (dailyStats.cashTotal || 0) + cashAmount;
+            dailyStats.cardCount = (dailyStats.cardCount || 0) + 1;
+            dailyStats.cardTotal = (dailyStats.cardTotal || 0) + cardAmount;
+
+            const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
+            window.fbSet(salesRef, dailyStats);
 
             const activeRef = window.fbRef(window.fbDB, 'activeOrders');
-            window.fbPush(activeRef, tempNewLog);
+            window.fbPush(activeRef, newOrderLog);
 
             clearCart();
         }
@@ -1617,9 +1521,11 @@
             if (cart.length === 0) return;
 
             let currentKey = getTodayDateKey();
+            let orderNum = (allOrderLogs[currentKey] ? allOrderLogs[currentKey].length : 0) + 1;
             let timeStr = new Date().toLocaleTimeString('en-AU', { hour12: false });
 
             let newOrderLog = {
+                orderNo: orderNum,
                 tableNo: tableNum,
                 time: timeStr,
                 paymentType: paymentType,
@@ -1627,8 +1533,23 @@
                 totalAmount: total
             };
 
-            const logsRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
-            window.fbPush(logsRef, newOrderLog);
+            if (!allOrderLogs[currentKey]) allOrderLogs[currentKey] = [];
+            allOrderLogs[currentKey].push(newOrderLog);
+            localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
+
+            if (paymentType === 'Cash') {
+                dailyStats.cashCount = (dailyStats.cashCount || 0) + 1;
+                dailyStats.cashTotal = (dailyStats.cashTotal || 0) + total;
+            } else if (paymentType === 'Card') {
+                dailyStats.cardCount = (dailyStats.cardCount || 0) + 1;
+                dailyStats.cardTotal = (dailyStats.cardTotal || 0) + total;
+            } else if (paymentType === 'Bulk Cash') {
+                dailyStats.bulkCount = (dailyStats.bulkCount || 0) + 1;
+                dailyStats.bulkTotal = (dailyStats.bulkTotal || 0) + total;
+            }
+
+            const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
+            window.fbSet(salesRef, dailyStats);
 
             const activeRef = window.fbRef(window.fbDB, 'activeOrders');
             window.fbPush(activeRef, newOrderLog);
@@ -1655,11 +1576,12 @@
             container.innerHTML = html;
         }
 
+        // 🔧 ปรับฟอนต์และระยะห่างใน Pop-up ให้พอดี อ่านง่ายสบายตา
         function openKitchenOrderModal(index) {
             selectedKitchenOrderIndex = index;
             let ord = activeKitchenOrders[index];
 
-            document.getElementById('kitchen-modal-title').innerText = `🍽️ Table ${ord.tableNo} (Order)`;
+            document.getElementById('kitchen-modal-title').innerText = `🍽️ Table ${ord.tableNo} (Order #${ord.orderNo})`;
 
             let itemsList = ord.items.map(it => {
                 let detailsStr = '';
@@ -1688,52 +1610,6 @@
                 window.fbRemove(itemRef);
                 closeKitchenModal();
             }
-        }
-
-        // 📊 คำนวณสรุปยอดขายและนับ Sunday Steak จาก orderLogs ของวันนี้จริงแบบอัตโนมัติ 100%
-        function calculateSummaryAndRumpSteak(orderLogs) {
-            let cashCnt = 0, cashAmt = 0;
-            let cardCnt = 0, cardAmt = 0;
-            let bulkCnt = 0, bulkAmt = 0;
-            let rumpSteakCount = 0;
-
-            if (orderLogs) {
-                Object.keys(orderLogs).forEach(key => {
-                    let ord = orderLogs[key];
-                    if (ord) {
-                        let amt = ord.totalAmount || 0;
-                        let pType = ord.paymentType;
-
-                        if (pType === 'Cash') {
-                            cashCnt++;
-                            cashAmt += amt;
-                        } else if (pType === 'Card') {
-                            cardCnt++;
-                            cardAmt += amt;
-                        } else if (pType === 'Bulk Cash') {
-                            bulkCnt++;
-                            bulkAmt += amt;
-                        } else if (pType === 'Split') {
-                            cashCnt++;
-                            cashAmt += (ord.cashAmount || 0);
-                            cardCnt++;
-                            cardAmt += (ord.cardAmount || 0);
-                        }
-
-                        if (ord.items && Array.isArray(ord.items)) {
-                            ord.items.forEach(item => {
-                                if (item.isSundaySteak || (item.title && item.title.toLowerCase().includes('rump steak') && item.price === 7)) {
-                                    rumpSteakCount++;
-                                }
-                            });
-                        }
-                    }
-                });
-            }
-
-            dailyStats = { cashCount: cashCnt, cashTotal: cashAmt, cardCount: cardCnt, cardTotal: cardAmt, bulkCount: bulkCnt, bulkTotal: bulkAmt };
-            updateDailyReportUI();
-            document.getElementById('rump-steak-today-count').innerText = rumpSteakCount;
         }
 
         function updateDailyReportUI() {
@@ -1766,63 +1642,79 @@
             }
         }
 
-        function renderPastOrdersList(data) {
+        function openPastOrdersModal() {
+            let currentKey = getTodayDateKey();
+            let logs = allOrderLogs[currentKey] || [];
             let contentHtml = '';
-            if (data) {
-                let keys = Object.keys(data);
-                keys.forEach((key, index) => {
-                    let log = data[key];
-                    let orderNum = index + 1;
-                    let itemsList = log.items ? log.items.map(it => {
-                        let detailsStr = '';
-                        if (it.details && it.details.length > 0) detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
-                        return `• ${it.title}${detailsStr} - $${it.price}`;
-                    }).join('<br>') : '';
 
-                    let paymentText = log.paymentType;
-                    if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
+            logs.forEach((log, index) => {
+                let itemsList = log.items.map(it => {
+                    let detailsStr = '';
+                    if (it.details && it.details.length > 0) detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
+                    return `• ${it.title}${detailsStr} - $${it.price}`;
+                }).join('<br>');
 
-                    contentHtml += `
-                        <div style="background: #fff; border: 1px solid #ccc; padding: 8px; border-radius: 4px; margin-top: 6px;">
-                            <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 3px;">
-                                <span>Order #${orderNum} [Table ${log.tableNo || '-'}] (${log.time})</span>
-                                <span style="color: #c0392b;">$${log.totalAmount} (${paymentText})</span>
-                            </div>
-                            <div style="font-size: 11px; color: #444; margin-top: 4px; margin-bottom: 6px;">
-                                ${itemsList}
-                            </div>
-                            <button style="background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;" onclick="loadOrderForEdit('${key}', ${log.totalAmount}, '${log.paymentType}', ${log.cashAmount || 0}, ${log.cardAmount || 0})">✏️ Remove & Edit Order</button>
+                let paymentText = log.paymentType;
+                if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
+
+                contentHtml += `
+                    <div style="background: #fff; border: 1px solid #ccc; padding: 8px; border-radius: 4px; margin-top: 6px;">
+                        <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 3px;">
+                            <span>Order #${log.orderNo} [Table ${log.tableNo || '-'}] (${log.time})</span>
+                            <span style="color: #c0392b;">$${log.totalAmount} (${paymentText})</span>
                         </div>
-                    `;
-                });
-            }
+                        <div style="font-size: 11px; color: #444; margin-top: 4px; margin-bottom: 6px;">
+                            ${itemsList}
+                        </div>
+                        <button style="background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;" onclick="loadOrderForEdit(${index})">✏️ Remove & Edit Order</button>
+                    </div>
+                `;
+            });
 
             document.getElementById('past-orders-list-content').innerHTML = contentHtml || '<div style="font-size: 12px; color: #777; text-align: center; padding: 20px;">No past orders recorded for today yet.</div>';
-        }
-
-        function openPastOrdersModal() {
-            renderPastOrdersList(todayOrderLogsCache);
             document.getElementById('past-orders-modal').style.display = 'flex';
         }
 
         function closePastOrdersModal() { document.getElementById('past-orders-modal').style.display = 'none'; }
 
-        function loadOrderForEdit(firebaseKey, totalAmount, paymentType, cashAmount, cardAmount) {
+        function loadOrderForEdit(logIndex) {
             let currentKey = getTodayDateKey();
-            const orderRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey + '/' + firebaseKey);
-            
-            window.fbGet(orderRef).then((snapshot) => {
-                let targetOrder = snapshot.val();
-                if (targetOrder) {
-                    cart = JSON.parse(JSON.stringify(targetOrder.items));
-                    updateCartUI();
-                    isBulkOptionSelected = cart.some(it => it.isBulk);
-                    updatePaymentButtonsDisplay();
+            let logs = allOrderLogs[currentKey] || [];
+            let targetOrder = logs[logIndex];
 
-                    window.fbRemove(orderRef);
-                    closePastOrdersModal();
+            if (targetOrder) {
+                cart = JSON.parse(JSON.stringify(targetOrder.items));
+                updateCartUI();
+                isBulkOptionSelected = cart.some(it => it.isBulk);
+                updatePaymentButtonsDisplay();
+
+                if (targetOrder.paymentType === 'Cash') {
+                    dailyStats.cashCount = Math.max(0, (dailyStats.cashCount || 0) - 1);
+                    dailyStats.cashTotal = Math.max(0, (dailyStats.cashTotal || 0) - targetOrder.totalAmount);
+                } else if (targetOrder.paymentType === 'Card') {
+                    dailyStats.cardCount = Math.max(0, (dailyStats.cardCount || 0) - 1);
+                    dailyStats.cardTotal = Math.max(0, (dailyStats.cardTotal || 0) - targetOrder.totalAmount);
+                } else if (targetOrder.paymentType === 'Bulk Cash') {
+                    dailyStats.bulkCount = Math.max(0, (dailyStats.bulkCount || 0) - 1);
+                    dailyStats.bulkTotal = Math.max(0, (dailyStats.bulkTotal || 0) - targetOrder.totalAmount);
+                } else if (targetOrder.paymentType === 'Split') {
+                    dailyStats.cashCount = Math.max(0, (dailyStats.cashCount || 0) - 1);
+                    dailyStats.cashTotal = Math.max(0, (dailyStats.cashTotal || 0) - (targetOrder.cashAmount || 0));
+                    dailyStats.cardCount = Math.max(0, (dailyStats.cardCount || 0) - 1);
+                    dailyStats.cardTotal = Math.max(0, (dailyStats.cardTotal || 0) - (targetOrder.cardAmount || 0));
                 }
-            });
+
+                if (window.fbDB) {
+                    const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
+                    window.fbSet(salesRef, dailyStats);
+                }
+
+                logs.splice(logIndex, 1);
+                allOrderLogs[currentKey] = logs;
+                localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
+
+                closePastOrdersModal();
+            }
         }
 
         function openNoOptModal() { document.getElementById('no-opt-modal').style.display = 'flex'; }
@@ -1918,53 +1810,45 @@
             let totalCnt = cCount + cdCount + bCount;
             let totalAmt = cTotal + cdTotal + bTotal;
 
-            const logsRef = window.fbRef(window.fbDB, 'orderLogs/' + dateStr);
-            window.fbGet(logsRef).then((snapshot) => {
-                let data = snapshot.val();
-                let logsHtml = '';
+            let logs = allOrderLogs[dateStr] || [];
+            let logsHtml = '';
 
-                if (data) {
-                    let keys = Object.keys(data);
-                    keys.forEach((key, index) => {
-                        let log = data[key];
-                        let orderNum = index + 1;
-                        let itemsList = log.items ? log.items.map(it => {
-                            let detailsStr = '';
-                            if (it.details && it.details.length > 0) detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
-                            return `• ${it.title}${detailsStr} - $${it.price}`;
-                        }).join('<br>') : '';
+            logs.forEach(log => {
+                let itemsList = log.items.map(it => {
+                    let detailsStr = '';
+                    if (it.details && it.details.length > 0) detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
+                    return `• ${it.title}${detailsStr} - $${it.price}`;
+                }).join('<br>');
 
-                        let paymentText = log.paymentType;
-                        if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
+                let paymentText = log.paymentType;
+                if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
 
-                        logsHtml += `
-                            <div style="background: #fff; border: 1px solid #ccc; padding: 6px; border-radius: 4px; margin-top: 4px;">
-                                <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 2px;">
-                                    <span>Order #${orderNum} [Table ${log.tableNo || '-'}] (${log.time})</span>
-                                    <span>${paymentText}: $${log.totalAmount}</span>
-                                </div>
-                                <div style="font-size: 11px; color: #444; margin-top: 4px;">${itemsList}</div>
-                            </div>
-                        `;
-                    });
-                }
-
-                let html = `
-                    <div><b>📅 Date:</b> ${dateStr}</div>
-                    <div>💵 Cash: <b>${cCount} bills</b> (<b>$${cTotal}</b>)</div>
-                    <div>💳 Card: <b>${cdCount} bills</b> (<b>$${cdTotal}</b>)</div>
-                    <div>💵 Bulk Cash: <b>${bCount} bills</b> (<b>$${bTotal}</b>)</div>
-                    <div style="border-top: 1px solid #ccc; padding-top: 4px; margin-top: 2px;">
-                        <b>Grand Total:</b> <span style="color: #c0392b; font-size: 14px;"><b>$${totalAmt}</b> (${totalCnt} bills)</span>
-                    </div>
-                    <hr style="margin: 8px 0;">
-                    <div style="font-weight: bold;">📜 Detailed Order Logs:</div>
-                    <div style="max-height: 180px; overflow-y: auto;">
-                        ${logsHtml || '<div style="font-size: 11px; color: #777;">No order logs recorded.</div>'}
+                logsHtml += `
+                    <div style="background: #fff; border: 1px solid #ccc; padding: 6px; border-radius: 4px; margin-top: 4px;">
+                        <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 2px;">
+                            <span>Order #${log.orderNo} [Table ${log.tableNo || '-'}] (${log.time})</span>
+                            <span>${paymentText}: $${log.totalAmount}</span>
+                        </div>
+                        <div style="font-size: 11px; color: #444; margin-top: 4px;">${itemsList}</div>
                     </div>
                 `;
-                document.getElementById('report-details-content').innerHTML = html;
             });
+
+            let html = `
+                <div><b>📅 Date:</b> ${dateStr}</div>
+                <div>💵 Cash: <b>${cCount} bills</b> (<b>$${cTotal}</b>)</div>
+                <div>💳 Card: <b>${cdCount} bills</b> (<b>$${cdTotal}</b>)</div>
+                <div>💵 Bulk Cash: <b>${bCount} bills</b> (<b>$${bTotal}</b>)</div>
+                <div style="border-top: 1px solid #ccc; padding-top: 4px; margin-top: 2px;">
+                    <b>Grand Total:</b> <span style="color: #c0392b; font-size: 14px;"><b>$${totalAmt}</b> (${totalCnt} bills)</span>
+                </div>
+                <hr style="margin: 8px 0;">
+                <div style="font-weight: bold;">📜 Detailed Order Logs:</div>
+                <div style="max-height: 180px; overflow-y: auto;">
+                    ${logsHtml || '<div style="font-size: 11px; color: #777;">No order logs recorded.</div>'}
+                </div>
+            `;
+            document.getElementById('report-details-content').innerHTML = html;
         }
 
         function initRealtimeSync() {
@@ -1972,18 +1856,6 @@
                 setTimeout(initRealtimeSync, 500);
                 return;
             }
-
-            const currentKey = getTodayDateKey();
-
-            // ดึงข้อมูล orderLogs ของวันนี้ และอัปเดตทั้ง Past Orders, ยอดขายสรุป, และจำนวน Rump Steak พร้อมกัน
-            const todayLogsRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
-            window.fbOnValue(todayLogsRef, (snapshot) => {
-                todayOrderLogsCache = snapshot.val() || {};
-                calculateSummaryAndRumpSteak(todayOrderLogsCache);
-                if (document.getElementById('past-orders-modal').style.display === 'flex') {
-                    renderPastOrdersList(todayOrderLogsCache);
-                }
-            });
 
             const activeRef = window.fbRef(window.fbDB, 'activeOrders');
             window.fbOnValue(activeRef, (snapshot) => {
@@ -2047,10 +1919,23 @@
 
                 isRemoteUpdate = false;
             });
+
+            const currentKey = getTodayDateKey();
+            const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
+            window.fbOnValue(salesRef, (snapshot) => {
+                const salesData = snapshot.val();
+                if (salesData) {
+                    dailyStats = salesData;
+                } else {
+                    dailyStats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
+                }
+                updateDailyReportUI();
+            });
         }
 
         window.onload = function() {
             updateClock();
+            updateDailyReportUI();
             updatePassProtectBtnUI();
             initRealtimeSync();
             switchCategory('lunch');

@@ -1556,11 +1556,16 @@
 
         function checkoutSplitOrder(cashAmount, cardAmount, tableNum) {
             let currentKey = getTodayDateKey();
-            let orderNum = (allOrderLogs[currentKey] ? allOrderLogs[currentKey].length : 0) + 1;
             let timeStr = new Date().toLocaleTimeString('en-AU', { hour12: false });
 
-            let newOrderLog = {
-                orderNo: orderNum,
+            const logsRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
+            
+            // ดึงข้อมูลมานับจำนวนออเดอร์เพื่อรันเลກที่ออร์เดอร์
+            window.fbOnValue(logsRef, (snapshot) => {
+                // ใช้การ push เพื่อสร้าง key อัตโนมัติใน Firebase
+            }, { onlyOnce: true });
+
+            let tempNewLog = {
                 tableNo: tableNum,
                 time: timeStr,
                 paymentType: `Split`,
@@ -1570,9 +1575,8 @@
                 totalAmount: total
             };
 
-            if (!allOrderLogs[currentKey]) allOrderLogs[currentKey] = [];
-            allOrderLogs[currentKey].push(newOrderLog);
-            localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
+            const newLogRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
+            window.fbPush(newLogRef, tempNewLog);
 
             dailyStats.cashCount = (dailyStats.cashCount || 0) + 1;
             dailyStats.cashTotal = (dailyStats.cashTotal || 0) + cashAmount;
@@ -1583,7 +1587,7 @@
             window.fbSet(salesRef, dailyStats);
 
             const activeRef = window.fbRef(window.fbDB, 'activeOrders');
-            window.fbPush(activeRef, newOrderLog);
+            window.fbPush(activeRef, tempNewLog);
 
             clearCart();
         }
@@ -1592,11 +1596,9 @@
             if (cart.length === 0) return;
 
             let currentKey = getTodayDateKey();
-            let orderNum = (allOrderLogs[currentKey] ? allOrderLogs[currentKey].length : 0) + 1;
             let timeStr = new Date().toLocaleTimeString('en-AU', { hour12: false });
 
             let newOrderLog = {
-                orderNo: orderNum,
                 tableNo: tableNum,
                 time: timeStr,
                 paymentType: paymentType,
@@ -1604,9 +1606,8 @@
                 totalAmount: total
             };
 
-            if (!allOrderLogs[currentKey]) allOrderLogs[currentKey] = [];
-            allOrderLogs[currentKey].push(newOrderLog);
-            localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
+            const logsRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
+            window.fbPush(logsRef, newOrderLog);
 
             if (paymentType === 'Cash') {
                 dailyStats.cashCount = (dailyStats.cashCount || 0) + 1;
@@ -1651,7 +1652,7 @@
             selectedKitchenOrderIndex = index;
             let ord = activeKitchenOrders[index];
 
-            document.getElementById('kitchen-modal-title').innerText = `🍽️ Table ${ord.tableNo} (Order #${ord.orderNo})`;
+            document.getElementById('kitchen-modal-title').innerText = `🍽️ Table ${ord.tableNo} (Order)`;
 
             let itemsList = ord.items.map(it => {
                 let detailsStr = '';
@@ -1712,79 +1713,88 @@
             }
         }
 
+        // 🔄 ปรับปรุงให้ดึงรายการออเดอร์ย้อนหลัง (Past Orders) จาก Firebase โดยตรง
         function openPastOrdersModal() {
             let currentKey = getTodayDateKey();
-            let logs = allOrderLogs[currentKey] || [];
-            let contentHtml = '';
+            const logsRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
+            
+            window.fbOnValue(logsRef, (snapshot) => {
+                let data = snapshot.val();
+                let contentHtml = '';
 
-            logs.forEach((log, index) => {
-                let itemsList = log.items.map(it => {
-                    let detailsStr = '';
-                    if (it.details && it.details.length > 0) detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
-                    return `• ${it.title}${detailsStr} - $${it.price}`;
-                }).join('<br>');
+                if (data) {
+                    let keys = Object.keys(data);
+                    keys.forEach((key, index) => {
+                        let log = data[key];
+                        let orderNum = index + 1;
+                        let itemsList = log.items.map(it => {
+                            let detailsStr = '';
+                            if (it.details && it.details.length > 0) detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
+                            return `• ${it.title}${detailsStr} - $${it.price}`;
+                        }).join('<br>');
 
-                let paymentText = log.paymentType;
-                if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
+                        let paymentText = log.paymentType;
+                        if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
 
-                contentHtml += `
-                    <div style="background: #fff; border: 1px solid #ccc; padding: 8px; border-radius: 4px; margin-top: 6px;">
-                        <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 3px;">
-                            <span>Order #${log.orderNo} [Table ${log.tableNo || '-'}] (${log.time})</span>
-                            <span style="color: #c0392b;">$${log.totalAmount} (${paymentText})</span>
-                        </div>
-                        <div style="font-size: 11px; color: #444; margin-top: 4px; margin-bottom: 6px;">
-                            ${itemsList}
-                        </div>
-                        <button style="background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;" onclick="loadOrderForEdit(${index})">✏️ Remove & Edit Order</button>
-                    </div>
-                `;
-            });
+                        contentHtml += `
+                            <div style="background: #fff; border: 1px solid #ccc; padding: 8px; border-radius: 4px; margin-top: 6px;">
+                                <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 3px;">
+                                    <span>Order #${orderNum} [Table ${log.tableNo || '-'}] (${log.time})</span>
+                                    <span style="color: #c0392b;">$${log.totalAmount} (${paymentText})</span>
+                                </div>
+                                <div style="font-size: 11px; color: #444; margin-top: 4px; margin-bottom: 6px;">
+                                    ${itemsList}
+                                </div>
+                                <button style="background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;" onclick="loadOrderForEdit('${key}', ${log.totalAmount}, '${log.paymentType}', ${log.cashAmount || 0}, ${log.cardAmount || 0})">✏️ Remove & Edit Order</button>
+                            </div>
+                        `;
+                    });
+                }
 
-            document.getElementById('past-orders-list-content').innerHTML = contentHtml || '<div style="font-size: 12px; color: #777; text-align: center; padding: 20px;">No past orders recorded for today yet.</div>';
-            document.getElementById('past-orders-modal').style.display = 'flex';
+                document.getElementById('past-orders-list-content').innerHTML = contentHtml || '<div style="font-size: 12px; color: #777; text-align: center; padding: 20px;">No past orders recorded for today yet.</div>';
+                document.getElementById('past-orders-modal').style.display = 'flex';
+            }, { onlyOnce: true });
         }
 
         function closePastOrdersModal() { document.getElementById('past-orders-modal').style.display = 'none'; }
 
-        function loadOrderForEdit(logIndex) {
+        function loadOrderForEdit(firebaseKey, totalAmount, paymentType, cashAmount, cardAmount) {
             let currentKey = getTodayDateKey();
-            let logs = allOrderLogs[currentKey] || [];
-            let targetOrder = logs[logIndex];
+            const orderRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey + '/' + firebaseKey);
+            
+            window.fbOnValue(orderRef, (snapshot) => {
+                let targetOrder = snapshot.val();
+                if (targetOrder) {
+                    cart = JSON.parse(JSON.stringify(targetOrder.items));
+                    updateCartUI();
+                    isBulkOptionSelected = cart.some(it => it.isBulk);
+                    updatePaymentButtonsDisplay();
 
-            if (targetOrder) {
-                cart = JSON.parse(JSON.stringify(targetOrder.items));
-                updateCartUI();
-                isBulkOptionSelected = cart.some(it => it.isBulk);
-                updatePaymentButtonsDisplay();
+                    if (paymentType === 'Cash') {
+                        dailyStats.cashCount = Math.max(0, (dailyStats.cashCount || 0) - 1);
+                        dailyStats.cashTotal = Math.max(0, (dailyStats.cashTotal || 0) - totalAmount);
+                    } else if (paymentType === 'Card') {
+                        dailyStats.cardCount = Math.max(0, (dailyStats.cardCount || 0) - 1);
+                        dailyStats.cardTotal = Math.max(0, (dailyStats.cardTotal || 0) - totalAmount);
+                    } else if (paymentType === 'Bulk Cash') {
+                        dailyStats.bulkCount = Math.max(0, (dailyStats.bulkCount || 0) - 1);
+                        dailyStats.bulkTotal = Math.max(0, (dailyStats.bulkTotal || 0) - totalAmount);
+                    } else if (paymentType === 'Split') {
+                        dailyStats.cashCount = Math.max(0, (dailyStats.cashCount || 0) - 1);
+                        dailyStats.cashTotal = Math.max(0, (dailyStats.cashTotal || 0) - cashAmount);
+                        dailyStats.cardCount = Math.max(0, (dailyStats.cardCount || 0) - 1);
+                        dailyStats.cardTotal = Math.max(0, (dailyStats.cardTotal || 0) - cardAmount);
+                    }
 
-                if (targetOrder.paymentType === 'Cash') {
-                    dailyStats.cashCount = Math.max(0, (dailyStats.cashCount || 0) - 1);
-                    dailyStats.cashTotal = Math.max(0, (dailyStats.cashTotal || 0) - targetOrder.totalAmount);
-                } else if (targetOrder.paymentType === 'Card') {
-                    dailyStats.cardCount = Math.max(0, (dailyStats.cardCount || 0) - 1);
-                    dailyStats.cardTotal = Math.max(0, (dailyStats.cardTotal || 0) - targetOrder.totalAmount);
-                } else if (targetOrder.paymentType === 'Bulk Cash') {
-                    dailyStats.bulkCount = Math.max(0, (dailyStats.bulkCount || 0) - 1);
-                    dailyStats.bulkTotal = Math.max(0, (dailyStats.bulkTotal || 0) - targetOrder.totalAmount);
-                } else if (targetOrder.paymentType === 'Split') {
-                    dailyStats.cashCount = Math.max(0, (dailyStats.cashCount || 0) - 1);
-                    dailyStats.cashTotal = Math.max(0, (dailyStats.cashTotal || 0) - (targetOrder.cashAmount || 0));
-                    dailyStats.cardCount = Math.max(0, (dailyStats.cardCount || 0) - 1);
-                    dailyStats.cardTotal = Math.max(0, (dailyStats.cardTotal || 0) - (targetOrder.cardAmount || 0));
-                }
-
-                if (window.fbDB) {
                     const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
                     window.fbSet(salesRef, dailyStats);
+
+                    // ลบออกจาก Firebase orderLogs
+                    window.fbRemove(orderRef);
+
+                    closePastOrdersModal();
                 }
-
-                logs.splice(logIndex, 1);
-                allOrderLogs[currentKey] = logs;
-                localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
-
-                closePastOrdersModal();
-            }
+            }, { onlyOnce: true });
         }
 
         function openNoOptModal() { document.getElementById('no-opt-modal').style.display = 'flex'; }
@@ -1880,45 +1890,53 @@
             let totalCnt = cCount + cdCount + bCount;
             let totalAmt = cTotal + cdTotal + bTotal;
 
-            let logs = allOrderLogs[dateStr] || [];
-            let logsHtml = '';
+            const logsRef = window.fbRef(window.fbDB, 'orderLogs/' + dateStr);
+            window.fbOnValue(logsRef, (snapshot) => {
+                let data = snapshot.val();
+                let logsHtml = '';
 
-            logs.forEach(log => {
-                let itemsList = log.items.map(it => {
-                    let detailsStr = '';
-                    if (it.details && it.details.length > 0) detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
-                    return `• ${it.title}${detailsStr} - $${it.price}`;
-                }).join('<br>');
+                if (data) {
+                    let keys = Object.keys(data);
+                    keys.forEach((key, index) => {
+                        let log = data[key];
+                        let orderNum = index + 1;
+                        let itemsList = log.items.map(it => {
+                            let detailsStr = '';
+                            if (it.details && it.details.length > 0) detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
+                            return `• ${it.title}${detailsStr} - $${it.price}`;
+                        }).join('<br>');
 
-                let paymentText = log.paymentType;
-                if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
+                        let paymentText = log.paymentType;
+                        if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
 
-                logsHtml += `
-                    <div style="background: #fff; border: 1px solid #ccc; padding: 6px; border-radius: 4px; margin-top: 4px;">
-                        <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 2px;">
-                            <span>Order #${log.orderNo} [Table ${log.tableNo || '-'}] (${log.time})</span>
-                            <span>${paymentText}: $${log.totalAmount}</span>
-                        </div>
-                        <div style="font-size: 11px; color: #444; margin-top: 4px;">${itemsList}</div>
+                        logsHtml += `
+                            <div style="background: #fff; border: 1px solid #ccc; padding: 6px; border-radius: 4px; margin-top: 4px;">
+                                <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 2px;">
+                                    <span>Order #${orderNum} [Table ${log.tableNo || '-'}] (${log.time})</span>
+                                    <span>${paymentText}: $${log.totalAmount}</span>
+                                </div>
+                                <div style="font-size: 11px; color: #444; margin-top: 4px;">${itemsList}</div>
+                            </div>
+                        `;
+                    });
+                }
+
+                let html = `
+                    <div><b>📅 Date:</b> ${dateStr}</div>
+                    <div>💵 Cash: <b>${cCount} bills</b> (<b>$${cTotal}</b>)</div>
+                    <div>💳 Card: <b>${cdCount} bills</b> (<b>$${cdTotal}</b>)</div>
+                    <div>💵 Bulk Cash: <b>${bCount} bills</b> (<b>$${bTotal}</b>)</div>
+                    <div style="border-top: 1px solid #ccc; padding-top: 4px; margin-top: 2px;">
+                        <b>Grand Total:</b> <span style="color: #c0392b; font-size: 14px;"><b>$${totalAmt}</b> (${totalCnt} bills)</span>
+                    </div>
+                    <hr style="margin: 8px 0;">
+                    <div style="font-weight: bold;">📜 Detailed Order Logs:</div>
+                    <div style="max-height: 180px; overflow-y: auto;">
+                        ${logsHtml || '<div style="font-size: 11px; color: #777;">No order logs recorded.</div>'}
                     </div>
                 `;
-            });
-
-            let html = `
-                <div><b>📅 Date:</b> ${dateStr}</div>
-                <div>💵 Cash: <b>${cCount} bills</b> (<b>$${cTotal}</b>)</div>
-                <div>💳 Card: <b>${cdCount} bills</b> (<b>$${cdTotal}</b>)</div>
-                <div>💵 Bulk Cash: <b>${bCount} bills</b> (<b>$${bTotal}</b>)</div>
-                <div style="border-top: 1px solid #ccc; padding-top: 4px; margin-top: 2px;">
-                    <b>Grand Total:</b> <span style="color: #c0392b; font-size: 14px;"><b>$${totalAmt}</b> (${totalCnt} bills)</span>
-                </div>
-                <hr style="margin: 8px 0;">
-                <div style="font-weight: bold;">📜 Detailed Order Logs:</div>
-                <div style="max-height: 180px; overflow-y: auto;">
-                    ${logsHtml || '<div style="font-size: 11px; color: #777;">No order logs recorded.</div>'}
-                </div>
-            `;
-            document.getElementById('report-details-content').innerHTML = html;
+                document.getElementById('report-details-content').innerHTML = html;
+            }, { onlyOnce: true });
         }
 
         function initRealtimeSync() {
@@ -1987,7 +2005,7 @@
                     updatePaymentButtonsDisplay();
                 }
 
-                isRemoteUpdate = false;
+                isRemoteOutput = false;
             });
 
             const currentKey = getTodayDateKey();

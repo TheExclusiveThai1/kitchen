@@ -285,7 +285,6 @@
         </div>
     </div>
 
-    <!-- 🔧 ปรับย่อขนาดหน้าต่าง Active Order ให้พอดี ไม่ใหญ่เกินไป -->
     <div class="modal-overlay" id="kitchen-order-modal">
         <div class="modal-content" style="width: 480px; max-width: 95%;">
             <div class="modal-header" style="font-size: 18px;">
@@ -661,6 +660,8 @@
         let windowExtras = [];
         let sundaySides = [];
         let sundaySauces = [];
+        let mainExtras = [];
+        let sundayExtras = [];
         let selectedNoIngredients = [];
 
         let isBulkOptionSelected = false;
@@ -784,6 +785,15 @@
                             <button class="opt-btn sauce-btn" onclick="toggleMainOption('sauce', 'Mushroom', this)">Mushroom</button>
                         </div>
                     </div>
+                    <div class="opt-box" style="border-top: 4px solid #8e44ad;">
+                        <div class="opt-title">➕ Choose Extra</div>
+                        <div class="opt-grid-2col">
+                            <button class="opt-btn main-extra-btn" onclick="toggleMainExtra('Fried Egg', 3, this)">Fried Egg</button>
+                            <button class="opt-btn main-extra-btn" onclick="toggleMainExtra('Bacon', 4, this)">Bacon</button>
+                            <button class="opt-btn main-extra-btn" onclick="toggleMainExtra('Ham', 4, this)">Ham</button>
+                            <button class="opt-btn main-extra-btn" onclick="toggleMainExtra('Rice', 5, this)">Rice</button>
+                        </div>
+                    </div>
                     <div class="opt-box" style="margin-top: auto;">
                         <button class="opt-btn btn-no-opt" onclick="openNoOptModal()">🚫 No Ingredients (Exclusion)</button>
                     </div>`;
@@ -816,6 +826,15 @@
                             <button class="opt-btn sunday-sauce-btn" onclick="selectSundayOption('sauce', 'Gravy', this)">Gravy</button>
                             <button class="opt-btn sunday-sauce-btn" onclick="selectSundayOption('sauce', 'Pepper', this)">Pepper</button>
                             <button class="opt-btn sunday-sauce-btn" onclick="selectSundayOption('sauce', 'Mushroom', this)">Mushroom</button>
+                        </div>
+                    </div>
+                    <div class="opt-box" style="border-top: 4px solid #8e44ad;">
+                        <div class="opt-title">➕ Sunday Extra</div>
+                        <div class="opt-grid-2col">
+                            <button class="opt-btn sunday-extra-btn" onclick="toggleSundayExtra('Fried Egg', 3, this)">Fried Egg</button>
+                            <button class="opt-btn sunday-extra-btn" onclick="toggleSundayExtra('Bacon', 4, this)">Bacon</button>
+                            <button class="opt-btn sunday-extra-btn" onclick="toggleSundayExtra('Ham', 4, this)">Ham</button>
+                            <button class="opt-btn sunday-extra-btn" onclick="toggleSundayExtra('Rice', 5, this)">Rice</button>
                         </div>
                     </div>
                     <div class="opt-box" style="margin-top: auto;">
@@ -882,7 +901,7 @@
                     <div class="opt-box" style="border-top: 4px solid #f39c12;">
                         <div class="opt-title">➕ 3. Choose Extra</div>
                         <div class="opt-grid-2col">
-                            <button class="opt-btn extra-btn" onclick="toggleExtra('Jasmine Rice', 5, this)">Jasmine Rice</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Rice', 5, this)">Rice</button>
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Fried Egg', 3, this)">Fried Egg</button>
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Roti', 4, this)">Roti</button>
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Bacon', 4, this)">Bacon</button>
@@ -907,6 +926,8 @@
             windowExtras = [];
             sundaySides = [];
             sundaySauces = [];
+            mainExtras = [];
+            sundayExtras = [];
             selectedNoIngredients = [];
 
             document.querySelectorAll('.item-card').forEach(c => c.classList.remove('selected'));
@@ -996,6 +1017,40 @@
                 el.classList.add('selected');
             }
             addToCartBurger(false);
+        }
+
+        function toggleMainExtra(name, price, el) {
+            if (!selectedMenu) {
+                cart.push({ title: `Extra: ${name}`, price: price, details: [{text: name, price: price}] });
+                updateCartUI();
+                return;
+            }
+            let idx = mainExtras.findIndex(i => i.name === name);
+            if (idx > -1) {
+                mainExtras.splice(idx, 1);
+                el.classList.remove('selected');
+            } else {
+                mainExtras.push({ name, price });
+                el.classList.add('selected');
+            }
+            addToCartMain(false);
+        }
+
+        function toggleSundayExtra(name, price, el) {
+            if (!selectedMenu) {
+                cart.push({ title: `Extra: ${name}`, price: price, details: [{text: name, price: price}] });
+                updateCartUI();
+                return;
+            }
+            let idx = sundayExtras.findIndex(i => i.name === name);
+            if (idx > -1) {
+                sundayExtras.splice(idx, 1);
+                el.classList.remove('selected');
+            } else {
+                sundayExtras.push({ name, price });
+                el.classList.add('selected');
+            }
+            addToCartSunday(false);
         }
 
         function addToCartBurger(isNew) {
@@ -1100,6 +1155,13 @@
                 details.push({ text: `Sauce: ${sundaySauces.join(', ')}`, price: sauceCost });
             }
 
+            if (sundayExtras.length > 0) {
+                sundayExtras.forEach(ex => {
+                    extraPrice += ex.price;
+                    details.push({ text: `Extra: ${ex.name}`, price: ex.price });
+                });
+            }
+
             if (selectedNoIngredients.length > 0) {
                 selectedNoIngredients.forEach(noItem => details.push({ text: `NO: ${noItem}`, price: 0 }));
             }
@@ -1194,6 +1256,13 @@
                     extraPrice += sauceCost;
                 }
                 details.push({ text: `Sauce: ${selectedSauces.join(', ')}`, price: sauceCost });
+            }
+
+            if (mainExtras.length > 0) {
+                mainExtras.forEach(ex => {
+                    extraPrice += ex.price;
+                    details.push({ text: `Extra: ${ex.name}`, price: ex.price });
+                });
             }
 
             if (selectedNoIngredients.length > 0) {
@@ -1309,6 +1378,8 @@
             windowExtras = [];
             sundaySides = [];
             sundaySauces = [];
+            mainExtras = [];
+            sundayExtras = [];
             selectedNoIngredients = [];
             activeCartIndex = null;
 
@@ -1576,7 +1647,6 @@
             container.innerHTML = html;
         }
 
-        // 🔧 ปรับฟอนต์และระยะห่างใน Pop-up ให้พอดี อ่านง่ายสบายตา
         function openKitchenOrderModal(index) {
             selectedKitchenOrderIndex = index;
             let ord = activeKitchenOrders[index];

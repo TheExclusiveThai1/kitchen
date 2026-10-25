@@ -1607,14 +1607,6 @@
             const newLogRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
             window.fbPush(newLogRef, tempNewLog);
 
-            dailyStats.cashCount = (dailyStats.cashCount || 0) + 1;
-            dailyStats.cashTotal = (dailyStats.cashTotal || 0) + cashAmount;
-            dailyStats.cardCount = (dailyStats.cardCount || 0) + 1;
-            dailyStats.cardTotal = (dailyStats.cardTotal || 0) + cardAmount;
-
-            const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
-            window.fbSet(salesRef, dailyStats);
-
             const activeRef = window.fbRef(window.fbDB, 'activeOrders');
             window.fbPush(activeRef, tempNewLog);
 
@@ -1637,20 +1629,6 @@
 
             const logsRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
             window.fbPush(logsRef, newOrderLog);
-
-            if (paymentType === 'Cash') {
-                dailyStats.cashCount = (dailyStats.cashCount || 0) + 1;
-                dailyStats.cashTotal = (dailyStats.cashTotal || 0) + total;
-            } else if (paymentType === 'Card') {
-                dailyStats.cardCount = (dailyStats.cardCount || 0) + 1;
-                dailyStats.cardTotal = (dailyStats.cardTotal || 0) + total;
-            } else if (paymentType === 'Bulk Cash') {
-                dailyStats.bulkCount = (dailyStats.bulkCount || 0) + 1;
-                dailyStats.bulkTotal = (dailyStats.bulkTotal || 0) + total;
-            }
-
-            const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
-            window.fbSet(salesRef, dailyStats);
 
             const activeRef = window.fbRef(window.fbDB, 'activeOrders');
             window.fbPush(activeRef, newOrderLog);
@@ -1710,6 +1688,52 @@
                 window.fbRemove(itemRef);
                 closeKitchenModal();
             }
+        }
+
+        // 📊 คำนวณสรุปยอดขายและนับ Sunday Steak จาก orderLogs ของวันนี้จริงแบบอัตโนมัติ 100%
+        function calculateSummaryAndRumpSteak(orderLogs) {
+            let cashCnt = 0, cashAmt = 0;
+            let cardCnt = 0, cardAmt = 0;
+            let bulkCnt = 0, bulkAmt = 0;
+            let rumpSteakCount = 0;
+
+            if (orderLogs) {
+                Object.keys(orderLogs).forEach(key => {
+                    let ord = orderLogs[key];
+                    if (ord) {
+                        let amt = ord.totalAmount || 0;
+                        let pType = ord.paymentType;
+
+                        if (pType === 'Cash') {
+                            cashCnt++;
+                            cashAmt += amt;
+                        } else if (pType === 'Card') {
+                            cardCnt++;
+                            cardAmt += amt;
+                        } else if (pType === 'Bulk Cash') {
+                            bulkCnt++;
+                            bulkAmt += amt;
+                        } else if (pType === 'Split') {
+                            cashCnt++;
+                            cashAmt += (ord.cashAmount || 0);
+                            cardCnt++;
+                            cardAmt += (ord.cardAmount || 0);
+                        }
+
+                        if (ord.items && Array.isArray(ord.items)) {
+                            ord.items.forEach(item => {
+                                if (item.isSundaySteak || (item.title && item.title.toLowerCase().includes('rump steak') && item.price === 7)) {
+                                    rumpSteakCount++;
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+
+            dailyStats = { cashCount: cashCnt, cashTotal: cashAmt, cardCount: cardCnt, cardTotal: cardAmt, bulkCount: bulkCnt, bulkTotal: bulkAmt };
+            updateDailyReportUI();
+            document.getElementById('rump-steak-today-count').innerText = rumpSteakCount;
         }
 
         function updateDailyReportUI() {
@@ -1794,25 +1818,6 @@
                     updateCartUI();
                     isBulkOptionSelected = cart.some(it => it.isBulk);
                     updatePaymentButtonsDisplay();
-
-                    if (paymentType === 'Cash') {
-                        dailyStats.cashCount = Math.max(0, (dailyStats.cashCount || 0) - 1);
-                        dailyStats.cashTotal = Math.max(0, (dailyStats.cashTotal || 0) - totalAmount);
-                    } else if (paymentType === 'Card') {
-                        dailyStats.cardCount = Math.max(0, (dailyStats.cardCount || 0) - 1);
-                        dailyStats.cardTotal = Math.max(0, (dailyStats.cardTotal || 0) - totalAmount);
-                    } else if (paymentType === 'Bulk Cash') {
-                        dailyStats.bulkCount = Math.max(0, (dailyStats.bulkCount || 0) - 1);
-                        dailyStats.bulkTotal = Math.max(0, (dailyStats.bulkTotal || 0) - totalAmount);
-                    } else if (paymentType === 'Split') {
-                        dailyStats.cashCount = Math.max(0, (dailyStats.cashCount || 0) - 1);
-                        dailyStats.cashTotal = Math.max(0, (dailyStats.cashTotal || 0) - cashAmount);
-                        dailyStats.cardCount = Math.max(0, (dailyStats.cardCount || 0) - 1);
-                        dailyStats.cardTotal = Math.max(0, (dailyStats.cardTotal || 0) - cardAmount);
-                    }
-
-                    const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
-                    window.fbSet(salesRef, dailyStats);
 
                     window.fbRemove(orderRef);
                     closePastOrdersModal();
@@ -1962,38 +1967,19 @@
             });
         }
 
-        // 🥩 นับจำนวนเฉพาะ Rump Steak จาก Sunday Special ($7) ของวันนี้เท่านั้นแบบ Realtime จาก Database
-        function calculateSundayRumpSteakCount(orderLogs) {
-            let totalCount = 0;
-            if (orderLogs) {
-                Object.keys(orderLogs).forEach(key => {
-                    let order = orderLogs[key];
-                    if (order && order.items && Array.isArray(order.items)) {
-                        order.items.forEach(item => {
-                            // ตรวจสอบว่าเป็น Sunday Special Rump Steak ที่ราคา $7 หรือมีธง isSundaySteak
-                            if (item.isSundaySteak || (item.title && item.title.toLowerCase().includes('rump steak') && item.price === 7)) {
-                                totalCount++;
-                            }
-                        });
-                    }
-                });
-            }
-            document.getElementById('rump-steak-today-count').innerText = totalCount;
-        }
-
         function initRealtimeSync() {
             if (!window.fbDB) {
                 setTimeout(initRealtimeSync, 500);
                 return;
             }
 
-            // ใช้ key ของวันนี้ เพื่อดึงเฉพาะออเดอร์ที่เกิดขึ้นในวันปัจจุบันเท่านั้น
             const currentKey = getTodayDateKey();
 
+            // ดึงข้อมูล orderLogs ของวันนี้ และอัปเดตทั้ง Past Orders, ยอดขายสรุป, และจำนวน Rump Steak พร้อมกัน
             const todayLogsRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
             window.fbOnValue(todayLogsRef, (snapshot) => {
                 todayOrderLogsCache = snapshot.val() || {};
-                calculateSundayRumpSteakCount(todayOrderLogsCache);
+                calculateSummaryAndRumpSteak(todayOrderLogsCache);
                 if (document.getElementById('past-orders-modal').style.display === 'flex') {
                     renderPastOrdersList(todayOrderLogsCache);
                 }
@@ -2061,22 +2047,10 @@
 
                 isRemoteUpdate = false;
             });
-
-            const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
-            window.fbOnValue(salesRef, (snapshot) => {
-                const salesData = snapshot.val();
-                if (salesData) {
-                    dailyStats = salesData;
-                } else {
-                    dailyStats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
-                }
-                updateDailyReportUI();
-            });
         }
 
         window.onload = function() {
             updateClock();
-            updateDailyReportUI();
             updatePassProtectBtnUI();
             initRealtimeSync();
             switchCategory('lunch');

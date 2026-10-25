@@ -8,7 +8,7 @@
     <!-- Firebase SDK (v10) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, remove, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCkm45aTNMieP5Si1rBGwWh7o60mVMwN9w",
@@ -29,6 +29,7 @@
         window.fbPush = push;
         window.fbOnValue = onValue;
         window.fbRemove = remove;
+        window.fbGet = get;
     </script>
 
     <style>
@@ -106,15 +107,41 @@
         .cat-btn.active { background: #e67e22; }
 
         .main-layout { display: flex; gap: 10px; flex: 1; min-height: 0; }
-        .col-menu { flex: 2.2; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; height: 100%; }
+        .col-menu { flex: 2.2; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; height: 100%; position: relative; }
         .section-header-title { font-size: 15px; font-weight: bold; color: #2c3e50; border-bottom: 2px solid #e67e22; padding-bottom: 4px; margin-bottom: 6px; }
-        .menu-scroll-area { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+        .menu-scroll-area { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; padding-bottom: 40px; }
         .sub-header { background: #34495e; color: white; padding: 6px 10px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-top: 4px; }
         .item-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .item-card { background: #fff; padding: 16px 8px; border-radius: 6px; border: 2px solid #bdc3c7; cursor: pointer; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 65px; }
         .item-card:hover { border-color: #3498db; background: #ebf5fb; }
         .item-card.selected { border-color: #e67e22; background: #fef5e7; box-shadow: 0 0 5px rgba(230,126,34,0.5); }
         .item-title { font-weight: bold; color: #2c3e50; font-size: 14px; line-height: 1.3; }
+
+        /* Realtime Sunday Special Rump Steak Tracker Widget (Bottom Left) */
+        .rump-tracker-widget {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            background: #27ae60;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 10;
+        }
+        .rump-tracker-count {
+            background: #ffffff;
+            color: #27ae60;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 900;
+        }
 
         .col-options { flex: 1.6; display: flex; flex-direction: column; gap: 8px; height: 100%; overflow-y: auto; }
         .opt-box { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
@@ -225,6 +252,13 @@
             <div class="col-menu">
                 <div class="section-header-title" id="mode-title">🍳 1. Select Menu</div>
                 <div class="menu-scroll-area" id="menu-container-box"></div>
+                
+                <!-- 🥩 Realtime Sunday Special Rump Steak Tracker Widget -->
+                <div class="rump-tracker-widget">
+                    <span>🥩 Sunday Steak ($7):</span>
+                    <span class="rump-tracker-count" id="rump-steak-today-count">0</span>
+                    <span>Sold</span>
+                </div>
             </div>
 
             <div class="col-options" id="options-panel"></div>
@@ -677,6 +711,8 @@
         let activeKitchenOrders = [];
         let activeKitchenKeys = [];
         let selectedKitchenOrderIndex = null;
+
+        let todayOrderLogsCache = {};
 
         let systemPassword = localStorage.getItem('pos_system_password') || '8989';
         let isPassProtectionEnabled = JSON.parse(localStorage.getItem('pos_pass_protect_enabled') ?? 'true');
@@ -1167,7 +1203,7 @@
             }
 
             let finalPrice = currentBasePrice + extraPrice;
-            let itemObj = { title: titleText, price: finalPrice, details: details };
+            let itemObj = { title: titleText, price: finalPrice, details: details, isSundaySteak: true }; 
 
             if (isNew || activeCartIndex === null || activeCartIndex >= cart.length) {
                 cart.push(itemObj);
@@ -1558,13 +1594,6 @@
             let currentKey = getTodayDateKey();
             let timeStr = new Date().toLocaleTimeString('en-AU', { hour12: false });
 
-            const logsRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
-            
-            // ดึงข้อมูลมานับจำนวนออเดอร์เพื่อรันเลກที่ออร์เดอร์
-            window.fbOnValue(logsRef, (snapshot) => {
-                // ใช้การ push เพื่อสร้าง key อัตโนมัติใน Firebase
-            }, { onlyOnce: true });
-
             let tempNewLog = {
                 tableNo: tableNum,
                 time: timeStr,
@@ -1713,47 +1742,43 @@
             }
         }
 
-        // 🔄 ปรับปรุงให้ดึงรายการออเดอร์ย้อนหลัง (Past Orders) จาก Firebase โดยตรง
-        function openPastOrdersModal() {
-            let currentKey = getTodayDateKey();
-            const logsRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
-            
-            window.fbOnValue(logsRef, (snapshot) => {
-                let data = snapshot.val();
-                let contentHtml = '';
+        function renderPastOrdersList(data) {
+            let contentHtml = '';
+            if (data) {
+                let keys = Object.keys(data);
+                keys.forEach((key, index) => {
+                    let log = data[key];
+                    let orderNum = index + 1;
+                    let itemsList = log.items ? log.items.map(it => {
+                        let detailsStr = '';
+                        if (it.details && it.details.length > 0) detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
+                        return `• ${it.title}${detailsStr} - $${it.price}`;
+                    }).join('<br>') : '';
 
-                if (data) {
-                    let keys = Object.keys(data);
-                    keys.forEach((key, index) => {
-                        let log = data[key];
-                        let orderNum = index + 1;
-                        let itemsList = log.items.map(it => {
-                            let detailsStr = '';
-                            if (it.details && it.details.length > 0) detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
-                            return `• ${it.title}${detailsStr} - $${it.price}`;
-                        }).join('<br>');
+                    let paymentText = log.paymentType;
+                    if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
 
-                        let paymentText = log.paymentType;
-                        if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
-
-                        contentHtml += `
-                            <div style="background: #fff; border: 1px solid #ccc; padding: 8px; border-radius: 4px; margin-top: 6px;">
-                                <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 3px;">
-                                    <span>Order #${orderNum} [Table ${log.tableNo || '-'}] (${log.time})</span>
-                                    <span style="color: #c0392b;">$${log.totalAmount} (${paymentText})</span>
-                                </div>
-                                <div style="font-size: 11px; color: #444; margin-top: 4px; margin-bottom: 6px;">
-                                    ${itemsList}
-                                </div>
-                                <button style="background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;" onclick="loadOrderForEdit('${key}', ${log.totalAmount}, '${log.paymentType}', ${log.cashAmount || 0}, ${log.cardAmount || 0})">✏️ Remove & Edit Order</button>
+                    contentHtml += `
+                        <div style="background: #fff; border: 1px solid #ccc; padding: 8px; border-radius: 4px; margin-top: 6px;">
+                            <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 3px;">
+                                <span>Order #${orderNum} [Table ${log.tableNo || '-'}] (${log.time})</span>
+                                <span style="color: #c0392b;">$${log.totalAmount} (${paymentText})</span>
                             </div>
-                        `;
-                    });
-                }
+                            <div style="font-size: 11px; color: #444; margin-top: 4px; margin-bottom: 6px;">
+                                ${itemsList}
+                            </div>
+                            <button style="background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;" onclick="loadOrderForEdit('${key}', ${log.totalAmount}, '${log.paymentType}', ${log.cashAmount || 0}, ${log.cardAmount || 0})">✏️ Remove & Edit Order</button>
+                        </div>
+                    `;
+                });
+            }
 
-                document.getElementById('past-orders-list-content').innerHTML = contentHtml || '<div style="font-size: 12px; color: #777; text-align: center; padding: 20px;">No past orders recorded for today yet.</div>';
-                document.getElementById('past-orders-modal').style.display = 'flex';
-            }, { onlyOnce: true });
+            document.getElementById('past-orders-list-content').innerHTML = contentHtml || '<div style="font-size: 12px; color: #777; text-align: center; padding: 20px;">No past orders recorded for today yet.</div>';
+        }
+
+        function openPastOrdersModal() {
+            renderPastOrdersList(todayOrderLogsCache);
+            document.getElementById('past-orders-modal').style.display = 'flex';
         }
 
         function closePastOrdersModal() { document.getElementById('past-orders-modal').style.display = 'none'; }
@@ -1762,7 +1787,7 @@
             let currentKey = getTodayDateKey();
             const orderRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey + '/' + firebaseKey);
             
-            window.fbOnValue(orderRef, (snapshot) => {
+            window.fbGet(orderRef).then((snapshot) => {
                 let targetOrder = snapshot.val();
                 if (targetOrder) {
                     cart = JSON.parse(JSON.stringify(targetOrder.items));
@@ -1789,12 +1814,10 @@
                     const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
                     window.fbSet(salesRef, dailyStats);
 
-                    // ลบออกจาก Firebase orderLogs
                     window.fbRemove(orderRef);
-
                     closePastOrdersModal();
                 }
-            }, { onlyOnce: true });
+            });
         }
 
         function openNoOptModal() { document.getElementById('no-opt-modal').style.display = 'flex'; }
@@ -1891,7 +1914,7 @@
             let totalAmt = cTotal + cdTotal + bTotal;
 
             const logsRef = window.fbRef(window.fbDB, 'orderLogs/' + dateStr);
-            window.fbOnValue(logsRef, (snapshot) => {
+            window.fbGet(logsRef).then((snapshot) => {
                 let data = snapshot.val();
                 let logsHtml = '';
 
@@ -1900,11 +1923,11 @@
                     keys.forEach((key, index) => {
                         let log = data[key];
                         let orderNum = index + 1;
-                        let itemsList = log.items.map(it => {
+                        let itemsList = log.items ? log.items.map(it => {
                             let detailsStr = '';
                             if (it.details && it.details.length > 0) detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
                             return `• ${it.title}${detailsStr} - $${it.price}`;
-                        }).join('<br>');
+                        }).join('<br>') : '';
 
                         let paymentText = log.paymentType;
                         if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
@@ -1936,7 +1959,26 @@
                     </div>
                 `;
                 document.getElementById('report-details-content').innerHTML = html;
-            }, { onlyOnce: true });
+            });
+        }
+
+        // 🥩 นับจำนวนเฉพาะ Rump Steak จาก Sunday Special ($7) ของวันนี้เท่านั้นแบบ Realtime จาก Database
+        function calculateSundayRumpSteakCount(orderLogs) {
+            let totalCount = 0;
+            if (orderLogs) {
+                Object.keys(orderLogs).forEach(key => {
+                    let order = orderLogs[key];
+                    if (order && order.items && Array.isArray(order.items)) {
+                        order.items.forEach(item => {
+                            // ตรวจสอบว่าเป็น Sunday Special Rump Steak ที่ราคา $7 หรือมีธง isSundaySteak
+                            if (item.isSundaySteak || (item.title && item.title.toLowerCase().includes('rump steak') && item.price === 7)) {
+                                totalCount++;
+                            }
+                        });
+                    }
+                });
+            }
+            document.getElementById('rump-steak-today-count').innerText = totalCount;
         }
 
         function initRealtimeSync() {
@@ -1944,6 +1986,18 @@
                 setTimeout(initRealtimeSync, 500);
                 return;
             }
+
+            // ใช้ key ของวันนี้ เพื่อดึงเฉพาะออเดอร์ที่เกิดขึ้นในวันปัจจุบันเท่านั้น
+            const currentKey = getTodayDateKey();
+
+            const todayLogsRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
+            window.fbOnValue(todayLogsRef, (snapshot) => {
+                todayOrderLogsCache = snapshot.val() || {};
+                calculateSundayRumpSteakCount(todayOrderLogsCache);
+                if (document.getElementById('past-orders-modal').style.display === 'flex') {
+                    renderPastOrdersList(todayOrderLogsCache);
+                }
+            });
 
             const activeRef = window.fbRef(window.fbDB, 'activeOrders');
             window.fbOnValue(activeRef, (snapshot) => {
@@ -2005,10 +2059,9 @@
                     updatePaymentButtonsDisplay();
                 }
 
-                isRemoteOutput = false;
+                isRemoteUpdate = false;
             });
 
-            const currentKey = getTodayDateKey();
             const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
             window.fbOnValue(salesRef, (snapshot) => {
                 const salesData = snapshot.val();

@@ -8,7 +8,7 @@
     <!-- Firebase SDK (v10) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue, remove, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCkm45aTNMieP5Si1rBGwWh7o60mVMwN9w",
@@ -29,6 +29,7 @@
         window.fbPush = push;
         window.fbOnValue = onValue;
         window.fbRemove = remove;
+        window.fbGet = get;
     </script>
 
     <style>
@@ -218,7 +219,7 @@
             <button class="cat-btn" id="btn-chef" onclick="switchCategory('chef')">5. Chef Recommended</button>
             <button class="cat-btn" id="btn-burger" onclick="switchCategory('burger')">6. Burger</button>
             <button class="cat-btn" id="btn-pizza" onclick="switchCategory('pizza')">7. Pizza</button>
-            <button class="cat-btn" id="btn-sunday" onclick="switchCategory('sunday')">8. Sunday Special ($7)</button>
+            <button class="cat-btn" id="btn-sunday" onclick="switchCategory('sunday')">8. Sunday Special</button>
         </div>
 
         <div class="main-layout">
@@ -285,16 +286,15 @@
         </div>
     </div>
 
-    <!-- 🔧 ปรับย่อขนาดหน้าต่าง Active Order ให้พอดี ไม่ใหญ่เกินไป -->
     <div class="modal-overlay" id="kitchen-order-modal">
-        <div class="modal-content" style="width: 480px; max-width: 95%;">
-            <div class="modal-header" style="font-size: 18px;">
+        <div class="modal-content" style="width: 650px; max-width: 95%;">
+            <div class="modal-header" style="font-size: 20px;">
                 <span id="kitchen-modal-title">🍽️ Order Details</span>
-                <button class="close-modal" style="font-size: 20px;" onclick="closeKitchenModal()">✕</button>
+                <button class="close-modal" style="font-size: 24px;" onclick="closeKitchenModal()">✕</button>
             </div>
-            <div class="report-details-box" id="kitchen-modal-body" style="padding: 12px;"></div>
+            <div class="report-details-box" id="kitchen-modal-body" style="font-size: 24px; padding: 16px;"></div>
             <div class="modal-actions">
-                <button class="btn-modal-action" style="background: #27ae60; padding: 12px; font-size: 18px;" onclick="markKitchenOrderDone()">✅ Done (Complete Order)</button>
+                <button class="btn-modal-action" style="background: #27ae60; padding: 16px; font-size: 24px;" onclick="markKitchenOrderDone()">✅ Done (Complete Order)</button>
             </div>
         </div>
     </div>
@@ -306,7 +306,7 @@
                 <button class="close-modal" onclick="closePastOrdersModal()">✕</button>
             </div>
             <div style="font-size: 12px; color: #555;">Select an order to load back into your cart for editing or re-submission:</div>
-            <div class="report-details-box" id="past-orders-list-content" style="max-height: 320px; overflow-y: auto;"></div>
+            <div class="report-details-box" id="past-orders-list-content" style="max-height: 320px; overflow-y: auto;">Loading...</div>
             <div class="modal-actions">
                 <button class="btn-modal-close" onclick="closePastOrdersModal()">Close</button>
             </div>
@@ -640,7 +640,7 @@
             sunday: `
                 <div class="sub-header">🥩 SUNDAY SPECIAL</div>
                 <div class="item-grid">
-                    <div class="item-card" onclick="selectMenu('Rump steak', 7, 'sunday', this)" style="background: #e8f8f5; border-color: #27ae60; grid-column: span 3; min-height: 75px;"><div class="item-title" style="color: #1e8449; font-size: 16px;">🥩 Rump steak ($7)</div></div>
+                    <div class="item-card" onclick="selectMenu('Rump steak', 7, 'sunday', this)" style="background: #e8f8f5; border-color: #27ae60; grid-column: span 3; min-height: 75px;"><div class="item-title" style="color: #1e8449; font-size: 16px;">🥩 Rump steak</div></div>
                 </div>
                 <div style="border-top: 1px dashed #bdc3c7; margin: 6px 0;"></div>
                 <div class="item-grid">
@@ -784,6 +784,15 @@
                             <button class="opt-btn sauce-btn" onclick="toggleMainOption('sauce', 'Mushroom', this)">Mushroom</button>
                         </div>
                     </div>
+                    <div class="opt-box" style="border-top: 4px solid #e67e22;">
+                        <div class="opt-title">➕ Extra</div>
+                        <div class="opt-grid-2col">
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Rice', 5, this)">Rice</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Fried Egg', 3, this)">Fried Egg</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Bacon', 4, this)">Bacon</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Ham', 4, this)">Ham</button>
+                        </div>
+                    </div>
                     <div class="opt-box" style="margin-top: auto;">
                         <button class="opt-btn btn-no-opt" onclick="openNoOptModal()">🚫 No Ingredients (Exclusion)</button>
                     </div>`;
@@ -816,6 +825,15 @@
                             <button class="opt-btn sunday-sauce-btn" onclick="selectSundayOption('sauce', 'Gravy', this)">Gravy</button>
                             <button class="opt-btn sunday-sauce-btn" onclick="selectSundayOption('sauce', 'Pepper', this)">Pepper</button>
                             <button class="opt-btn sunday-sauce-btn" onclick="selectSundayOption('sauce', 'Mushroom', this)">Mushroom</button>
+                        </div>
+                    </div>
+                    <div class="opt-box" style="border-top: 4px solid #e67e22;">
+                        <div class="opt-title">➕ Extra</div>
+                        <div class="opt-grid-2col">
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Rice', 5, this)">Rice</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Fried Egg', 3, this)">Fried Egg</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Bacon', 4, this)">Bacon</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Ham', 4, this)">Ham</button>
                         </div>
                     </div>
                     <div class="opt-box" style="margin-top: auto;">
@@ -882,7 +900,7 @@
                     <div class="opt-box" style="border-top: 4px solid #f39c12;">
                         <div class="opt-title">➕ 3. Choose Extra</div>
                         <div class="opt-grid-2col">
-                            <button class="opt-btn extra-btn" onclick="toggleExtra('Jasmine Rice', 5, this)">Jasmine Rice</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Rice', 5, this)">Rice</button>
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Fried Egg', 3, this)">Fried Egg</button>
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Roti', 4, this)">Roti</button>
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Bacon', 4, this)">Bacon</button>
@@ -1040,6 +1058,8 @@
             }
 
             if (currentMode === 'entree') addToCartDirectly(false);
+            else if (currentMode === 'main') addToCartMain(false);
+            else if (currentMode === 'sunday') addToCartSunday(false);
             else addToCartLunchDinner(false);
         }
 
@@ -1098,6 +1118,13 @@
                 let sauceCost = sundaySauces.length * 3;
                 extraPrice += sauceCost;
                 details.push({ text: `Sauce: ${sundaySauces.join(', ')}`, price: sauceCost });
+            }
+
+            if (windowExtras && windowExtras.length > 0) {
+                windowExtras.forEach(ex => {
+                    extraPrice += ex.price;
+                    details.push({ text: `Extra: ${ex.name}`, price: ex.price });
+                });
             }
 
             if (selectedNoIngredients.length > 0) {
@@ -1194,6 +1221,13 @@
                     extraPrice += sauceCost;
                 }
                 details.push({ text: `Sauce: ${selectedSauces.join(', ')}`, price: sauceCost });
+            }
+
+            if (windowExtras && windowExtras.length > 0) {
+                windowExtras.forEach(ex => {
+                    extraPrice += ex.price;
+                    details.push({ text: `Extra: ${ex.name}`, price: ex.price });
+                });
             }
 
             if (selectedNoIngredients.length > 0) {
@@ -1503,6 +1537,11 @@
             allOrderLogs[currentKey].push(newOrderLog);
             localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
 
+            if (window.fbDB) {
+                const logsRef = window.fbRef(window.fbDB, `orderLogs/${currentKey}`);
+                window.fbPush(logsRef, newOrderLog);
+            }
+
             dailyStats.cashCount = (dailyStats.cashCount || 0) + 1;
             dailyStats.cashTotal = (dailyStats.cashTotal || 0) + cashAmount;
             dailyStats.cardCount = (dailyStats.cardCount || 0) + 1;
@@ -1536,6 +1575,11 @@
             if (!allOrderLogs[currentKey]) allOrderLogs[currentKey] = [];
             allOrderLogs[currentKey].push(newOrderLog);
             localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
+
+            if (window.fbDB) {
+                const logsRef = window.fbRef(window.fbDB, `orderLogs/${currentKey}`);
+                window.fbPush(logsRef, newOrderLog);
+            }
 
             if (paymentType === 'Cash') {
                 dailyStats.cashCount = (dailyStats.cashCount || 0) + 1;
@@ -1576,7 +1620,6 @@
             container.innerHTML = html;
         }
 
-        // 🔧 ปรับฟอนต์และระยะห่างใน Pop-up ให้พอดี อ่านง่ายสบายตา
         function openKitchenOrderModal(index) {
             selectedKitchenOrderIndex = index;
             let ord = activeKitchenOrders[index];
@@ -1586,15 +1629,15 @@
             let itemsList = ord.items.map(it => {
                 let detailsStr = '';
                 if (it.details && it.details.length > 0) {
-                    detailsStr = '<br>' + it.details.map(d => `<span style="font-size: 16px; color: #555; padding-left: 16px; display:inline-block; width:100%;">• ${d.text}</span>`).join('');
+                    detailsStr = '<br>' + it.details.map(d => `<span style="font-size: 26px; color: #555; padding-left: 20px; display:inline-block; width:100%;">• ${d.text}</span>`).join('');
                 }
-                return `<div style="padding: 6px 0; border-bottom: 1px solid #eee;"><b>${it.title}</b> ($${it.price})${detailsStr}</div>`;
+                return `<div style="padding: 8px 0; border-bottom: 2px solid #eee;"><b>${it.title}</b> ($${it.price})${detailsStr}</div>`;
             }).join('');
 
             let bodyHtml = `
-                <div style="font-size: 18px; font-weight: bold; color: #2c3e50;">Time: ${ord.time} | Total: $${ord.totalAmount}</div>
-                <hr style="margin: 8px 0;">
-                <div style="font-size: 20px; line-height: 1.3;">${itemsList}</div>
+                <div style="font-size: 28px; font-weight: bold; color: #2c3e50;">Time: ${ord.time} | Total: $${ord.totalAmount}</div>
+                <hr style="margin: 10px 0;">
+                <div style="font-size: 36px; line-height: 1.4;">${itemsList}</div>
             `;
 
             document.getElementById('kitchen-modal-body').innerHTML = bodyHtml;
@@ -1642,11 +1685,26 @@
             }
         }
 
-        function openPastOrdersModal() {
+        async function openPastOrdersModal() {
             let currentKey = getTodayDateKey();
-            let logs = allOrderLogs[currentKey] || [];
-            let contentHtml = '';
+            document.getElementById('past-orders-list-content').innerHTML = "Loading...";
+            document.getElementById('past-orders-modal').style.display = 'flex';
 
+            let logs = allOrderLogs[currentKey] || [];
+
+            if (window.fbDB) {
+                try {
+                    const logsRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
+                    const snapshot = await window.fbGet(logsRef);
+                    if (snapshot.exists()) {
+                        logs = Object.values(snapshot.val());
+                    }
+                } catch(e) {
+                    console.error("Error fetching past orders:", e);
+                }
+            }
+
+            let contentHtml = '';
             logs.forEach((log, index) => {
                 let itemsList = log.items.map(it => {
                     let detailsStr = '';
@@ -1654,13 +1712,13 @@
                     return `• ${it.title}${detailsStr} - $${it.price}`;
                 }).join('<br>');
 
-                let paymentText = log.paymentType;
+                let paymentText = log.paymentType || 'Cash';
                 if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
 
                 contentHtml += `
                     <div style="background: #fff; border: 1px solid #ccc; padding: 8px; border-radius: 4px; margin-top: 6px;">
                         <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 3px;">
-                            <span>Order #${log.orderNo} [Table ${log.tableNo || '-'}] (${log.time})</span>
+                            <span>Order #${log.orderNo || (index+1)} [Table ${log.tableNo || '-'}] (${log.time || '-'})</span>
                             <span style="color: #c0392b;">$${log.totalAmount} (${paymentText})</span>
                         </div>
                         <div style="font-size: 11px; color: #444; margin-top: 4px; margin-bottom: 6px;">
@@ -1672,7 +1730,6 @@
             });
 
             document.getElementById('past-orders-list-content').innerHTML = contentHtml || '<div style="font-size: 12px; color: #777; text-align: center; padding: 20px;">No past orders recorded for today yet.</div>';
-            document.getElementById('past-orders-modal').style.display = 'flex';
         }
 
         function closePastOrdersModal() { document.getElementById('past-orders-modal').style.display = 'none'; }
@@ -1782,10 +1839,12 @@
         function deleteCashRecords() {
             let dateStr = document.getElementById('report-date-picker').value;
             if (confirm(`Are you sure you want to delete normal Cash records for ${dateStr}?`)) {
-                dailyStats.cashCount = 0;
-                dailyStats.cashTotal = 0;
+                if (dateStr === getTodayDateKey()) {
+                    dailyStats.cashCount = 0;
+                    dailyStats.cashTotal = 0;
+                }
                 const salesRef = window.fbRef(window.fbDB, 'dailySales/' + dateStr);
-                window.fbSet(salesRef, dailyStats);
+                window.fbSet(salesRef, { cashCount: 0, cashTotal: 0, cardCount: dailyStats.cardCount || 0, cardTotal: dailyStats.cardTotal || 0, bulkCount: dailyStats.bulkCount || 0, bulkTotal: dailyStats.bulkTotal || 0 });
                 loadReportByDate(dateStr);
             }
         }
@@ -1793,26 +1852,73 @@
         function deleteCardRecords() {
             let dateStr = document.getElementById('report-date-picker').value;
             if (confirm(`คุณต้องการลบยอดชำระด้วย Card ของวันที่ ${dateStr} ทั้งหมดใช่หรือไม่?`)) {
-                dailyStats.cardCount = 0;
-                dailyStats.cardTotal = 0;
+                if (dateStr === getTodayDateKey()) {
+                    dailyStats.cardCount = 0;
+                    dailyStats.cardTotal = 0;
+                }
                 const salesRef = window.fbRef(window.fbDB, 'dailySales/' + dateStr);
-                window.fbSet(salesRef, dailyStats);
+                window.fbSet(salesRef, { cashCount: dailyStats.cashCount || 0, cashTotal: dailyStats.cashTotal || 0, cardCount: 0, cardTotal: 0, bulkCount: dailyStats.bulkCount || 0, bulkTotal: dailyStats.bulkTotal || 0 });
                 loadReportByDate(dateStr);
             }
         }
 
-        function loadReportByDate(dateStr) {
-            let stats = dailyStats;
-            let bCount = stats.bulkCount || 0, bTotal = stats.bulkTotal || 0;
+        async function loadReportByDate(dateStr) {
+            document.getElementById('report-details-content').innerHTML = "Loading...";
+
+            let stats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
+            let logs = allOrderLogs[dateStr] || [];
+
+            if (window.fbDB) {
+                try {
+                    const salesRef = window.fbRef(window.fbDB, 'dailySales/' + dateStr);
+                    const snapshot = await window.fbGet(salesRef);
+                    if (snapshot.exists()) {
+                        stats = snapshot.val();
+                    }
+
+                    const logsRef = window.fbRef(window.fbDB, 'orderLogs/' + dateStr);
+                    const logsSnapshot = await window.fbGet(logsRef);
+                    if (logsSnapshot.exists()) {
+                        const fbLogs = logsSnapshot.val();
+                        logs = Object.values(fbLogs);
+                    }
+                } catch(e) {
+                    console.error("Error fetching report data:", e);
+                }
+            }
+
             let cCount = stats.cashCount || 0, cTotal = stats.cashTotal || 0;
             let cdCount = stats.cardCount || 0, cdTotal = stats.cardTotal || 0;
+            let bCount = stats.bulkCount || 0, bTotal = stats.bulkTotal || 0;
+
+            if (cTotal === 0 && cdTotal === 0 && bTotal === 0 && logs.length > 0) {
+                cCount = 0; cTotal = 0;
+                cdCount = 0; cdTotal = 0;
+                bCount = 0; bTotal = 0;
+                logs.forEach(log => {
+                    let pType = log.paymentType || 'Cash';
+                    if (pType === 'Cash') {
+                        cCount++;
+                        cTotal += log.totalAmount;
+                    } else if (pType === 'Card') {
+                        cdCount++;
+                        cdTotal += log.totalAmount;
+                    } else if (pType === 'Bulk Cash') {
+                        bCount++;
+                        bTotal += log.totalAmount;
+                    } else if (pType === 'Split') {
+                        cCount++;
+                        cTotal += (log.cashAmount || 0);
+                        cdCount++;
+                        cdTotal += (log.cardAmount || 0);
+                    }
+                });
+            }
 
             let totalCnt = cCount + cdCount + bCount;
             let totalAmt = cTotal + cdTotal + bTotal;
 
-            let logs = allOrderLogs[dateStr] || [];
             let logsHtml = '';
-
             logs.forEach(log => {
                 let itemsList = log.items.map(it => {
                     let detailsStr = '';
@@ -1820,13 +1926,13 @@
                     return `• ${it.title}${detailsStr} - $${it.price}`;
                 }).join('<br>');
 
-                let paymentText = log.paymentType;
+                let paymentText = log.paymentType || 'Cash';
                 if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
 
                 logsHtml += `
                     <div style="background: #fff; border: 1px solid #ccc; padding: 6px; border-radius: 4px; margin-top: 4px;">
                         <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 2px;">
-                            <span>Order #${log.orderNo} [Table ${log.tableNo || '-'}] (${log.time})</span>
+                            <span>Order #${log.orderNo || '-'} [Table ${log.tableNo || '-'}] (${log.time || '-'})</span>
                             <span>${paymentText}: $${log.totalAmount}</span>
                         </div>
                         <div style="font-size: 11px; color: #444; margin-top: 4px;">${itemsList}</div>

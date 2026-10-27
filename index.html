@@ -112,10 +112,31 @@
         .menu-scroll-area { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
         .sub-header { background: #34495e; color: white; padding: 6px 10px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-top: 4px; }
         .item-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-        .item-card { background: #fff; padding: 16px 8px; border-radius: 6px; border: 2px solid #bdc3c7; cursor: pointer; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 65px; }
+        .item-card { background: #fff; padding: 16px 8px; border-radius: 6px; border: 2px solid #bdc3c7; cursor: pointer; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 65px; position: relative; }
         .item-card:hover { border-color: #3498db; background: #ebf5fb; }
         .item-card.selected { border-color: #e67e22; background: #fef5e7; box-shadow: 0 0 5px rgba(230,126,34,0.5); }
         .item-title { font-weight: bold; color: #2c3e50; font-size: 14px; line-height: 1.3; }
+
+        .sunday-rump-card {
+            background: #e8f8f5;
+            border: 2px solid #27ae60;
+            grid-column: span 3;
+            min-height: 75px;
+            position: relative;
+        }
+        .sunday-rump-card:hover { background: #d1f2eb; }
+        .sunday-rump-card.selected { border-color: #e67e22; background: #fef5e7; }
+        .sunday-rump-count-badge {
+            position: absolute;
+            bottom: 4px;
+            left: 6px;
+            background: #27ae60;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
 
         .col-options { flex: 1.6; display: flex; flex-direction: column; gap: 8px; height: 100%; overflow-y: auto; }
         .opt-box { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
@@ -287,14 +308,14 @@
     </div>
 
     <div class="modal-overlay" id="kitchen-order-modal">
-        <div class="modal-content" style="width: 650px; max-width: 95%;">
-            <div class="modal-header" style="font-size: 20px;">
+        <div class="modal-content" style="width: 550px; max-width: 95%;">
+            <div class="modal-header" style="font-size: 16px;">
                 <span id="kitchen-modal-title">🍽️ Order Details</span>
-                <button class="close-modal" style="font-size: 24px;" onclick="closeKitchenModal()">✕</button>
+                <button class="close-modal" style="font-size: 20px;" onclick="closeKitchenModal()">✕</button>
             </div>
-            <div class="report-details-box" id="kitchen-modal-body" style="font-size: 24px; padding: 16px;"></div>
+            <div class="report-details-box" id="kitchen-modal-body" style="font-size: 16px; padding: 12px;"></div>
             <div class="modal-actions">
-                <button class="btn-modal-action" style="background: #27ae60; padding: 16px; font-size: 24px;" onclick="markKitchenOrderDone()">✅ Done (Complete Order)</button>
+                <button class="btn-modal-action" style="background: #27ae60; padding: 10px; font-size: 16px;" onclick="markKitchenOrderDone()">✅ Done (Complete Order)</button>
             </div>
         </div>
     </div>
@@ -305,7 +326,7 @@
                 <span>📋 Past Orders (Edit / Reorder)</span>
                 <button class="close-modal" onclick="closePastOrdersModal()">✕</button>
             </div>
-            <div style="font-size: 12px; color: #555;">Select an order to load back into your cart for editing or re-submission:</div>
+            <div style="font-size: 12px; color: #555;">Select an order to load back into your cart for editing, re-submission, or delete:</div>
             <div class="report-details-box" id="past-orders-list-content" style="max-height: 320px; overflow-y: auto;">Loading...</div>
             <div class="modal-actions">
                 <button class="btn-modal-close" onclick="closePastOrdersModal()">Close</button>
@@ -640,7 +661,10 @@
             sunday: `
                 <div class="sub-header">🥩 SUNDAY SPECIAL</div>
                 <div class="item-grid">
-                    <div class="item-card" onclick="selectMenu('Rump steak', 7, 'sunday', this)" style="background: #e8f8f5; border-color: #27ae60; grid-column: span 3; min-height: 75px;"><div class="item-title" style="color: #1e8449; font-size: 16px;">🥩 Rump steak</div></div>
+                    <div class="item-card sunday-rump-card" onclick="selectMenu('Rump steak', 7, 'sunday', this)">
+                        <div class="item-title" style="color: #1e8449; font-size: 16px;">🥩 Rump steak</div>
+                        <div class="sunday-rump-count-badge" id="sunday-rump-badge">Total: 0</div>
+                    </div>
                 </div>
                 <div style="border-top: 1px dashed #bdc3c7; margin: 6px 0;"></div>
                 <div class="item-grid">
@@ -658,7 +682,7 @@
         let selectedSides = [];
         let selectedSauces = [];
         let selectedBurgerExtras = [];
-        let windowExtras = [];
+        let windowExtras = []; 
         let sundaySides = [];
         let sundaySauces = [];
         let selectedNoIngredients = [];
@@ -679,6 +703,8 @@
 
         let systemPassword = localStorage.getItem('pos_system_password') || '8989';
         let isPassProtectionEnabled = JSON.parse(localStorage.getItem('pos_pass_protect_enabled') ?? 'true');
+
+        let sundayRumpCounts = JSON.parse(localStorage.getItem('pos_sunday_rump_counts')) || {};
 
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
@@ -714,6 +740,19 @@
             localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
         }
 
+        if (!sundayRumpCounts[todayKey]) {
+            sundayRumpCounts[todayKey] = 0;
+            localStorage.setItem('pos_sunday_rump_counts', JSON.stringify(sundayRumpCounts));
+        }
+
+        function updateSundayRumpBadgeUI() {
+            let badge = document.getElementById('sunday-rump-badge');
+            if (badge) {
+                let count = sundayRumpCounts[todayKey] || 0;
+                badge.innerText = `Total: ${count}`;
+            }
+        }
+
         function togglePasswordProtection() {
             isPassProtectionEnabled = !isPassProtectionEnabled;
             localStorage.setItem('pos_pass_protect_enabled', JSON.stringify(isPassProtectionEnabled));
@@ -747,6 +786,10 @@
             if (menuData[cat]) containerBox.innerHTML = menuData[cat];
             else containerBox.innerHTML = `<div class="sub-header">Menu coming soon</div>`;
 
+            if (cat === 'sunday') {
+                updateSundayRumpBadgeUI();
+            }
+
             resetSelection();
         }
 
@@ -773,7 +816,7 @@
                             <button class="opt-btn side-btn" onclick="toggleMainOption('side', 'Salad', this)">Salad</button>
                             <button class="opt-btn side-btn" onclick="toggleMainOption('side', 'Vegetables', this)">Vegetables</button>
                             <button class="opt-btn side-btn" onclick="toggleMainOption('side', 'Mashed Potatoes', this)">Mashed Potatoes</button>
-                            <button class="opt-btn side-btn" onclick="toggleMainOption('side', 'Greek salad', this)" style="grid-column: span 2; background: #e8f8f5;">Greek salad</button>
+                            <button class="opt-btn side-btn" onclick="toggleMainOption('side', 'Greek salad', this)" style="grid-column: span 2; background: #e8f8f5;">Greek salad (+$3)</button>
                         </div>
                     </div>
                     <div class="opt-box" style="border-top: 4px solid #f39c12;">
@@ -816,7 +859,7 @@
                             <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Salad', this)">Salad</button>
                             <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Vegetables', this)">Vegetables</button>
                             <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Mashed Potatoes', this)">Mashed Potatoes</button>
-                            <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Greek salad', this)" style="grid-column: span 2; background: #e8f8f5;">Greek salad</button>
+                            <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Greek salad', this)" style="grid-column: span 2; background: #e8f8f5;">Greek salad (+$3)</button>
                         </div>
                     </div>
                     <div class="opt-box" style="border-top: 4px solid #f39c12;">
@@ -914,6 +957,42 @@
             }
         }
 
+        function toggleExtra(name, price, btn) {
+            btn.style.transform = 'scale(0.95)';
+            setTimeout(() => btn.style.transform = 'scale(1)', 100);
+
+            if (!selectedMenu) {
+                cart.push({ title: `${name}`, price: price, details: [{text: name, price: price}] });
+                updateCartUI();
+                return;
+            }
+
+            windowExtras.push({ name: name, price: price });
+
+            if (currentMode === 'entree') addToCartDirectly(false);
+            else if (currentMode === 'main') addToCartMain(false);
+            else if (currentMode === 'sunday') addToCartSunday(false);
+            else if (currentMode === 'burger') addToCartBurger(false);
+            else addToCartLunchDinner(false);
+        }
+
+        function toggleBurgerExtra(name, price, el) {
+            if (!selectedMenu) {
+                cart.push({ title: `Extra: ${name}`, price: price, details: [{text: name, price: price}] });
+                updateCartUI();
+                return;
+            }
+            let idx = selectedBurgerExtras.findIndex(i => i.name === name);
+            if (idx > -1) {
+                selectedBurgerExtras.splice(idx, 1);
+                el.classList.remove('selected');
+            } else {
+                selectedBurgerExtras.push({ name, price });
+                el.classList.add('selected');
+            }
+            addToCartBurger(false);
+        }
+
         function selectMenu(name, price, type, el) {
             selectedMenu = name;
             currentBasePrice = price;
@@ -944,7 +1023,9 @@
             else if (type === 'main') addToCartMain(true);
             else if (type === 'burger') addToCartBurger(true);
             else if (type === 'ken_pizza') addToCartKenPizza(true);
-            else if (type === 'sunday') addToCartSunday(true);
+            else if (type === 'sunday') {
+                addToCartSunday(true);
+            }
         }
 
         function openBulkModal() {
@@ -999,23 +1080,6 @@
             updateCartUI();
         }
 
-        function toggleBurgerExtra(name, price, el) {
-            if (!selectedMenu) {
-                cart.push({ title: `Extra: ${name}`, price: price, details: [{text: name, price: price}] });
-                updateCartUI();
-                return;
-            }
-            let idx = selectedBurgerExtras.findIndex(i => i.name === name);
-            if (idx > -1) {
-                selectedBurgerExtras.splice(idx, 1);
-                el.classList.remove('selected');
-            } else {
-                selectedBurgerExtras.push({ name, price });
-                el.classList.add('selected');
-            }
-            addToCartBurger(false);
-        }
-
         function addToCartBurger(isNew) {
             if (!selectedMenu) return;
             let extraTotal = 0;
@@ -1024,6 +1088,13 @@
                 extraTotal += ex.price;
                 details.push({ text: `Extra: ${ex.name}`, price: ex.price });
             });
+
+            if (windowExtras && windowExtras.length > 0) {
+                windowExtras.forEach(ex => {
+                    extraTotal += ex.price;
+                    details.push({ text: `Extra: ${ex.name}`, price: ex.price });
+                });
+            }
 
             if (selectedNoIngredients.length > 0) {
                 selectedNoIngredients.forEach(noItem => details.push({ text: `NO: ${noItem}`, price: 0 }));
@@ -1040,27 +1111,6 @@
                 cart[activeCartIndex] = itemObj;
             }
             updateCartUI();
-        }
-
-        function toggleExtra(name, price, el) {
-            if (!selectedMenu) {
-                cart.push({ title: `${name}`, price: price, details: [{text: name, price: price}] });
-                updateCartUI();
-                return;
-            }
-            let idx = windowExtras.findIndex(i => i.name === name);
-            if (idx > -1) {
-                windowExtras.splice(idx, 1);
-                el.classList.remove('selected');
-            } else {
-                windowExtras.push({ name, price });
-                el.classList.add('selected');
-            }
-
-            if (currentMode === 'entree') addToCartDirectly(false);
-            else if (currentMode === 'main') addToCartMain(false);
-            else if (currentMode === 'sunday') addToCartSunday(false);
-            else addToCartLunchDinner(false);
         }
 
         function selectSundayOption(category, value, el) {
@@ -1091,26 +1141,18 @@
 
             if (sundaySides.length > 0) {
                 let freeQuota = 1;
-                let greekSaladExtraCount = 0;
-                let regularSidesCount = 0;
+                let greekSaladCount = 0;
+                let regularSides = [];
+
                 sundaySides.forEach(side => {
-                    if (side === 'Greek salad') greekSaladExtraCount++;
-                    else regularSidesCount++;
+                    if (side === 'Greek salad') greekSaladCount++;
+                    else regularSides.push(side);
                 });
 
-                let remainingFree = freeQuota;
-                let chargeableRegular = 0;
-                let chargeableGreek = 0;
-
-                if (regularSidesCount >= remainingFree) {
-                    chargeableRegular = regularSidesCount - remainingFree;
-                    remainingFree = 0;
-                } else remainingFree -= regularSidesCount;
-
-                if (greekSaladExtraCount >= remainingFree) chargeableGreek = greekSaladExtraCount - remainingFree;
-
-                let sideCost = (chargeableRegular * 5) + (chargeableGreek * 3);
+                let chargeableRegular = Math.max(0, regularSides.length - freeQuota);
+                let sideCost = (chargeableRegular * 5) + (greekSaladCount * 3);
                 extraPrice += sideCost;
+
                 details.push({ text: `Sides: ${sundaySides.join(', ')}`, price: sideCost });
             }
 
@@ -1191,26 +1233,18 @@
 
             if (selectedSides.length > 0) {
                 let freeQuota = 2;
-                let greekSaladExtraCount = 0;
-                let regularSidesCount = 0;
+                let greekSaladCount = 0;
+                let regularSides = [];
+
                 selectedSides.forEach(side => {
-                    if (side === 'Greek salad') greekSaladExtraCount++;
-                    else regularSidesCount++;
+                    if (side === 'Greek salad') greekSaladCount++;
+                    else regularSides.push(side);
                 });
 
-                let remainingFree = freeQuota;
-                let chargeableRegular = 0;
-                let chargeableGreek = 0;
-
-                if (regularSidesCount >= remainingFree) {
-                    chargeableRegular = regularSidesCount - remainingFree;
-                    remainingFree = 0;
-                } else remainingFree -= regularSidesCount;
-
-                if (greekSaladExtraCount >= remainingFree) chargeableGreek = greekSaladExtraCount - remainingFree;
-
-                let sideCost = (chargeableRegular * 5) + (chargeableGreek * 3);
+                let chargeableRegular = Math.max(0, regularSides.length - freeQuota);
+                let sideCost = (chargeableRegular * 5) + (greekSaladCount * 3);
                 extraPrice += sideCost;
+
                 details.push({ text: `Sides: ${selectedSides.join(', ')}`, price: sideCost });
             }
 
@@ -1353,6 +1387,14 @@
 
         function removeCartItem(index, event) {
             if (event) event.stopPropagation();
+            
+            let removedItem = cart[index];
+            if (removedItem && removedItem.title === 'Rump steak') {
+                sundayRumpCounts[todayKey] = Math.max(0, (sundayRumpCounts[todayKey] || 0) - 1);
+                localStorage.setItem('pos_sunday_rump_counts', JSON.stringify(sundayRumpCounts));
+                updateSundayRumpBadgeUI();
+            }
+
             cart.splice(index, 1);
             if (activeCartIndex === index) activeCartIndex = null;
             else if (activeCartIndex > index) activeCartIndex--;
@@ -1511,15 +1553,48 @@
 
         function closeTableModal() { document.getElementById('table-modal').style.display = 'none'; }
 
-        function confirmOrderWithTable(tableNum) {
+        async function confirmOrderWithTable(tableNum) {
             closeTableModal();
-            if (pendingPaymentType === 'Split') checkoutSplitOrder(pendingCashPaid, pendingCardPaid, tableNum);
-            else checkoutOrder(pendingPaymentType, tableNum);
+            
+            let currentKey = getTodayDateKey();
+            
+            let maxOrderNo = 0;
+            if (allOrderLogs[currentKey]) {
+                allOrderLogs[currentKey].forEach(o => {
+                    if (o.orderNo && o.orderNo > maxOrderNo) maxOrderNo = o.orderNo;
+                });
+            }
+
+            if (window.fbDB) {
+                try {
+                    const logsRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
+                    const snapshot = await window.fbGet(logsRef);
+                    if (snapshot.exists()) {
+                        const valObj = snapshot.val();
+                        Object.values(valObj).forEach(o => {
+                            if (o.orderNo && o.orderNo > maxOrderNo) maxOrderNo = o.orderNo;
+                        });
+                    }
+                } catch(e) {
+                    console.error("Error checking max orderNo:", e);
+                }
+            }
+
+            let nextOrderNo = maxOrderNo + 1;
+
+            let rumpCountInCart = cart.filter(it => it.title === 'Rump steak').length;
+            if (rumpCountInCart > 0) {
+                sundayRumpCounts[currentKey] = (sundayRumpCounts[currentKey] || 0) + rumpCountInCart;
+                localStorage.setItem('pos_sunday_rump_counts', JSON.stringify(sundayRumpCounts));
+                updateSundayRumpBadgeUI();
+            }
+
+            if (pendingPaymentType === 'Split') checkoutSplitOrder(pendingCashPaid, pendingCardPaid, tableNum, nextOrderNo);
+            else checkoutOrder(pendingPaymentType, tableNum, nextOrderNo);
         }
 
-        function checkoutSplitOrder(cashAmount, cardAmount, tableNum) {
+        function checkoutSplitOrder(cashAmount, cardAmount, tableNum, orderNum) {
             let currentKey = getTodayDateKey();
-            let orderNum = (allOrderLogs[currentKey] ? allOrderLogs[currentKey].length : 0) + 1;
             let timeStr = new Date().toLocaleTimeString('en-AU', { hour12: false });
 
             let newOrderLog = {
@@ -1556,11 +1631,10 @@
             clearCart();
         }
 
-        function checkoutOrder(paymentType, tableNum) {
+        function checkoutOrder(paymentType, tableNum, orderNum) {
             if (cart.length === 0) return;
 
             let currentKey = getTodayDateKey();
-            let orderNum = (allOrderLogs[currentKey] ? allOrderLogs[currentKey].length : 0) + 1;
             let timeStr = new Date().toLocaleTimeString('en-AU', { hour12: false });
 
             let newOrderLog = {
@@ -1629,15 +1703,15 @@
             let itemsList = ord.items.map(it => {
                 let detailsStr = '';
                 if (it.details && it.details.length > 0) {
-                    detailsStr = '<br>' + it.details.map(d => `<span style="font-size: 26px; color: #555; padding-left: 20px; display:inline-block; width:100%;">• ${d.text}</span>`).join('');
+                    detailsStr = '<br>' + it.details.map(d => `<span style="font-size: 14px; color: #555; padding-left: 15px; display:inline-block; width:100%;">• ${d.text}</span>`).join('');
                 }
-                return `<div style="padding: 8px 0; border-bottom: 2px solid #eee;"><b>${it.title}</b> ($${it.price})${detailsStr}</div>`;
+                return `<div style="padding: 6px 0; border-bottom: 1px solid #eee;"><b>${it.title}</b> ($${it.price})${detailsStr}</div>`;
             }).join('');
 
             let bodyHtml = `
-                <div style="font-size: 28px; font-weight: bold; color: #2c3e50;">Time: ${ord.time} | Total: $${ord.totalAmount}</div>
-                <hr style="margin: 10px 0;">
-                <div style="font-size: 36px; line-height: 1.4;">${itemsList}</div>
+                <div style="font-size: 15px; font-weight: bold; color: #2c3e50;">Time: ${ord.time} | Total: $${ord.totalAmount}</div>
+                <hr style="margin: 8px 0;">
+                <div style="font-size: 18px; line-height: 1.4;">${itemsList}</div>
             `;
 
             document.getElementById('kitchen-modal-body').innerHTML = bodyHtml;
@@ -1697,15 +1771,18 @@
                     const logsRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
                     const snapshot = await window.fbGet(logsRef);
                     if (snapshot.exists()) {
-                        logs = Object.values(snapshot.val());
+                        const valObj = snapshot.val();
+                        logs = Object.values(valObj);
                     }
                 } catch(e) {
                     console.error("Error fetching past orders:", e);
                 }
             }
 
+            logs.sort((a, b) => (a.orderNo || 0) - (b.orderNo || 0));
+
             let contentHtml = '';
-            logs.forEach((log, index) => {
+            logs.forEach((log) => {
                 let itemsList = log.items.map(it => {
                     let detailsStr = '';
                     if (it.details && it.details.length > 0) detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
@@ -1715,16 +1792,21 @@
                 let paymentText = log.paymentType || 'Cash';
                 if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
 
+                let targetOrderNo = log.orderNo || 1;
+
                 contentHtml += `
                     <div style="background: #fff; border: 1px solid #ccc; padding: 8px; border-radius: 4px; margin-top: 6px;">
                         <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 3px;">
-                            <span>Order #${log.orderNo || (index+1)} [Table ${log.tableNo || '-'}] (${log.time || '-'})</span>
+                            <span>Order #${targetOrderNo} [Table ${log.tableNo || '-'}] (${log.time || '-'})</span>
                             <span style="color: #c0392b;">$${log.totalAmount} (${paymentText})</span>
                         </div>
                         <div style="font-size: 11px; color: #444; margin-top: 4px; margin-bottom: 6px;">
                             ${itemsList}
                         </div>
-                        <button style="background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;" onclick="loadOrderForEdit(${index})">✏️ Remove & Edit Order</button>
+                        <div style="display: flex; gap: 6px;">
+                            <button style="background: #2980b9; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold; flex: 1;" onclick="loadOrderForEditByOrderNo(${targetOrderNo})">📥 Load to Cart (Edit)</button>
+                            <button style="background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;" onclick="deletePastOrder(${targetOrderNo})">🗑️ Delete Order</button>
+                        </div>
                     </div>
                 `;
             });
@@ -1734,10 +1816,25 @@
 
         function closePastOrdersModal() { document.getElementById('past-orders-modal').style.display = 'none'; }
 
-        function loadOrderForEdit(logIndex) {
+        async function loadOrderForEditByOrderNo(targetOrderNo) {
             let currentKey = getTodayDateKey();
             let logs = allOrderLogs[currentKey] || [];
-            let targetOrder = logs[logIndex];
+            let targetOrder = null;
+
+            if (window.fbDB) {
+                try {
+                    const logsRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
+                    const snapshot = await window.fbGet(logsRef);
+                    if (snapshot.exists()) {
+                        const fbLogsObj = snapshot.val();
+                        logs = Object.values(fbLogsObj);
+                    }
+                } catch(e) {
+                    console.error("Error fetching past orders for edit:", e);
+                }
+            }
+
+            targetOrder = logs.find(l => l.orderNo === targetOrderNo);
 
             if (targetOrder) {
                 cart = JSON.parse(JSON.stringify(targetOrder.items));
@@ -1745,33 +1842,93 @@
                 isBulkOptionSelected = cart.some(it => it.isBulk);
                 updatePaymentButtonsDisplay();
 
-                if (targetOrder.paymentType === 'Cash') {
-                    dailyStats.cashCount = Math.max(0, (dailyStats.cashCount || 0) - 1);
-                    dailyStats.cashTotal = Math.max(0, (dailyStats.cashTotal || 0) - targetOrder.totalAmount);
-                } else if (targetOrder.paymentType === 'Card') {
-                    dailyStats.cardCount = Math.max(0, (dailyStats.cardCount || 0) - 1);
-                    dailyStats.cardTotal = Math.max(0, (dailyStats.cardTotal || 0) - targetOrder.totalAmount);
-                } else if (targetOrder.paymentType === 'Bulk Cash') {
-                    dailyStats.bulkCount = Math.max(0, (dailyStats.bulkCount || 0) - 1);
-                    dailyStats.bulkTotal = Math.max(0, (dailyStats.bulkTotal || 0) - targetOrder.totalAmount);
-                } else if (targetOrder.paymentType === 'Split') {
-                    dailyStats.cashCount = Math.max(0, (dailyStats.cashCount || 0) - 1);
-                    dailyStats.cashTotal = Math.max(0, (dailyStats.cashTotal || 0) - (targetOrder.cashAmount || 0));
-                    dailyStats.cardCount = Math.max(0, (dailyStats.cardCount || 0) - 1);
-                    dailyStats.cardTotal = Math.max(0, (dailyStats.cardTotal || 0) - (targetOrder.cardAmount || 0));
-                }
-
-                if (window.fbDB) {
-                    const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
-                    window.fbSet(salesRef, dailyStats);
-                }
-
-                logs.splice(logIndex, 1);
-                allOrderLogs[currentKey] = logs;
-                localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
-
                 closePastOrdersModal();
+            } else {
+                alert("ไม่พบข้อมูลออเดอร์ที่ต้องการเรียก กรุณาลองใหม่อีกครั้ง");
             }
+        }
+
+        async function deletePastOrder(targetOrderNo) {
+            if (!confirm(`คุณต้องการลบ Order #${targetOrderNo} นี้ออกจากระบบใช่หรือไม่? (ยอดขายและจำนวน Rump steak จะถูกหักออกด้วย)`)) {
+                return;
+            }
+
+            let currentKey = getTodayDateKey();
+            let logs = allOrderLogs[currentKey] || [];
+            let fbLogsObj = null;
+
+            if (window.fbDB) {
+                try {
+                    const logsRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
+                    const snapshot = await window.fbGet(logsRef);
+                    if (snapshot.exists()) {
+                        fbLogsObj = snapshot.val();
+                        logs = Object.values(fbLogsObj);
+                    }
+                } catch(e) {
+                    console.error("Error fetching logs for deletion:", e);
+                }
+            }
+
+            let targetIndex = logs.findIndex(l => l.orderNo === targetOrderNo);
+            if (targetIndex === -1) {
+                alert("ไม่พบออเดอร์ที่ต้องการลบในระบบ");
+                return;
+            }
+
+            let targetOrder = logs[targetIndex];
+
+            let rumpCount = targetOrder.items.filter(it => it.title === 'Rump steak').length;
+            if (rumpCount > 0) {
+                sundayRumpCounts[currentKey] = Math.max(0, (sundayRumpCounts[currentKey] || 0) - rumpCount);
+                localStorage.setItem('pos_sunday_rump_counts', JSON.stringify(sundayRumpCounts));
+                updateSundayRumpBadgeUI();
+            }
+
+            let pType = targetOrder.paymentType || 'Cash';
+            let pAmount = targetOrder.totalAmount || 0;
+
+            if (pType === 'Cash') {
+                dailyStats.cashCount = Math.max(0, (dailyStats.cashCount || 0) - 1);
+                dailyStats.cashTotal = Math.max(0, (dailyStats.cashTotal || 0) - pAmount);
+            } else if (pType === 'Card') {
+                dailyStats.cardCount = Math.max(0, (dailyStats.cardCount || 0) - 1);
+                dailyStats.cardTotal = Math.max(0, (dailyStats.cardTotal || 0) - pAmount);
+            } else if (pType === 'Bulk Cash') {
+                dailyStats.bulkCount = Math.max(0, (dailyStats.bulkCount || 0) - 1);
+                dailyStats.bulkTotal = Math.max(0, (dailyStats.bulkTotal || 0) - pAmount);
+            } else if (pType === 'Split') {
+                let cashPart = targetOrder.cashAmount || 0;
+                let cardPart = targetOrder.cardAmount || 0;
+                dailyStats.cashCount = Math.max(0, (dailyStats.cashCount || 0) - 1);
+                dailyStats.cashTotal = Math.max(0, (dailyStats.cashTotal || 0) - cashPart);
+                dailyStats.cardCount = Math.max(0, (dailyStats.cardCount || 0) - 1);
+                dailyStats.cardTotal = Math.max(0, (dailyStats.cardTotal || 0) - cardPart);
+            }
+
+            if (window.fbDB) {
+                const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
+                window.fbSet(salesRef, dailyStats);
+            }
+            updateDailyReportUI();
+
+            if (window.fbDB && fbLogsObj) {
+                let fbKeyToDelete = null;
+                Object.keys(fbLogsObj).forEach(k => {
+                    if (fbLogsObj[k].orderNo === targetOrderNo) {
+                        fbKeyToDelete = k;
+                    }
+                });
+                if (fbKeyToDelete) {
+                    const itemRef = window.fbRef(window.fbDB, `orderLogs/${currentKey}/${fbKeyToDelete}`);
+                    await window.fbRemove(itemRef);
+                }
+            }
+
+            allOrderLogs[currentKey].splice(targetIndex, 1);
+            localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
+
+            openPastOrdersModal();
         }
 
         function openNoOptModal() { document.getElementById('no-opt-modal').style.display = 'flex'; }
@@ -1867,6 +2024,7 @@
 
             let stats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
             let logs = allOrderLogs[dateStr] || [];
+            let sundayRumpTotal = sundayRumpCounts[dateStr] || 0;
 
             if (window.fbDB) {
                 try {
@@ -1887,33 +2045,11 @@
                 }
             }
 
+            logs.sort((a, b) => (a.orderNo || 0) - (b.orderNo || 0));
+
             let cCount = stats.cashCount || 0, cTotal = stats.cashTotal || 0;
             let cdCount = stats.cardCount || 0, cdTotal = stats.cardTotal || 0;
             let bCount = stats.bulkCount || 0, bTotal = stats.bulkTotal || 0;
-
-            if (cTotal === 0 && cdTotal === 0 && bTotal === 0 && logs.length > 0) {
-                cCount = 0; cTotal = 0;
-                cdCount = 0; cdTotal = 0;
-                bCount = 0; bTotal = 0;
-                logs.forEach(log => {
-                    let pType = log.paymentType || 'Cash';
-                    if (pType === 'Cash') {
-                        cCount++;
-                        cTotal += log.totalAmount;
-                    } else if (pType === 'Card') {
-                        cdCount++;
-                        cdTotal += log.totalAmount;
-                    } else if (pType === 'Bulk Cash') {
-                        bCount++;
-                        bTotal += log.totalAmount;
-                    } else if (pType === 'Split') {
-                        cCount++;
-                        cTotal += (log.cashAmount || 0);
-                        cdCount++;
-                        cdTotal += (log.cardAmount || 0);
-                    }
-                });
-            }
 
             let totalCnt = cCount + cdCount + bCount;
             let totalAmt = cTotal + cdTotal + bTotal;
@@ -1942,6 +2078,7 @@
 
             let html = `
                 <div><b>📅 Date:</b> ${dateStr}</div>
+                <div>🥩 Sunday Rump Steak Sold: <b style="color: #27ae60;">${sundayRumpTotal} portions</b></div>
                 <div>💵 Cash: <b>${cCount} bills</b> (<b>$${cTotal}</b>)</div>
                 <div>💳 Card: <b>${cdCount} bills</b> (<b>$${cdTotal}</b>)</div>
                 <div>💵 Bulk Cash: <b>${bCount} bills</b> (<b>$${bTotal}</b>)</div>
@@ -2043,6 +2180,7 @@
             updateClock();
             updateDailyReportUI();
             updatePassProtectBtnUI();
+            updateSundayRumpBadgeUI();
             initRealtimeSync();
             switchCategory('lunch');
         };

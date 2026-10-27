@@ -1388,13 +1388,7 @@
         function removeCartItem(index, event) {
             if (event) event.stopPropagation();
             
-            let removedItem = cart[index];
-            if (removedItem && removedItem.title === 'Rump steak') {
-                sundayRumpCounts[todayKey] = Math.max(0, (sundayRumpCounts[todayKey] || 0) - 1);
-                localStorage.setItem('pos_sunday_rump_counts', JSON.stringify(sundayRumpCounts));
-                updateSundayRumpBadgeUI();
-            }
-
+            // ลบเฉพาะรายการออกจากตะกร้า โดยไม่ลด Sunday Rump Total ตามที่คุณขอ
             cart.splice(index, 1);
             if (activeCartIndex === index) activeCartIndex = null;
             else if (activeCartIndex > index) activeCartIndex--;
@@ -1878,6 +1872,7 @@
 
             let targetOrder = logs[targetIndex];
 
+            // หักลบจำนวน Rump steak เฉพาะเมื่อลบ Order จากหน้า Past Orders ตามที่คุณขอ
             let rumpCount = targetOrder.items.filter(it => it.title === 'Rump steak').length;
             if (rumpCount > 0) {
                 sundayRumpCounts[currentKey] = Math.max(0, (sundayRumpCounts[currentKey] || 0) - rumpCount);

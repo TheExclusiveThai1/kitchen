@@ -107,15 +107,33 @@
         .cat-btn.active { background: #e67e22; }
 
         .main-layout { display: flex; gap: 10px; flex: 1; min-height: 0; }
-        .col-menu { flex: 2.2; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; height: 100%; }
+        .col-menu { flex: 2.2; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; height: 100%; position: relative; }
         .section-header-title { font-size: 15px; font-weight: bold; color: #2c3e50; border-bottom: 2px solid #e67e22; padding-bottom: 4px; margin-bottom: 6px; }
-        .menu-scroll-area { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+        .menu-scroll-area { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; padding-bottom: 50px; }
         .sub-header { background: #34495e; color: white; padding: 6px 10px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-top: 4px; }
         .item-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .item-card { background: #fff; padding: 16px 8px; border-radius: 6px; border: 2px solid #bdc3c7; cursor: pointer; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 65px; position: relative; }
         .item-card:hover { border-color: #3498db; background: #ebf5fb; }
         .item-card.selected { border-color: #e67e22; background: #fef5e7; box-shadow: 0 0 5px rgba(230,126,34,0.5); }
         .item-title { font-weight: bold; color: #2c3e50; font-size: 14px; line-height: 1.3; }
+
+        /* ปุ่ม Add Note หลักที่มุมล่างซ้าย */
+        .btn-add-note-corner {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: #8e44ad;
+            color: white;
+            border: none;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+        .btn-add-note-corner:hover { background: #732d91; }
 
         .sunday-rump-card {
             background: #e8f8f5;
@@ -179,9 +197,20 @@
         .btn-past-orders { background: #7f8c8d; color: white; border: none; width: 100%; padding: 7px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; margin-bottom: 6px; }
         .btn-past-orders:hover { background: #707b7c; }
 
-        .daily-report-box { background: #eaf2f8; border: 1px solid #2980b9; padding: 6px 8px; border-radius: 6px; font-size: 11px; color: #2c3e50; display: flex; flex-direction: column; gap: 2px; }
-        .daily-report-header { font-weight: bold; display: flex; justify-content: space-between; border-bottom: 1px solid #bdc3c7; padding-bottom: 2px; margin-bottom: 2px; }
-        .daily-report-row { display: flex; justify-content: space-between; }
+        /* ปรับปรุงกล่อง Today's Sales Summary ให้ตัวหนังสือและตัวเลขใหญ่ ชัดเจนขึ้น */
+        .daily-report-box { 
+            background: #eaf2f8; 
+            border: 2px solid #2980b9; 
+            padding: 10px 12px; 
+            border-radius: 6px; 
+            font-size: 14px; 
+            color: #2c3e50; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 5px; 
+        }
+        .daily-report-header { font-weight: bold; font-size: 15px; display: flex; justify-content: space-between; border-bottom: 1px solid #bdc3c7; padding-bottom: 4px; margin-bottom: 2px; }
+        .daily-report-row { display: flex; justify-content: space-between; font-weight: bold; }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 18px; border-radius: 8px; width: 440px; max-width: 95%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 10px; max-height: 90vh; overflow-y: auto; }
@@ -208,6 +237,49 @@
         .table-btn { background: #3498db; color: white; border: none; border-radius: 8px; aspect-ratio: 1 / 1; font-size: 30px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 6px rgba(0,0,0,0.15); transition: transform 0.1s, background-color 0.1s; }
         .table-btn:hover { background: #2980b9; transform: scale(1.04); }
         .table-btn:active { transform: scale(0.96); }
+
+        /* ขยายขนาดหน้าต่างป๊อปอัพแป้นพิมพ์และตัวอักษรบนแป้นพิมพ์เพิ่มขึ้นอีก 5px (จาก 24px เป็น 29px) */
+        .keyboard-modal { width: 750px !important; max-width: 95vw !important; padding: 24px !important; }
+        .keyboard-screen-input {
+            width: 100%;
+            padding: 16px;
+            font-size: 30px;
+            font-weight: bold;
+            border: 2px solid #34495e;
+            border-radius: 8px;
+            background: #fff;
+            color: #2c3e50;
+            text-align: left;
+            min-height: 75px;
+            margin-bottom: 12px;
+        }
+        .kb-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+        .kb-key {
+            background: #ecf0f1;
+            border: 2px solid #bdc3c7;
+            border-radius: 10px;
+            font-size: 29px; /* ขยายเพิ่มขึ้นอีก 5px จาก 24px */
+            font-weight: bold;
+            color: #2c3e50;
+            padding: 20px 0;
+            flex: 1;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: 0 3px 4px rgba(0,0,0,0.1);
+            user-select: none;
+        }
+        .kb-key:hover { background: #d5dbdb; }
+        .kb-key:active { background: #bdc3c7; transform: scale(0.95); }
+        .kb-key.wide { flex: 1.5; font-size: 21px; background: #95a5a6; color: white; border-color: #7f8c8d; }
+        .kb-key.wide:hover { background: #7f8c8d; }
+        .kb-key.space { flex: 5; font-size: 21px; background: #eaeded; }
+        .kb-key.action { background: #27ae60; color: white; border-color: #219653; flex: 2; font-size: 21px; }
+        .kb-key.action:hover { background: #219653; }
     </style>
 </head>
 <body>
@@ -247,6 +319,8 @@
             <div class="col-menu">
                 <div class="section-header-title" id="mode-title">🍳 1. Select Menu</div>
                 <div class="menu-scroll-area" id="menu-container-box"></div>
+                <!-- ปุ่ม Add Note หลักที่มุมล่างซ้าย -->
+                <button class="btn-add-note-corner" onclick="openKeyboardForNote()">📝 Add Note</button>
             </div>
 
             <div class="col-options" id="options-panel"></div>
@@ -276,19 +350,19 @@
                         </div>
                         <div class="daily-report-row">
                             <span>💵 Cash (<span id="daily-cash-count">0</span>):</span>
-                            <b style="color: #27ae60;">$<span id="daily-cash-amount">0</span></b>
+                            <b style="color: #27ae60; font-size: 15px;">$<span id="daily-cash-amount">0</span></b>
                         </div>
                         <div class="daily-report-row">
                             <span>💳 Card (<span id="daily-card-count">0</span>):</span>
-                            <b style="color: #2980b9;">$<span id="daily-card-amount">0</span></b>
+                            <b style="color: #2980b9; font-size: 15px;">$<span id="daily-card-amount">0</span></b>
                         </div>
                         <div class="daily-report-row">
                             <span>💵 Bulk Cash (<span id="daily-bulk-count">0</span>):</span>
-                            <b style="color: #8e44ad;">$<span id="daily-bulk-amount">0</span></b>
+                            <b style="color: #8e44ad; font-size: 15px;">$<span id="daily-bulk-amount">0</span></b>
                         </div>
-                        <div class="daily-report-row" style="border-top: 1px dashed #bdc3c7; padding-top: 2px; font-weight: bold;">
+                        <div class="daily-report-row" style="border-top: 1px dashed #bdc3c7; padding-top: 4px; font-weight: bold; font-size: 15px;">
                             <span>Total (<span id="daily-orders-count">0</span>):</span>
-                            <span style="color: #c0392b;">$<span id="daily-total-amount">0</span></span>
+                            <span style="color: #c0392b; font-size: 16px;">$<span id="daily-total-amount">0</span></span>
                         </div>
                     </div>
                 </div>
@@ -449,6 +523,58 @@
                     <b style="color: #27ae60; font-size: 18px;">$<span id="cash-change-amount">0.00</span></b>
                 </div>
                 <button class="btn-modal-action" style="background: #27ae60; padding: 10px; font-size: 15px; margin-top: 4px;" onclick="confirmCashCheckout()">Confirm Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- On-Screen English Keyboard Modal (Larger Font 29px) -->
+    <div class="modal-overlay" id="keyboard-modal">
+        <div class="modal-content keyboard-modal">
+            <div class="modal-header">
+                <span style="font-size: 18px;">⌨️ Add Custom Note (English)</span>
+                <button class="close-modal" onclick="closeKeyboardModal()" style="font-size: 22px;">✕</button>
+            </div>
+            <div style="font-size: 14px; color: #555; font-weight: bold;" id="keyboard-target-info">Type custom note or special instruction:</div>
+            <input type="text" id="keyboard-text-input" class="keyboard-screen-input" placeholder="e.g. Cut burger in half, No onion..." readonly>
+            
+            <div class="kb-row">
+                <div class="kb-key" onclick="pressKey('Q')">Q</div>
+                <div class="kb-key" onclick="pressKey('W')">W</div>
+                <div class="kb-key" onclick="pressKey('E')">E</div>
+                <div class="kb-key" onclick="pressKey('R')">R</div>
+                <div class="kb-key" onclick="pressKey('T')">T</div>
+                <div class="kb-key" onclick="pressKey('Y')">Y</div>
+                <div class="kb-key" onclick="pressKey('U')">U</div>
+                <div class="kb-key" onclick="pressKey('I')">I</div>
+                <div class="kb-key" onclick="pressKey('O')">O</div>
+                <div class="kb-key" onclick="pressKey('P')">P</div>
+            </div>
+            <div class="kb-row">
+                <div class="kb-key" onclick="pressKey('A')">A</div>
+                <div class="kb-key" onclick="pressKey('S')">S</div>
+                <div class="kb-key" onclick="pressKey('D')">D</div>
+                <div class="kb-key" onclick="pressKey('F')">F</div>
+                <div class="kb-key" onclick="pressKey('G')">G</div>
+                <div class="kb-key" onclick="pressKey('H')">H</div>
+                <div class="kb-key" onclick="pressKey('J')">J</div>
+                <div class="kb-key" onclick="pressKey('K')">K</div>
+                <div class="kb-key" onclick="pressKey('L')">L</div>
+                <div class="kb-key" onclick="pressKey('DEL')">⌫</div>
+            </div>
+            <div class="kb-row">
+                <div class="kb-key wide" onclick="pressKey('CLEAR')">CLEAR</div>
+                <div class="kb-key" onclick="pressKey('Z')">Z</div>
+                <div class="kb-key" onclick="pressKey('X')">X</div>
+                <div class="kb-key" onclick="pressKey('C')">C</div>
+                <div class="kb-key" onclick="pressKey('V')">V</div>
+                <div class="kb-key" onclick="pressKey('B')">B</div>
+                <div class="kb-key" onclick="pressKey('N')">N</div>
+                <div class="kb-key" onclick="pressKey('M')">M</div>
+                <div class="kb-key wide" onclick="pressKey(',')">,</div>
+            </div>
+            <div class="kb-row">
+                <div class="kb-key space" onclick="pressKey('SPACE')">SPACE</div>
+                <div class="kb-key action" onclick="confirmKeyboardNote()">APPLY TO CART</div>
             </div>
         </div>
     </div>
@@ -686,6 +812,7 @@
         let sundaySides = [];
         let sundaySauces = [];
         let selectedNoIngredients = [];
+        let customNoteText = '';
 
         let isBulkOptionSelected = false;
         let pendingPaymentType = 'Cash';
@@ -954,6 +1081,50 @@
                     <div class="opt-box" style="margin-top: auto;">
                         <button class="opt-btn btn-no-opt" onclick="openNoOptModal()">🚫 No Ingredients (Exclusion)</button>
                     </div>`;
+            }
+        }
+
+        // เปิดแป้นพิมพ์เมื่อกดปุ่ม Add Note มุมล่างซ้าย
+        function openKeyboardForNote() {
+            customNoteText = '';
+            document.getElementById('keyboard-text-input').value = '';
+            document.getElementById('keyboard-modal').style.display = 'flex';
+        }
+
+        function closeKeyboardModal() {
+            document.getElementById('keyboard-modal').style.display = 'none';
+        }
+
+        function pressKey(keyVal) {
+            let input = document.getElementById('keyboard-text-input');
+            if (keyVal === 'CLEAR') {
+                customNoteText = '';
+            } else if (keyVal === 'DEL') {
+                customNoteText = customNoteText.slice(0, -1);
+            } else if (keyVal === 'SPACE') {
+                customNoteText += ' ';
+            } else {
+                customNoteText += keyVal;
+            }
+            input.value = customNoteText;
+        }
+
+        function confirmKeyboardNote() {
+            closeKeyboardModal();
+            let noteStr = customNoteText.trim();
+            if (noteStr === '') return;
+
+            // หากมีการเลือกเมนูค้างไว้ในตะกร้า (activeCartIndex หรือชิ้นล่าสุด) ให้แปะ Note เข้าไป
+            if (cart.length > 0) {
+                let targetIdx = (activeCartIndex !== null && activeCartIndex < cart.length) ? activeCartIndex : cart.length - 1;
+                if (!cart[targetIdx].details) cart[targetIdx].details = [];
+                cart[targetIdx].details.push({ text: `Note: ${noteStr}`, price: 0 });
+                updateCartUI();
+            } else {
+                // ถ้ายังไม่เลือกเมนู ให้สร้างเป็นรายการ Note อิสระในตะกร้า
+                cart.push({ title: `Note: ${noteStr}`, price: 0, details: [] });
+                activeCartIndex = cart.length - 1;
+                updateCartUI();
             }
         }
 
@@ -1378,6 +1549,7 @@
             sundaySides = [];
             sundaySauces = [];
             selectedNoIngredients = [];
+            customNoteText = '';
             activeCartIndex = null;
 
             document.querySelectorAll('.item-card').forEach(c => c.classList.remove('selected'));
@@ -1388,7 +1560,6 @@
         function removeCartItem(index, event) {
             if (event) event.stopPropagation();
             
-            // ลบเฉพาะรายการออกจากตะกร้า โดยไม่ลด Sunday Rump Total ตามที่คุณขอ
             cart.splice(index, 1);
             if (activeCartIndex === index) activeCartIndex = null;
             else if (activeCartIndex > index) activeCartIndex--;
@@ -1872,7 +2043,6 @@
 
             let targetOrder = logs[targetIndex];
 
-            // หักลบจำนวน Rump steak เฉพาะเมื่อลบ Order จากหน้า Past Orders ตามที่คุณขอ
             let rumpCount = targetOrder.items.filter(it => it.title === 'Rump steak').length;
             if (rumpCount > 0) {
                 sundayRumpCounts[currentKey] = Math.max(0, (sundayRumpCounts[currentKey] || 0) - rumpCount);

@@ -109,7 +109,7 @@
         .main-layout { display: flex; gap: 10px; flex: 1; min-height: 0; }
         .col-menu { flex: 2.2; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; height: 100%; position: relative; }
         .section-header-title { font-size: 15px; font-weight: bold; color: #2c3e50; border-bottom: 2px solid #e67e22; padding-bottom: 4px; margin-bottom: 6px; }
-        .menu-scroll-area { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; padding-bottom: 50px; }
+        .menu-scroll-area { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; padding-bottom: 60px; }
         .sub-header { background: #34495e; color: white; padding: 6px 10px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-top: 4px; }
         .item-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .item-card { background: #fff; padding: 16px 8px; border-radius: 6px; border: 2px solid #bdc3c7; cursor: pointer; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 65px; position: relative; }
@@ -117,21 +117,27 @@
         .item-card.selected { border-color: #e67e22; background: #fef5e7; box-shadow: 0 0 5px rgba(230,126,34,0.5); }
         .item-title { font-weight: bold; color: #2c3e50; font-size: 14px; line-height: 1.3; }
 
-        .btn-add-note-corner {
+        .corner-buttons-area {
             position: absolute;
             bottom: 10px;
             left: 10px;
-            background: #8e44ad;
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+        .btn-corner {
             color: white;
             border: none;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
-            padding: 10px 18px;
+            padding: 10px 14px;
             border-radius: 6px;
             cursor: pointer;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 10;
         }
+        .btn-add-new-order { background: #27ae60; }
+        .btn-add-new-order:hover { background: #219653; }
+        .btn-add-note-corner { background: #8e44ad; }
         .btn-add-note-corner:hover { background: #732d91; }
 
         .sunday-rump-card {
@@ -329,7 +335,10 @@
             <div class="col-menu">
                 <div class="section-header-title" id="mode-title">🍳 1. Select Menu</div>
                 <div class="menu-scroll-area" id="menu-container-box"></div>
-                <button class="btn-add-note-corner" onclick="openKeyboardForNote()">📝 Add Note</button>
+                <div class="corner-buttons-area">
+                    <button class="btn-corner btn-add-new-order" onclick="openKeyboardForNewOrder()">➕ Add New Order</button>
+                    <button class="btn-corner btn-add-note-corner" onclick="openKeyboardForNote()">📝 Add Note</button>
+                </div>
             </div>
 
             <div class="col-options" id="options-panel"></div>
@@ -540,7 +549,7 @@
     <div class="modal-overlay" id="keyboard-modal">
         <div class="modal-content keyboard-modal">
             <div class="modal-header">
-                <span style="font-size: 18px;">⌨️ Add Custom Note (English)</span>
+                <span style="font-size: 18px;" id="keyboard-modal-title">⌨️ Add Custom Note (English)</span>
                 <button class="close-modal" onclick="closeKeyboardModal()" style="font-size: 22px;">✕</button>
             </div>
             <div style="font-size: 14px; color: #555; font-weight: bold;" id="keyboard-target-info">Type custom note or special instruction:</div>
@@ -583,7 +592,7 @@
             </div>
             <div class="kb-row">
                 <div class="kb-key space" onclick="pressKey('SPACE')">SPACE</div>
-                <div class="kb-key action" onclick="confirmKeyboardNote()">APPLY TO CART</div>
+                <div class="kb-key action" onclick="confirmKeyboardAction()">APPLY TO CART</div>
             </div>
         </div>
     </div>
@@ -833,6 +842,7 @@
         let sundaySauces = [];
         let selectedNoIngredients = [];
         let customNoteText = '';
+        let keyboardActionMode = 'note';
 
         let isBulkOptionSelected = false;
         let pendingPaymentType = 'Cash';
@@ -1107,7 +1117,19 @@
         }
 
         function openKeyboardForNote() {
+            keyboardActionMode = 'note';
             customNoteText = '';
+            document.getElementById('keyboard-modal-title').innerText = '⌨️ Add Custom Note (English)';
+            document.getElementById('keyboard-target-info').innerText = 'Type custom note or special instruction:';
+            document.getElementById('keyboard-text-input').value = '';
+            document.getElementById('keyboard-modal').style.display = 'flex';
+        }
+
+        function openKeyboardForNewOrder() {
+            keyboardActionMode = 'new_order';
+            customNoteText = '';
+            document.getElementById('keyboard-modal-title').innerText = '⌨️ Add New Order Item (English)';
+            document.getElementById('keyboard-target-info').innerText = 'Type custom order item name:';
             document.getElementById('keyboard-text-input').value = '';
             document.getElementById('keyboard-modal').style.display = 'flex';
         }
@@ -1130,18 +1152,28 @@
             input.value = customNoteText;
         }
 
-        function confirmKeyboardNote() {
+        function confirmKeyboardAction() {
             closeKeyboardModal();
-            let noteStr = customNoteText.trim();
-            if (noteStr === '') return;
+            let textStr = customNoteText.trim();
+            if (textStr === '') return;
 
-            if (cart.length > 0) {
-                let targetIdx = (activeCartIndex !== null && activeCartIndex < cart.length) ? activeCartIndex : cart.length - 1;
-                if (!cart[targetIdx].details) cart[targetIdx].details = [];
-                cart[targetIdx].details.push({ text: `Note: ${noteStr}`, price: 0 });
-                updateCartUI();
-            } else {
-                cart.push({ title: `Note: ${noteStr}`, price: 0, details: [] });
+            if (keyboardActionMode === 'note') {
+                if (cart.length > 0) {
+                    let targetIdx = (activeCartIndex !== null && activeCartIndex < cart.length) ? activeCartIndex : cart.length - 1;
+                    if (!cart[targetIdx].details) cart[targetIdx].details = [];
+                    cart[targetIdx].details.push({ text: `Note: ${textStr}`, price: 0 });
+                    updateCartUI();
+                } else {
+                    cart.push({ title: `Note: ${textStr}`, price: 0, details: [] });
+                    activeCartIndex = cart.length - 1;
+                    updateCartUI();
+                }
+            } else if (keyboardActionMode === 'new_order') {
+                let itemPrice = prompt(`Enter price for "${textStr}" ($):`, "0");
+                let parsedPrice = parseFloat(itemPrice);
+                if (isNaN(parsedPrice) || parsedPrice < 0) parsedPrice = 0;
+
+                cart.push({ title: textStr, price: parsedPrice, details: [] });
                 activeCartIndex = cart.length - 1;
                 updateCartUI();
             }
@@ -1304,7 +1336,7 @@
         }
 
         function selectSundayOption(category, value, el) {
-            // ฟังก์ชันเก่าเผื่อเรียก
+            // Reserved for legacy call
         }
 
         function addSundayItem(type, value, el) {
@@ -1322,14 +1354,12 @@
         }
 
         function updateSundayBadgesUI() {
-            // เคลียร์ Badge ทั้งหมดก่อน
             document.querySelectorAll('.sunday-side-btn, .sunday-sauce-btn').forEach(btn => {
                 let badge = btn.querySelector('.opt-badge-count');
                 if (badge) badge.remove();
                 btn.classList.remove('selected');
             });
 
-            // นับจำนวน Side
             let sideCounts = {};
             sundaySides.forEach(s => sideCounts[s] = (sideCounts[s] || 0) + 1);
             Object.keys(sideCounts).forEach(sName => {
@@ -1345,7 +1375,6 @@
                 }
             });
 
-            // นับจำนวน Sauce
             let sauceCounts = {};
             sundaySauces.forEach(sc => sauceCounts[sc] = (sauceCounts[sc] || 0) + 1);
             Object.keys(sauceCounts).forEach(scName => {
@@ -1384,7 +1413,6 @@
                 let sideCost = (chargeableRegular * 5) + (greekSaladCount * 3);
                 extraPrice += sideCost;
 
-                // จัดกลุ่มแสดงผล (เช่น Chips (2))
                 let sideSummary = {};
                 sundaySides.forEach(s => sideSummary[s] = (sideSummary[s] || 0) + 1);
                 let sideStrArr = Object.keys(sideSummary).map(k => sideSummary[k] > 1 ? `${k} (${sideSummary[k]})` : k);
@@ -1707,10 +1735,15 @@
             calculateChange();
         }
 
+        // ฟังก์ชัน Preset แบบใหม่ (บวกสะสมยอดแทนการทับค่าเดิม)
         function setPresetCash(amount) {
             let input = document.getElementById('cash-received-input');
-            if (amount === 'exact') input.value = total;
-            else input.value = amount;
+            if (amount === 'exact') {
+                input.value = total;
+            } else {
+                let currentVal = parseFloat(input.value) || 0;
+                input.value = currentVal + amount;
+            }
             calculateChange();
         }
 

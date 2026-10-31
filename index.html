@@ -1735,7 +1735,6 @@
             calculateChange();
         }
 
-        // ฟังก์ชัน Preset แบบใหม่ (บวกสะสมยอดแทนการทับค่าเดิม)
         function setPresetCash(amount) {
             let input = document.getElementById('cash-received-input');
             if (amount === 'exact') {
@@ -2493,6 +2492,13 @@
             updateSundayRumpBadgeUI();
             initRealtimeSync();
             switchCategory('lunch');
+
+            // เพิ่มฟังก์ชันคลิกพื้นที่ว่างรอบหน้าต่าง (Modal Overlay) เพื่อปิดหน้าต่าง Active Order
+            document.getElementById('kitchen-order-modal').addEventListener('click', function(event) {
+                if (event.target === this) {
+                    closeKitchenModal();
+                }
+            });
         };
     </script>
 </body>

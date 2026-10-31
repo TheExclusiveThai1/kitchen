@@ -935,7 +935,6 @@
 
         if (!sundayRumpCounts[todayKey]) {
             sundayRumpCounts[todayKey] = 0;
-            localStorage.setItem('pos_sunday_rump_counts', JSON.stringify(sundayRumpCounts));
         }
 
         function updateSundayRumpBadgeUI() {
@@ -1890,7 +1889,10 @@
             let rumpCountInCart = cart.filter(it => it.title === 'Rump steak').length;
             if (rumpCountInCart > 0) {
                 sundayRumpCounts[currentKey] = (sundayRumpCounts[currentKey] || 0) + rumpCountInCart;
-                localStorage.setItem('pos_sunday_rump_counts', JSON.stringify(sundayRumpCounts));
+                if (window.fbDB) {
+                    const rumpRef = window.fbRef(window.fbDB, 'sundayRumpCounts/' + currentKey);
+                    window.fbSet(rumpRef, sundayRumpCounts[currentKey]);
+                }
                 updateSundayRumpBadgeUI();
             }
 
@@ -2206,7 +2208,10 @@
             let rumpCount = targetOrder.items.filter(it => it.title === 'Rump steak').length;
             if (rumpCount > 0) {
                 sundayRumpCounts[currentKey] = Math.max(0, (sundayRumpCounts[currentKey] || 0) - rumpCount);
-                localStorage.setItem('pos_sunday_rump_counts', JSON.stringify(sundayRumpCounts));
+                if (window.fbDB) {
+                    const rumpRef = window.fbRef(window.fbDB, 'sundayRumpCounts/' + currentKey);
+                    window.fbSet(rumpRef, sundayRumpCounts[currentKey]);
+                }
                 updateSundayRumpBadgeUI();
             }
 
@@ -2351,6 +2356,7 @@
 
             let allSalesData = {};
             let allLogsData = {};
+            let allRumpData = {};
 
             if (window.fbDB) {
                 try {
@@ -2359,6 +2365,9 @@
 
                     const logsSnap = await window.fbGet(window.fbRef(window.fbDB, 'orderLogs'));
                     if (logsSnap.exists()) allLogsData = logsSnap.val();
+
+                    const rumpSnap = await window.fbGet(window.fbRef(window.fbDB, 'sundayRumpCounts'));
+                    if (rumpSnap.exists()) allRumpData = rumpSnap.val();
                 } catch(e) {
                     console.error("Error fetching report data:", e);
                 }
@@ -2388,7 +2397,8 @@
             let combinedLogs = [];
 
             filteredDates.forEach(dateStr => {
-                aggRumpTotal += (sundayRumpCounts[dateStr] || 0);
+                let rCount = allRumpData[dateStr] !== undefined ? allRumpData[dateStr] : (sundayRumpCounts[dateStr] || 0);
+                aggRumpTotal += rCount;
 
                 let st = allSalesData[dateStr];
                 if (dateStr === getTodayDateKey()) {
@@ -2540,9 +2550,20 @@
                 if (salesData) {
                     dailyStats = salesData;
                 } else {
-                    dailyStats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
+                    dailyStats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardCount: 0, bulkCount: 0, bulkTotal: 0 };
                 }
                 updateDailyReportUI();
+            });
+
+            const rumpRef = window.fbRef(window.fbDB, 'sundayRumpCounts/' + currentKey);
+            window.fbOnValue(rumpRef, (snapshot) => {
+                const rumpVal = snapshot.val();
+                if (rumpVal !== null && rumpVal !== undefined) {
+                    sundayRumpCounts[currentKey] = rumpVal;
+                } else {
+                    sundayRumpCounts[currentKey] = 0;
+                }
+                updateSundayRumpBadgeUI();
             });
         }
 

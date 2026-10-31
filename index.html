@@ -160,9 +160,22 @@
         .opt-title { font-size: 14px; font-weight: bold; color: #2c3e50; margin-bottom: 6px; }
         .opt-grid-2col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
         .opt-grid-3col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-        .opt-btn { background: #ecf0f1; border: 2px solid #bdc3c7; border-radius: 6px; font-weight: bold; cursor: pointer; text-align: center; font-size: 13px; color: #2c3e50; padding: 12px 6px; min-height: 48px; display: flex; align-items: center; justify-content: center; }
+        .opt-btn { background: #ecf0f1; border: 2px solid #bdc3c7; border-radius: 6px; font-weight: bold; cursor: pointer; text-align: center; font-size: 13px; color: #2c3e50; padding: 12px 6px; min-height: 48px; display: flex; align-items: center; justify-content: center; position: relative; }
         .opt-btn:hover { background: #d5dbdb; }
         .opt-btn.selected { background: #e67e22; color: white; border-color: #d35400; }
+        
+        .opt-badge-count {
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            background: #c0392b;
+            color: white;
+            font-size: 11px;
+            padding: 1px 5px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
         .btn-no-opt { background: #e74c3c; color: white; border-color: #c0392b; font-size: 14px; padding: 12px 6px; min-height: 48px; }
         .btn-no-opt:hover { background: #c0392b; }
 
@@ -615,14 +628,13 @@
                 <button class="close-modal" onclick="closeReportModal()">✕</button>
             </div>
             
-            <!-- ส่วนเลือกช่วงวันแบบช่องเดียว -->
             <div style="display: flex; flex-direction: column; gap: 6px; background: #eaf2f8; padding: 10px; border-radius: 6px; border: 1px solid #2980b9;">
                 <div style="font-size: 13px; font-weight: bold; color: #2c3e50; display: flex; justify-content: space-between; align-items: center;">
                     <span>📅 Select Date Range (Mon - Sun)</span>
                     <button style="background: #8e44ad; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;" onclick="openChPassModal()">Change Pass</button>
                 </div>
                 <div style="display: flex; gap: 6px; align-items: center;">
-                    <input type="text" id="report-date-range" placeholder="คลิกเพื่อเลือกช่วงวันที่ (เช่น 2026-10-26ถึง2026-11-01)" readonly style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; background: #fff; text-align: center;">
+                    <input type="text" id="report-date-range" placeholder="คลิกเพื่อเลือกช่วงวันที่" readonly style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; background: #fff; text-align: center;">
                 </div>
             </div>
 
@@ -668,7 +680,7 @@
         </div>
     </div>
 
-    <!-- โหลด Flatpickr CSS และ JS -->
+    <!-- Flatpickr CSS & JS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
@@ -990,21 +1002,21 @@
                         </div>
                     </div>
                     <div class="opt-box" style="border-top: 4px solid #27ae60;">
-                        <div class="opt-title">🥗 Side</div>
+                        <div class="opt-title">🥗 Side (คลิกซ้ำเพื่อเพิ่มจำนวน)</div>
                         <div class="opt-grid-2col">
-                            <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Chips', this)">Chips</button>
-                            <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Salad', this)">Salad</button>
-                            <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Vegetables', this)">Vegetables</button>
-                            <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Mashed Potatoes', this)">Mashed Potatoes</button>
-                            <button class="opt-btn sunday-side-btn" onclick="selectSundayOption('side', 'Greek salad', this)" style="grid-column: span 2; background: #e8f8f5;">Greek salad (+$3)</button>
+                            <button class="opt-btn sunday-side-btn" id="sside-Chips" onclick="addSundayItem('side', 'Chips', this)">Chips</button>
+                            <button class="opt-btn sunday-side-btn" id="sside-Salad" onclick="addSundayItem('side', 'Salad', this)">Salad</button>
+                            <button class="opt-btn sunday-side-btn" id="sside-Vegetables" onclick="addSundayItem('side', 'Vegetables', this)">Vegetables</button>
+                            <button class="opt-btn sunday-side-btn" id="sside-Mashed Potatoes" onclick="addSundayItem('side', 'Mashed Potatoes', this)">Mashed Potatoes</button>
+                            <button class="opt-btn sunday-side-btn" id="sside-Greek salad" onclick="addSundayItem('side', 'Greek salad', this)" style="grid-column: span 2; background: #e8f8f5;">Greek salad (+$3)</button>
                         </div>
                     </div>
                     <div class="opt-box" style="border-top: 4px solid #f39c12;">
-                        <div class="opt-title">🥣 Sauce</div>
+                        <div class="opt-title">🥣 Sauce (คลิกซ้ำเพื่อเพิ่มจำนวน)</div>
                         <div class="opt-grid-3col">
-                            <button class="opt-btn sunday-sauce-btn" onclick="selectSundayOption('sauce', 'Gravy', this)">Gravy</button>
-                            <button class="opt-btn sunday-sauce-btn" onclick="selectSundayOption('sauce', 'Pepper', this)">Pepper</button>
-                            <button class="opt-btn sunday-sauce-btn" onclick="selectSundayOption('sauce', 'Mushroom', this)">Mushroom</button>
+                            <button class="opt-btn sunday-sauce-btn" id="ssauce-Gravy" onclick="addSundayItem('sauce', 'Gravy', this)">Gravy</button>
+                            <button class="opt-btn sunday-sauce-btn" id="ssauce-Pepper" onclick="addSundayItem('sauce', 'Pepper', this)">Pepper</button>
+                            <button class="opt-btn sunday-sauce-btn" id="ssauce-Mushroom" onclick="addSundayItem('sauce', 'Mushroom', this)">Mushroom</button>
                         </div>
                     </div>
                     <div class="opt-box" style="border-top: 4px solid #e67e22;">
@@ -1292,21 +1304,62 @@
         }
 
         function selectSundayOption(category, value, el) {
+            // ฟังก์ชันเก่าเผื่อเรียก
+        }
+
+        function addSundayItem(type, value, el) {
             if (!selectedMenu) return;
-            if (category === 'cook') {
-                selectedCooking = value;
-                document.querySelectorAll('.cook-btn').forEach(b => b.classList.remove('selected'));
-                el.classList.add('selected');
-            } else if (category === 'side') {
-                let idx = sundaySides.indexOf(value);
-                if (idx > -1) { sundaySides.splice(idx, 1); el.classList.remove('selected'); }
-                else { sundaySides.push(value); el.classList.add('selected'); }
-            } else if (category === 'sauce') {
-                let idx = sundaySauces.indexOf(value);
-                if (idx > -1) { sundaySauces.splice(idx, 1); el.classList.remove('selected'); }
-                else { sundaySauces.push(value); el.classList.add('selected'); }
+            el.style.transform = 'scale(0.95)';
+            setTimeout(() => el.style.transform = 'scale(1)', 100);
+
+            if (type === 'side') {
+                sundaySides.push(value);
+            } else if (type === 'sauce') {
+                sundaySauces.push(value);
             }
+            updateSundayBadgesUI();
             addToCartSunday(false);
+        }
+
+        function updateSundayBadgesUI() {
+            // เคลียร์ Badge ทั้งหมดก่อน
+            document.querySelectorAll('.sunday-side-btn, .sunday-sauce-btn').forEach(btn => {
+                let badge = btn.querySelector('.opt-badge-count');
+                if (badge) badge.remove();
+                btn.classList.remove('selected');
+            });
+
+            // นับจำนวน Side
+            let sideCounts = {};
+            sundaySides.forEach(s => sideCounts[s] = (sideCounts[s] || 0) + 1);
+            Object.keys(sideCounts).forEach(sName => {
+                let btn = document.getElementById('sside-' + sName);
+                if (btn) {
+                    btn.classList.add('selected');
+                    if (sideCounts[sName] > 1) {
+                        let badge = document.createElement('span');
+                        badge.className = 'opt-badge-count';
+                        badge.innerText = sideCounts[sName];
+                        btn.appendChild(badge);
+                    }
+                }
+            });
+
+            // นับจำนวน Sauce
+            let sauceCounts = {};
+            sundaySauces.forEach(sc => sauceCounts[sc] = (sauceCounts[sc] || 0) + 1);
+            Object.keys(sauceCounts).forEach(scName => {
+                let btn = document.getElementById('ssauce-' + scName);
+                if (btn) {
+                    btn.classList.add('selected');
+                    if (sauceCounts[scName] > 1) {
+                        let badge = document.createElement('span');
+                        badge.className = 'opt-badge-count';
+                        badge.innerText = sauceCounts[scName];
+                        btn.appendChild(badge);
+                    }
+                }
+            });
         }
 
         function addToCartSunday(isNew) {
@@ -1331,13 +1384,20 @@
                 let sideCost = (chargeableRegular * 5) + (greekSaladCount * 3);
                 extraPrice += sideCost;
 
-                details.push({ text: `Sides: ${sundaySides.join(', ')}`, price: sideCost });
+                // จัดกลุ่มแสดงผล (เช่น Chips (2))
+                let sideSummary = {};
+                sundaySides.forEach(s => sideSummary[s] = (sideSummary[s] || 0) + 1);
+                let sideStrArr = Object.keys(sideSummary).map(k => sideSummary[k] > 1 ? `${k} (${sideSummary[k]})` : k);
+                details.push({ text: `Sides: ${sideStrArr.join(', ')}`, price: sideCost });
             }
 
             if (sundaySauces.length > 0) {
                 let sauceCost = sundaySauces.length * 3;
                 extraPrice += sauceCost;
-                details.push({ text: `Sauce: ${sundaySauces.join(', ')}`, price: sauceCost });
+                let sauceSummary = {};
+                sundaySauces.forEach(sc => sauceSummary[sc] = (sauceSummary[sc] || 0) + 1);
+                let sauceStrArr = Object.keys(sauceSummary).map(k => sauceSummary[k] > 1 ? `${k} (${sauceSummary[k]})` : k);
+                details.push({ text: `Sauce: ${sauceStrArr.join(', ')}`, price: sauceCost });
             }
 
             if (windowExtras && windowExtras.length > 0) {
@@ -2143,14 +2203,13 @@
             document.getElementById('report-modal').style.display = 'flex';
             let todayStr = getTodayDateKey();
             
-            // ตั้งค่า Flatpickr ให้สัปดาห์เริ่มจากวันจันทร์ (locale: { firstDayOfWeek: 1 })
             if (!fpInstance) {
                 fpInstance = flatpickr("#report-date-range", {
                     mode: "range",
                     dateFormat: "Y-m-d",
                     defaultDate: [todayStr, todayStr],
                     locale: {
-                        firstDayOfWeek: 1 // ให้วันจันทร์เป็นวันแรกของสัปดาห์
+                        firstDayOfWeek: 1
                     },
                     onChange: function(selectedDates, dateStr, instance) {
                         if (selectedDates.length === 2) {

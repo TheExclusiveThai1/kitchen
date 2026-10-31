@@ -65,41 +65,79 @@
         .fullscreen-btn:hover { background: #d35400; }
         .pass-toggle-btn { background: #34495e; color: #f1c40f; border: 1px solid #f1c40f; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
 
+        /* ปรับแต่ง Container สำหรับ Active Orders ให้สไลด์ซ้าย-ขวาได้แบบแนวนอน */
         .kitchen-bar-container {
             background: #d5dbdb;
-            padding: 4px 8px;
+            padding: 6px 10px;
             border-radius: 6px;
             display: flex;
-            align-items: center;
-            gap: 8px;
+            flex-direction: column;
+            gap: 4px;
             margin-bottom: 6px;
-            min-height: 55px;
-            overflow-x: auto;
         }
         .kitchen-bar-title { font-size: 12px; font-weight: bold; color: #2c3e50; white-space: nowrap; }
-        .kitchen-orders-list { display: flex; gap: 6px; align-items: center; flex: 1; }
         
-        .table-order-badge {
+        .kitchen-orders-list { 
+            display: flex; 
+            gap: 10px; 
+            align-items: center; 
+            flex-wrap: nowrap; /* ห้ามขึ้นบรรทัดใหม่ */
+            overflow-x: auto;  /* เปิด Horizontal Scroll */
+            overflow-y: hidden;
+            padding-bottom: 6px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch; /* รองรับการปัดแบบลื่นไหลบน Touchscreen */
+        }
+
+        /* ตกแต่ง Scrollbar ของแถบสไลด์ออเดอร์ให้ดูสะอาดตา */
+        .kitchen-orders-list::-webkit-scrollbar {
+            height: 6px;
+        }
+        .kitchen-orders-list::-webkit-scrollbar-track {
+            background: #bdc3c7;
+            border-radius: 3px;
+        }
+        .kitchen-orders-list::-webkit-scrollbar-thumb {
             background: #e67e22;
-            color: white;
-            border: none;
+            border-radius: 3px;
+        }
+
+        /* การ์ดสี่เหลี่ยมผืนผ้าของ Active Order */
+        .kitchen-order-card {
+            background: #ffffff;
+            border: 2px solid #e67e22;
             border-radius: 8px;
-            width: 48px;
-            height: 48px;
+            width: 210px;
+            min-width: 210px; /* ล็อคขนาดคงที่เพื่อไม่ให้ถูกบีบย่อ */
+            height: 115px;
+            padding: 8px 10px;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2px;
-            animation: pulse 2s infinite;
+            justify-content: space-between;
+            position: relative;
+            transition: transform 0.1s;
+            flex-shrink: 0;
         }
-        .table-order-badge:hover { background: #d35400; }
-        .badge-table-num { font-size: 18px; font-weight: bold; line-height: 1; }
-        .badge-time-str { font-size: 9px; opacity: 0.9; margin-top: 2px; line-height: 1; }
-
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+        .kitchen-order-card:hover { background: #fef5e7; transform: translateY(-2px); }
+        .kcard-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 4px; margin-bottom: 4px; }
+        .kcard-table { font-size: 13px; font-weight: bold; color: #c0392b; }
+        .kcard-time { font-size: 11px; color: #7f8c8d; }
+        .kcard-items { font-size: 12px; color: #2c3e50; max-height: 48px; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; margin-bottom: 4px; }
+        .kcard-btn-done {
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
+        }
+        .kcard-btn-done:hover { background: #219653; }
 
         .pos-container { display: flex; flex-direction: column; flex: 1; gap: 6px; min-height: 0; }
         .category-grid { display: flex; gap: 6px; height: 38px; }
@@ -313,7 +351,7 @@
     </div>
 
     <div class="kitchen-bar-container">
-        <div class="kitchen-bar-title">👨‍🍳 Active Orders:</div>
+        <div class="kitchen-bar-title">👨‍🍳 Active Orders (Kitchen Queue):</div>
         <div class="kitchen-orders-list" id="kitchen-active-orders">
             <span style="font-size: 11px; color: #7f8c8d;">No active kitchen orders</span>
         </div>
@@ -407,7 +445,7 @@
             </div>
             <div class="report-details-box" id="kitchen-modal-body" style="font-size: 16px; padding: 12px;"></div>
             <div class="modal-actions">
-                <button class="btn-modal-action" style="background: #27ae60; padding: 10px; font-size: 16px;" onclick="markKitchenOrderDone()">✅ Done (Complete Order)</button>
+                <button class="btn-modal-action" style="background: #27ae60; padding: 10px; font-size: 16px;" onclick="markKitchenOrderDoneFromModal()">✅ Done (Complete Order)</button>
             </div>
         </div>
     </div>
@@ -629,7 +667,7 @@
         </div>
     </div>
 
-    <!-- Sales & Orders Report Modal with Single Date Range Picker (Monday to Sunday start) -->
+    <!-- Sales & Orders Report Modal with Single Date Range Picker -->
     <div class="modal-overlay" id="report-modal">
         <div class="modal-content" style="width: 520px;">
             <div class="modal-header">
@@ -1948,11 +1986,22 @@
 
             let html = '';
             activeKitchenOrders.forEach((ord, index) => {
+                let itemsPreview = ord.items.map(it => {
+                    let detailsStr = (it.details && it.details.length > 0) ? ' (' + it.details.map(d => d.text).join(', ') + ')' : '';
+                    return `• ${it.title}${detailsStr}`;
+                }).join('<br>');
+
                 html += `
-                    <button class="table-order-badge" onclick="openKitchenOrderModal(${index})">
-                        <span class="badge-table-num">${ord.tableNo}</span>
-                        <span class="badge-time-str">${ord.time}</span>
-                    </button>
+                    <div class="kitchen-order-card" onclick="openKitchenOrderModal(${index})">
+                        <div>
+                            <div class="kcard-header">
+                                <span class="kcard-table">Table ${ord.tableNo} (#${ord.orderNo})</span>
+                                <span class="kcard-time">${ord.time}</span>
+                            </div>
+                            <div class="kcard-items">${itemsPreview}</div>
+                        </div>
+                        <button class="kcard-btn-done" onclick="markKitchenOrderDoneDirect(${index}, event)">✅ Done</button>
+                    </div>
                 `;
             });
             container.innerHTML = html;
@@ -1984,12 +2033,21 @@
 
         function closeKitchenModal() { document.getElementById('kitchen-order-modal').style.display = 'none'; }
 
-        function markKitchenOrderDone() {
+        function markKitchenOrderDoneFromModal() {
             if (selectedKitchenOrderIndex !== null && activeKitchenKeys[selectedKitchenOrderIndex]) {
                 const key = activeKitchenKeys[selectedKitchenOrderIndex];
                 const itemRef = window.fbRef(window.fbDB, 'activeOrders/' + key);
                 window.fbRemove(itemRef);
                 closeKitchenModal();
+            }
+        }
+
+        function markKitchenOrderDoneDirect(index, event) {
+            event.stopPropagation();
+            if (activeKitchenKeys[index]) {
+                const key = activeKitchenKeys[index];
+                const itemRef = window.fbRef(window.fbDB, 'activeOrders/' + key);
+                window.fbRemove(itemRef);
             }
         }
 
@@ -2493,7 +2551,6 @@
             initRealtimeSync();
             switchCategory('lunch');
 
-            // เพิ่มฟังก์ชันคลิกพื้นที่ว่างรอบหน้าต่าง (Modal Overlay) เพื่อปิดหน้าต่าง Active Order
             document.getElementById('kitchen-order-modal').addEventListener('click', function(event) {
                 if (event.target === this) {
                     closeKitchenModal();

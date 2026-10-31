@@ -1862,6 +1862,7 @@
             
             let currentKey = getTodayDateKey();
             
+            // เช็คเลขออร์เดอร์สูงสุดจาก Firebase (orderLogs) และข้อมูลสำรองในเครื่องแบบเรียลไทม์เสมอ
             let maxOrderNo = 0;
             if (allOrderLogs[currentKey]) {
                 allOrderLogs[currentKey].forEach(o => {
@@ -1884,6 +1885,7 @@
                 }
             }
 
+            // บังคับให้เลขออร์เดอร์ใหม่เรียงต่อจากค่าสูงสุดบน Firebase + 1 เสมอ
             let nextOrderNo = maxOrderNo + 1;
 
             let rumpCountInCart = cart.filter(it => it.title === 'Rump steak').length;

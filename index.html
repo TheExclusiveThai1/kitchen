@@ -65,7 +65,6 @@
         .fullscreen-btn:hover { background: #d35400; }
         .pass-toggle-btn { background: #34495e; color: #f1c40f; border: 1px solid #f1c40f; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
 
-        /* ปรับแต่ง Container สำหรับ Active Orders ให้สไลด์ซ้าย-ขวาได้แบบแนวนอน */
         .kitchen-bar-container {
             background: #d5dbdb;
             padding: 6px 10px;
@@ -81,15 +80,14 @@
             display: flex; 
             gap: 10px; 
             align-items: center; 
-            flex-wrap: nowrap; /* ห้ามขึ้นบรรทัดใหม่ */
-            overflow-x: auto;  /* เปิด Horizontal Scroll */
+            flex-wrap: nowrap; 
+            overflow-x: auto;  
             overflow-y: hidden;
             padding-bottom: 6px;
             scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch; /* รองรับการปัดแบบลื่นไหลบน Touchscreen */
+            -webkit-overflow-scrolling: touch; 
         }
 
-        /* ตกแต่ง Scrollbar ของแถบสไลด์ออเดอร์ให้ดูสะอาดตา */
         .kitchen-orders-list::-webkit-scrollbar {
             height: 6px;
         }
@@ -102,13 +100,12 @@
             border-radius: 3px;
         }
 
-        /* การ์ดสี่เหลี่ยมผืนผ้าของ Active Order */
         .kitchen-order-card {
             background: #ffffff;
             border: 2px solid #e67e22;
             border-radius: 8px;
             width: 210px;
-            min-width: 210px; /* ล็อคขนาดคงที่เพื่อไม่ให้ถูกบีบย่อ */
+            min-width: 210px;
             height: 115px;
             padding: 8px 10px;
             cursor: pointer;
@@ -1374,7 +1371,13 @@
         }
 
         function selectSundayOption(category, value, el) {
-            // Reserved for legacy call
+            if (!selectedMenu) return;
+            if (category === 'cook') {
+                selectedCooking = value;
+                document.querySelectorAll('.cook-btn').forEach(b => b.classList.remove('selected'));
+                el.classList.add('selected');
+            }
+            addToCartSunday(false);
         }
 
         function addSundayItem(type, value, el) {

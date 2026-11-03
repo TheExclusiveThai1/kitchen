@@ -454,8 +454,9 @@
                 <button class="close-modal" style="font-size: 20px;" onclick="closeKitchenModal()">✕</button>
             </div>
             <div class="report-details-box" id="kitchen-modal-body" style="font-size: 16px; padding: 12px;"></div>
-            <div class="modal-actions">
-                <button class="btn-modal-action" style="background: #27ae60; padding: 10px; font-size: 16px;" onclick="markKitchenOrderDoneFromModal()">✅ Done (Complete Order)</button>
+            <div class="modal-actions" style="display: flex; gap: 8px;">
+                <button class="btn-modal-action" style="background: #2980b9; padding: 10px; font-size: 14px; flex: 1;" onclick="loadCurrentKitchenOrderForEdit()">📥 Edit Order</button>
+                <button class="btn-modal-action" style="background: #27ae60; padding: 10px; font-size: 14px; flex: 1;" onclick="markKitchenOrderDoneFromModal()">✅ Done (Complete Order)</button>
             </div>
         </div>
     </div>
@@ -679,7 +680,7 @@
 
     <!-- Sales & Orders Report Modal with Single Date Range Picker -->
     <div class="modal-overlay" id="report-modal">
-        <div class="modal-content" style="width: 520px;">
+        <div class="modal-content" style="width: 560px;">
             <div class="modal-header">
                 <span>📅 Sales & Orders Report</span>
                 <button class="close-modal" onclick="closeReportModal()">✕</button>
@@ -693,6 +694,12 @@
                 <div style="display: flex; gap: 6px; align-items: center;">
                     <input type="text" id="report-date-range" placeholder="คลิกเพื่อเลือกช่วงวันที่" readonly style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; background: #fff; text-align: center;">
                 </div>
+            </div>
+
+            <!-- Toggle View Mode Buttons -->
+            <div style="display: flex; gap: 6px; margin-top: 4px;">
+                <button class="cat-btn active" id="btn-rep-all" onclick="setReportViewMode('all')" style="padding: 8px; font-size: 12px;">📜 ภาพรวมทั้งหมด</button>
+                <button class="cat-btn" id="btn-rep-steak" onclick="setReportViewMode('steak')" style="background: #27ae60; padding: 8px; font-size: 12px;">🥩 เฉพาะ Sunday Rump Steak ($7)</button>
             </div>
 
             <div class="report-details-box" id="report-details-content"></div>
@@ -900,6 +907,7 @@
         let selectedNoIngredients = [];
         let customNoteText = '';
         let keyboardActionMode = 'note';
+        let reportViewMode = 'all';
 
         let isBulkOptionSelected = false;
         let pendingPaymentType = 'Cash';
@@ -990,7 +998,7 @@
         function switchCategory(cat) {
             currentMode = cat;
             document.querySelectorAll('.cat-btn').forEach(b => {
-                if(b.id.startsWith('btn-')) b.classList.remove('active');
+                if(b.id.startsWith('btn-') && !b.id.startsWith('btn-rep-')) b.classList.remove('active');
             });
             if(document.getElementById('btn-' + cat)) document.getElementById('btn-' + cat).classList.add('active');
 
@@ -2097,6 +2105,24 @@
 
         function closeKitchenModal() { document.getElementById('kitchen-order-modal').style.display = 'none'; }
 
+        function loadCurrentKitchenOrderForEdit() {
+            if (selectedKitchenOrderIndex !== null && activeKitchenOrders[selectedKitchenOrderIndex]) {
+                let ord = activeKitchenOrders[selectedKitchenOrderIndex];
+                cart = JSON.parse(JSON.stringify(ord.items));
+                editingOrderNo = ord.orderNo;
+                updateCartUI();
+                isBulkOptionSelected = cart.some(it => it.isBulk);
+                updatePaymentButtonsDisplay();
+
+                if (cart.length > 0) {
+                    activeCartIndex = cart.length - 1;
+                    selectedMenu = cart[activeCartIndex].title;
+                }
+
+                closeKitchenModal();
+            }
+        }
+
         function markKitchenOrderDoneFromModal() {
             if (selectedKitchenOrderIndex !== null && activeKitchenKeys[selectedKitchenOrderIndex]) {
                 const key = activeKitchenKeys[selectedKitchenOrderIndex];
@@ -2230,7 +2256,6 @@
                 isBulkOptionSelected = cart.some(it => it.isBulk);
                 updatePaymentButtonsDisplay();
 
-                // ปลดล็อกให้สามารถแก้ไข/คลิกเพิ่มอพชันเสริมในรายการสุดท้ายได้ทันที
                 if (cart.length > 0) {
                     activeCartIndex = cart.length - 1;
                     selectedMenu = cart[activeCartIndex].title;
@@ -2363,9 +2388,21 @@
             } else alert("Incorrect Password!");
         }
 
+        function setReportViewMode(mode) {
+            reportViewMode = mode;
+            document.getElementById('btn-rep-all').classList.remove('active');
+            document.getElementById('btn-rep-steak').classList.remove('active');
+            if (mode === 'all') document.getElementById('btn-rep-all').classList.add('active');
+            else document.getElementById('btn-rep-steak').classList.add('active');
+            loadReportData();
+        }
+
         function showReportDirectly() {
             document.getElementById('report-modal').style.display = 'flex';
             let todayStr = getTodayDateKey();
+            reportViewMode = 'all';
+            document.getElementById('btn-rep-all').classList.add('active');
+            document.getElementById('btn-rep-steak').classList.remove('active');
             
             if (!fpInstance) {
                 fpInstance = flatpickr("#report-date-range", {
@@ -2495,49 +2532,103 @@
                 return (a.orderNo || 0) - (b.orderNo || 0);
             });
 
-            let totalCnt = aggCashCount + aggCardCount + aggBulkCount;
-            let totalAmt = aggCashTotal + aggCardTotal + aggBulkTotal;
-
-            let logsHtml = '';
-            combinedLogs.forEach(log => {
-                let itemsList = log.items.map(it => {
-                    let detailsStr = '';
-                    if (it.details && it.details.length > 0) detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
-                    return `• ${it.title}${detailsStr} - $${it.price}`;
-                }).join('<br>');
-
-                let paymentText = log.paymentType || 'Cash';
-                if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
-
-                logsHtml += `
-                    <div style="background: #fff; border: 1px solid #ccc; padding: 6px; border-radius: 4px; margin-top: 4px;">
-                        <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 2px;">
-                            <span>[${log._dateTag}] Order #${log.orderNo || '-'} [Table ${log.tableNo || '-'}] (${log.time || '-'})</span>
-                            <span>${paymentText}: $${log.totalAmount}</span>
-                        </div>
-                        <div style="font-size: 11px; color: #444; margin-top: 4px;">${itemsList}</div>
-                    </div>
-                `;
-            });
-
             let headerTitle = fromDate === toDate ? `📅 Date: ${fromDate}` : `📅 Date Range: ${fromDate} ถึง ${toDate}`;
 
-            let html = `
-                <div><b>${headerTitle}</b></div>
-                <div>🥩 Sunday Rump Steak Sold: <b style="color: #27ae60;">${aggRumpTotal} portions</b></div>
-                <div>💵 Cash: <b>${aggCashCount} bills</b> (<b>$${aggCashTotal}</b>)</div>
-                <div>💳 Card: <b>${aggCardCount} bills</b> (<b>$${aggCardTotal}</b>)</div>
-                <div>💵 Bulk Cash: <b>${aggBulkCount} bills</b> (<b>$${aggBulkTotal}</b>)</div>
-                <div style="border-top: 1px solid #ccc; padding-top: 4px; margin-top: 2px;">
-                    <b>Grand Total:</b> <span style="color: #c0392b; font-size: 14px;"><b>$${totalAmt}</b> (${totalCnt} bills)</span>
-                </div>
-                <hr style="margin: 8px 0;">
-                <div style="font-weight: bold;">📜 Detailed Order Logs:</div>
-                <div style="max-height: 180px; overflow-y: auto;">
-                    ${logsHtml || '<div style="font-size: 11px; color: #777;">No order logs recorded for this period.</div>'}
-                </div>
-            `;
-            contentBox.innerHTML = html;
+            if (reportViewMode === 'steak') {
+                let steakLogs = [];
+                let totalSteakCount = 0;
+                let totalSteakSalesAmount = 0;
+
+                combinedLogs.forEach(log => {
+                    let steakItemsInOrder = log.items.filter(it => it.title === 'Rump steak');
+                    if (steakItemsInOrder.length > 0) {
+                        totalSteakCount += steakItemsInOrder.length;
+                        steakItemsInOrder.forEach(stItem => {
+                            totalSteakSalesAmount += stItem.price;
+                        });
+                        steakLogs.push({
+                            dateTag: log._dateTag,
+                            orderNo: log.orderNo || '-',
+                            tableNo: log.tableNo || '-',
+                            time: log.time || '-',
+                            steakItems: steakItemsInOrder
+                        });
+                    }
+                });
+
+                let steakLogsHtml = '';
+                steakLogs.forEach(sl => {
+                    let itemsDetail = sl.steakItems.map(it => {
+                        let detailsStr = '';
+                        if (it.details && it.details.length > 0) {
+                            detailsStr = '<br>' + it.details.map(d => `<span style="font-size: 11px; color: #555; padding-left: 10px;">• ${d.text} (${d.price > 0 ? '$'+d.price : 'free'})</span>`).join('');
+                        }
+                        return `• <b>${it.title}</b> - <b>$${it.price}</b>${detailsStr}`;
+                    }).join('<br>');
+
+                    steakLogsHtml += `
+                        <div style="background: #fff; border: 1px solid #27ae60; padding: 6px; border-radius: 4px; margin-top: 4px;">
+                            <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 2px; color: #1e8449;">
+                                <span>[${sl.dateTag}] Order #${sl.orderNo} [Table ${sl.tableNo}] (${sl.time})</span>
+                            </div>
+                            <div style="font-size: 12px; color: #2c3e50; margin-top: 4px;">${itemsDetail}</div>
+                        </div>
+                    `;
+                });
+
+                contentBox.innerHTML = `
+                    <div style="font-weight: bold; color: #1e8449;">🥩 Sunday Rump Steak ($7) Report</div>
+                    <div><b>${headerTitle}</b></div>
+                    <div>จำนวนเสิร์ฟทั้งหมด: <b style="color: #27ae60; font-size: 15px;">${totalSteakCount} เสิร์ฟ</b></div>
+                    <div>ยอดขายรวมเฉพาะเสิร์ฟนี้ (รวม Side/Sauce ที่เพิ่ม): <b style="color: #c0392b; font-size: 15px;">$${totalSteakSalesAmount}</b></div>
+                    <hr style="margin: 6px 0;">
+                    <div style="font-weight: bold;">📜 รายละเอียดแยกตาม Order:</div>
+                    <div style="max-height: 220px; overflow-y: auto;">
+                        ${steakLogsHtml || '<div style="font-size: 11px; color: #777; text-align: center; padding: 10px;">ไม่พบประวัติการสั่ง Sunday Rump Steak ในช่วงเวลานี้</div>'}
+                    </div>
+                `;
+            } else {
+                let totalCnt = aggCashCount + aggCardCount + aggBulkCount;
+                let totalAmt = aggCashTotal + aggCardTotal + aggBulkTotal;
+
+                let logsHtml = '';
+                combinedLogs.forEach(log => {
+                    let itemsList = log.items.map(it => {
+                        let detailsStr = '';
+                        if (it.details && it.details.length > 0) detailsStr = ' (' + it.details.map(d => d.text).join(', ') + ')';
+                        return `• ${it.title}${detailsStr} - $${it.price}`;
+                    }).join('<br>');
+
+                    let paymentText = log.paymentType || 'Cash';
+                    if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
+
+                    logsHtml += `
+                        <div style="background: #fff; border: 1px solid #ccc; padding: 6px; border-radius: 4px; margin-top: 4px;">
+                            <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 2px;">
+                                <span>[${log._dateTag}] Order #${log.orderNo || '-'} [Table ${log.tableNo || '-'}] (${log.time || '-'})</span>
+                                <span>${paymentText}: $${log.totalAmount}</span>
+                            </div>
+                            <div style="font-size: 11px; color: #444; margin-top: 4px;">${itemsList}</div>
+                        </div>
+                    `;
+                });
+
+                contentBox.innerHTML = `
+                    <div><b>${headerTitle}</b></div>
+                    <div>🥩 Sunday Rump Steak Sold: <b style="color: #27ae60;">${aggRumpTotal} portions</b></div>
+                    <div>💵 Cash: <b>${aggCashCount} bills</b> (<b>$${aggCashTotal}</b>)</div>
+                    <div>💳 Card: <b>${aggCardCount} bills</b> (<b>$${aggCardTotal}</b>)</div>
+                    <div>💵 Bulk Cash: <b>${aggBulkCount} bills</b> (<b>$${aggBulkTotal}</b>)</div>
+                    <div style="border-top: 1px solid #ccc; padding-top: 4px; margin-top: 2px;">
+                        <b>Grand Total:</b> <span style="color: #c0392b; font-size: 14px;"><b>$${totalAmt}</b> (${totalCnt} bills)</span>
+                    </div>
+                    <hr style="margin: 8px 0;">
+                    <div style="font-weight: bold;">📜 Detailed Order Logs:</div>
+                    <div style="max-height: 180px; overflow-y: auto;">
+                        ${logsHtml || '<div style="font-size: 11px; color: #777;">No order logs recorded for this period.</div>'}
+                    </div>
+                `;
+            }
         }
 
         function initRealtimeSync() {
@@ -2606,7 +2697,7 @@
                     updatePaymentButtonsDisplay();
                 }
 
-                isRemoteUpdate = false;
+                isRemoteUser = false;
             });
 
             const currentKey = getTodayDateKey();
@@ -2641,7 +2732,6 @@
             initRealtimeSync();
             switchCategory('lunch');
 
-            defaultContentClickCheck:
             document.getElementById('kitchen-order-modal').addEventListener('click', function(event) {
                 if (event.target === this) {
                     closeKitchenModal();

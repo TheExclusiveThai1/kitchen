@@ -56,6 +56,7 @@
             border-radius: 6px;
             margin-bottom: 4px;
             height: 42px;
+            flex-shrink: 0;
         }
         .header-left { display: flex; align-items: center; }
         .menu-toggle-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; margin-right: 12px; display: flex; align-items: center; }
@@ -74,6 +75,7 @@
             flex-direction: column;
             gap: 4px;
             margin-bottom: 6px;
+            flex-shrink: 0;
         }
         .kitchen-bar-title { font-size: 12px; font-weight: bold; color: #2c3e50; white-space: nowrap; }
         
@@ -138,14 +140,14 @@
         .kcard-btn-done:hover { background: #219653; }
 
         .pos-container { display: flex; flex-direction: column; flex: 1; gap: 6px; min-height: 0; }
-        .category-grid { display: flex; gap: 6px; height: 38px; }
+        .category-grid { display: flex; gap: 6px; height: 38px; flex-shrink: 0; }
         .cat-btn { background: #34495e; color: white; border: none; padding: 0 6px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer; flex: 1; white-space: nowrap; }
         .cat-btn.active { background: #e67e22; }
 
         .main-layout { display: flex; gap: 10px; flex: 1; min-height: 0; }
-        .col-menu { flex: 2.2; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; height: 100%; position: relative; }
-        .section-header-title { font-size: 15px; font-weight: bold; color: #2c3e50; border-bottom: 2px solid #e67e22; padding-bottom: 4px; margin-bottom: 6px; }
-        .menu-scroll-area { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; padding-bottom: 60px; }
+        .col-menu { flex: 2.2; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; height: 100%; position: relative; min-height: 0; }
+        .section-header-title { font-size: 15px; font-weight: bold; color: #2c3e50; border-bottom: 2px solid #e67e22; padding-bottom: 4px; margin-bottom: 6px; flex-shrink: 0; }
+        .menu-scroll-area { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; padding-bottom: 60px; min-height: 0; }
         .sub-header { background: #34495e; color: white; padding: 6px 10px; border-radius: 4px; font-size: 14px; font-weight: bold; margin-top: 4px; }
         .item-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         
@@ -209,8 +211,8 @@
             border-radius: 4px;
         }
 
-        .col-options { flex: 1.6; display: flex; flex-direction: column; gap: 8px; height: 100%; overflow-y: auto; }
-        .opt-box { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+        .col-options { flex: 1.6; display: flex; flex-direction: column; gap: 8px; height: 100%; overflow-y: auto; min-height: 0; }
+        .opt-box { background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; flex-shrink: 0; }
         .opt-title { font-size: 14px; font-weight: bold; color: #2c3e50; margin-bottom: 6px; }
         .opt-grid-2col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
         .opt-grid-3col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -233,9 +235,28 @@
         .btn-no-opt { background: #e74c3c; color: white; border-color: #c0392b; font-size: 14px; padding: 12px 6px; min-height: 48px; }
         .btn-no-opt:hover { background: #c0392b; }
 
-        .col-cart { flex: 1.2; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
-        .cart-title { font-size: 15px; font-weight: bold; color: #2c3e50; margin-bottom: 6px; border-bottom: 2px solid #27ae60; padding-bottom: 4px; }
-        .cart-list-box { flex: 1; overflow-y: auto; border: 1px solid #eee; padding: 6px; border-radius: 4px; margin-bottom: 6px; }
+        /* ปรับสัดส่วนตะกร้าสินค้าให้คำนวณความสูงพอดีจอและมี Scrollbar เฉพาะรายการ */
+        .col-cart { flex: 1.2; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden; }
+        .cart-title { font-size: 15px; font-weight: bold; color: #2c3e50; margin-bottom: 6px; border-bottom: 2px solid #27ae60; padding-bottom: 4px; flex-shrink: 0; }
+        
+        .cart-list-box { 
+            flex: 1; 
+            overflow-y: auto; 
+            border: 1px solid #eee; 
+            padding: 6px; 
+            border-radius: 4px; 
+            margin-bottom: 6px; 
+            min-height: 50px; 
+            max-height: none; 
+        }
+        
+        .cart-footer-fixed {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
         .cart-item { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; border-bottom: 1px solid #f0f0f0; padding-bottom: 4px; font-size: 13px; cursor: pointer; }
         .cart-item:hover { background-color: #f8f9fa; }
         .cart-item-details { display: flex; flex-direction: column; gap: 2px; flex: 1; padding-right: 4px; }
@@ -249,32 +270,32 @@
         .btn-delete-item { background: #e74c3c; color: white; border: none; border-radius: 4px; width: 20px; height: 20px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; font-weight: bold; }
         .btn-delete-item:hover { background: #c0392b; }
 
-        .cart-total { font-size: 18px; font-weight: bold; text-align: right; margin-bottom: 8px; color: #c0392b; }
-        .cart-actions { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; }
+        .cart-total { font-size: 18px; font-weight: bold; text-align: right; margin-bottom: 4px; color: #c0392b; }
+        .cart-actions { display: flex; flex-direction: column; gap: 4px; margin-bottom: 4px; }
         .cart-actions-row { display: flex; gap: 4px; }
-        .btn-pay-cash { background: #27ae60; color: white; border: none; flex: 1; padding: 10px 4px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; }
+        .btn-pay-cash { background: #27ae60; color: white; border: none; flex: 1; padding: 8px 4px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; }
         .btn-pay-cash:hover { background: #219653; }
-        .btn-pay-card { background: #2980b9; color: white; border: none; flex: 1; padding: 10px 4px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; }
+        .btn-pay-card { background: #2980b9; color: white; border: none; flex: 1; padding: 8px 4px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; }
         .btn-pay-card:hover { background: #1f618d; }
-        .btn-pay-split { background: #d35400; color: white; border: none; flex: 1; padding: 10px 4px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; }
+        .btn-pay-split { background: #d35400; color: white; border: none; flex: 1; padding: 8px 4px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; }
         .btn-pay-split:hover { background: #ba4a00; }
-        .btn-pay-bulk { background: #8e44ad; color: white; border: none; width: 100%; padding: 10px 4px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; display: none; }
+        .btn-pay-bulk { background: #8e44ad; color: white; border: none; width: 100%; padding: 8px 4px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; display: none; }
         .btn-pay-bulk:hover { background: #732d91; }
-        .btn-past-orders { background: #7f8c8d; color: white; border: none; width: 100%; padding: 7px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; margin-bottom: 6px; }
+        .btn-past-orders { background: #7f8c8d; color: white; border: none; width: 100%; padding: 6px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; margin-bottom: 4px; }
         .btn-past-orders:hover { background: #707b7c; }
 
         .daily-report-box { 
             background: #eaf2f8; 
             border: 2px solid #2980b9; 
-            padding: 10px 12px; 
+            padding: 6px 10px; 
             border-radius: 6px; 
-            font-size: 14px; 
+            font-size: 13px; 
             color: #2c3e50; 
             display: flex; 
             flex-direction: column; 
-            gap: 5px; 
+            gap: 2px; 
         }
-        .daily-report-header { font-weight: bold; font-size: 15px; display: flex; justify-content: space-between; border-bottom: 1px solid #bdc3c7; padding-bottom: 4px; margin-bottom: 2px; }
+        .daily-report-header { font-weight: bold; font-size: 14px; display: flex; justify-content: space-between; border-bottom: 1px solid #bdc3c7; padding-bottom: 2px; margin-bottom: 2px; }
         .daily-report-row { display: flex; justify-content: space-between; font-weight: bold; }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
@@ -392,11 +413,13 @@
             <div class="col-options" id="options-panel"></div>
 
             <div class="col-cart">
-                <div>
-                    <div class="cart-title">🛒 Your Order</div>
-                    <div class="cart-list-box" id="cart-list">No items ordered yet</div>
-                </div>
-                <div>
+                <div class="cart-title">🛒 Your Order</div>
+                
+                <!-- ส่วนรายการในตะกร้าที่จะเลื่อน Scrollbar เฉพาะตรงนี้ -->
+                <div class="cart-list-box" id="cart-list">No items ordered yet</div>
+                
+                <!-- ส่วนท้ายของตะกร้า (Total, ปุ่ม Edit, ปุ่มจ่ายเงิน, สรุปยอดขาย) ที่จะถูกล็อกให้อยู่กับที่ตลอดเวลา -->
+                <div class="cart-footer-fixed">
                     <div class="cart-total">Total: $<span id="total-amount">0</span></div>
                     
                     <button class="btn-past-orders" onclick="openPastOrdersModal()">📋 View & Edit Past Orders</button>
@@ -416,19 +439,19 @@
                         </div>
                         <div class="daily-report-row">
                             <span>💵 Cash (<span id="daily-cash-count">0</span>):</span>
-                            <b style="color: #27ae60; font-size: 15px;">$<span id="daily-cash-amount">0</span></b>
+                            <b style="color: #27ae60; font-size: 14px;">$<span id="daily-cash-amount">0</span></b>
                         </div>
                         <div class="daily-report-row">
                             <span>💳 Card (<span id="daily-card-count">0</span>):</span>
-                            <b style="color: #2980b9; font-size: 15px;">$<span id="daily-card-amount">0</span></b>
+                            <b style="color: #2980b9; font-size: 14px;">$<span id="daily-card-amount">0</span></b>
                         </div>
                         <div class="daily-report-row">
                             <span>💵 Bulk Cash (<span id="daily-bulk-count">0</span>):</span>
-                            <b style="color: #8e44ad; font-size: 15px;">$<span id="daily-bulk-amount">0</span></b>
+                            <b style="color: #8e44ad; font-size: 14px;">$<span id="daily-bulk-amount">0</span></b>
                         </div>
-                        <div class="daily-report-row" style="border-top: 1px dashed #bdc3c7; padding-top: 4px; font-weight: bold; font-size: 15px;">
+                        <div class="daily-report-row" style="border-top: 1px dashed #bdc3c7; padding-top: 2px; font-weight: bold; font-size: 14px;">
                             <span>Total (<span id="daily-orders-count">0</span>):</span>
-                            <span style="color: #c0392b; font-size: 16px;">$<span id="daily-total-amount">0</span></span>
+                            <span style="color: #c0392b; font-size: 15px;">$<span id="daily-total-amount">0</span></span>
                         </div>
                     </div>
                 </div>
@@ -2697,7 +2720,7 @@
                     updatePaymentButtonsDisplay();
                 }
 
-                isRemoteUser = false;
+                isRemoteUpdate = false;
             });
 
             const currentKey = getTodayDateKey();

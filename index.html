@@ -2324,7 +2324,7 @@
                         </div>
                         <div style="display: flex; gap: 5px;">
                             <button style="background: #2980b9; color: white; border: none; padding: 3px 6px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: bold; flex: 1; font-family: 'Calibri', Arial, sans-serif;" onclick="loadOrderForEditByOrderNo(${targetOrderNo})">📥 Load to Cart (Edit)</button>
-                            <button style="background: #e74c3c; color: white; border: none; padding: 3px 6px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: bold; font-family: 'Calibri', Arial, sans-serif;" onclick="deletePastOrder(${targetOrderNo})">🗑️ Delete Order</button>
+                            <button style="background: #e74c3c; color: white; border: none; padding: 3px 6px; border-radius: 4px; font-size: 10px; cursor: pointer; font-weight: bold; flex: 1; font-family: 'Calibri', Arial, sans-serif;" onclick="deletePastOrder(${targetOrderNo})">🗑️ Delete Order</button>
                         </div>
                     </div>
                 `;
@@ -2563,24 +2563,24 @@
                     <style>
                         body {
                             font-family: 'Calibri', Arial, sans-serif;
-                            font-size: 16px;
+                            font-size: 11px;
                             color: #000;
                             background: #fff;
-                            margin: 10px;
-                            line-height: 1.4;
+                            margin: 5px;
+                            line-height: 1.2;
                         }
-                        .rep-title { font-size: 18px; font-weight: bold; margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 4px; }
-                        .rep-row { font-size: 16px; font-weight: bold; margin-bottom: 4px; }
+                        .rep-title { font-size: 12px; font-weight: bold; margin-bottom: 4px; border-bottom: 1.5px solid #000; padding-bottom: 2px; }
+                        .rep-row { font-size: 11px; font-weight: bold; margin-bottom: 3px; }
                     </style>
                 </head>
                 <body>
-                    <div class="rep-title">📅 Date: ${d.dateText}</div>
-                    <div class="rep-row">🥩 Sunday Rump Steak Sold: ${d.rumpTotal} portions</div>
-                    <div class="rep-row">💵 Cash: ${d.cashCount} bills ($${d.cashTotal})</div>
-                    <div class="rep-row">💳 Card: ${d.cardCount} bills ($${d.cardTotal})</div>
-                    <div class="rep-row">💵 Bulk Cash: ${d.bulkCount} bills ($${d.bulkTotal})</div>
-                    <div style="border-top: 1.5px solid #000; margin: 6px 0;"></div>
-                    <div class="rep-row" style="font-size: 18px;">Grand Total: $${d.grandTotalAmt} (${d.grandTotalCnt} bills)</div>
+                    <div class="rep-title">Date: ${d.dateText}</div>
+                    <div class="rep-row">Sunday Rump Steak Sold: ${d.rumpTotal} portions</div>
+                    <div class="rep-row">Cash: ${d.cashCount} bills ($${d.cashTotal})</div>
+                    <div class="rep-row">Card: ${d.cardCount} bills ($${d.cardTotal})</div>
+                    <div class="rep-row">Bulk Cash: ${d.bulkCount} bills ($${d.bulkTotal})</div>
+                    <div style="border-top: 1.5px solid #000; margin: 4px 0;"></div>
+                    <div class="rep-row" style="font-size: 12px;">Grand Total: $${d.grandTotalAmt} (${d.grandTotalCnt} bills)</div>
                 </body>
                 </html>
             `;
@@ -2702,7 +2702,7 @@
 
             let printBtnHtml = `<button onclick="printReportSummary()" style="background: #e67e22; color: white; border: none; padding: 3px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold; font-family: 'Calibri', Arial, sans-serif;">🖨️ Print Report</button>`;
 
-            let headerTitleHtml = fromDate === toDate ? `📅 Date: ${fromDate}` : `📅 Date Range: ${fromDate} ถึง ${toDate}`;
+            let headerTitleHtml = fromDate === toDate ? `Date: ${fromDate}` : `Date Range: ${fromDate} ถึง ${toDate}`;
 
             if (reportViewMode === 'steak') {
                 let steakLogs = [];
@@ -2749,7 +2749,7 @@
 
                 contentBox.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #bdc3c7; padding-bottom: 3px; margin-bottom: 3px;">
-                        <span style="font-weight: bold; color: #1e8449;">🥩 Sunday Rump Steak ($7) Report (${headerTitle})</span>
+                        <span style="font-weight: bold; color: #1e8449;">Sunday Rump Steak ($7) Report (${headerTitle})</span>
                         ${printBtnHtml}
                     </div>
                     <div>จำนวนเสิร์ฟทั้งหมด: <b style="color: #27ae60; font-size: 13px;">${totalSteakCount} เสิร์ฟ</b></div>
@@ -2792,10 +2792,10 @@
                         <span style="font-weight: bold;">${headerTitleHtml}</span>
                         ${printBtnHtml}
                     </div>
-                    <div>🥩 Sunday Rump Steak Sold: <b style="color: #27ae60;">${aggRumpTotal} portions</b></div>
-                    <div>💵 Cash: <b>${aggCashCount} bills</b> (<b>$${aggCashTotal}</b>)</div>
-                    <div>💳 Card: <b>${aggCardCount} bills</b> (<b>$${aggCardTotal}</b>)</div>
-                    <div>💵 Bulk Cash: <b>${aggBulkCount} bills</b> (<b>$${aggBulkTotal}</b>)</div>
+                    <div>Sunday Rump Steak Sold: <b style="color: #27ae60;">${aggRumpTotal} portions</b></div>
+                    <div>Cash: <b>${aggCashCount} bills</b> (<b>$${aggCashTotal}</b>)</div>
+                    <div>Card: <b>${aggCardCount} bills</b> (<b>$${aggCardTotal}</b>)</div>
+                    <div>Bulk Cash: <b>${aggBulkCount} bills</b> (<b>$${aggBulkTotal}</b>)</div>
                     <div style="border-top: 1px solid #ccc; padding-top: 3px; margin-top: 2px;">
                         <b>Grand Total:</b> <span style="color: #c0392b; font-size: 12px;"><b>$${totalAmt}</b> (${totalCnt} bills)</span>
                     </div>

@@ -62,11 +62,13 @@
         .header-left { display: flex; align-items: center; }
         .menu-toggle-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 15px; display: flex; align-items: center; }
         .restaurant-title { font-size: 18px; font-weight: bold; letter-spacing: 0.5px; }
-        .header-right-area { display: flex; align-items: center; gap: 12px; }
+        .header-right-area { display: flex; align-items: center; gap: 10px; }
         .header-time { font-size: 15px; font-weight: bold; color: #f1c40f; }
-        .fullscreen-btn { background: #e67e22; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .fullscreen-btn { background: #e67e22; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; font-family: 'Calibri', Arial, sans-serif; }
         .fullscreen-btn:hover { background: #d35400; }
-        .pass-toggle-btn { background: #34495e; color: #f1c40f; border: 1px solid #f1c40f; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .pass-toggle-btn { background: #34495e; color: #f1c40f; border: 1px solid #f1c40f; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; font-family: 'Calibri', Arial, sans-serif; }
+        .printer-toggle-btn { background: #27ae60; color: white; border: 1px solid #2ecc71; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; font-family: 'Calibri', Arial, sans-serif; }
+        .printer-toggle-btn.off { background: #c0392b; border-color: #e74c3c; color: #fff; }
 
         .kitchen-bar-container {
             background: #d5dbdb;
@@ -319,27 +321,27 @@
         .keyboard-modal { width: 750px !important; max-width: 95vw !important; padding: 24px !important; }
         .keyboard-screen-input {
             width: 100%;
-            padding: 16px;
-            font-size: 28px;
+            padding: 14px;
+            font-size: 24px;
             font-weight: bold;
             border: 2px solid #34495e;
             border-radius: 6px;
             background: #fff;
             color: #2c3e50;
             text-align: left;
-            min-height: 70px;
-            margin-bottom: 14px;
+            min-height: 55px;
+            margin-bottom: 10px;
             font-family: 'Calibri', Arial, sans-serif;
         }
-        .kb-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 10px; }
+        .kb-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 8px; }
         .kb-key {
             background: #ecf0f1;
             border: 2px solid #bdc3c7;
             border-radius: 8px;
-            font-size: 26px;
+            font-size: 24px;
             font-weight: bold;
             color: #2c3e50;
-            padding: 18px 0;
+            padding: 14px 0;
             flex: 1;
             cursor: pointer;
             text-align: center;
@@ -349,15 +351,11 @@
         }
         .kb-key:hover { background: #d5dbdb; }
         .kb-key:active { background: #bdc3c7; transform: scale(0.95); }
-        .kb-key.wide { flex: 1.5; font-size: 20px; background: #95a5a6; color: white; border-color: #7f8c8d; }
+        .kb-key.wide { flex: 1.5; font-size: 18px; background: #95a5a6; color: white; border-color: #7f8c8d; }
         .kb-key.wide:hover { background: #7f8c8d; }
-        .kb-key.space { flex: 5; font-size: 20px; background: #eaeded; }
-        .kb-key.action { background: #27ae60; color: white; border-color: #219653; flex: 2; font-size: 20px; }
+        .kb-key.space { flex: 5; font-size: 18px; background: #eaeded; }
+        .kb-key.action { background: #27ae60; color: white; border-color: #219653; flex: 2; font-size: 18px; }
         .kb-key.action:hover { background: #219653; }
-
-        #print-iframe {
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -368,6 +366,7 @@
             <div class="restaurant-title">🍽️ The Exclusive Thai Kitchen</div>
         </div>
         <div class="header-right-area">
+            <button class="printer-toggle-btn" id="printer-toggle-btn" onclick="togglePrinterMode()">🖨️ Printer: ON</button>
             <button class="pass-toggle-btn" id="pass-toggle-btn" onclick="togglePasswordProtection()">⚙️ Pass Protect: ON</button>
             <button class="fullscreen-btn" onclick="toggleFullScreen()" title="Toggle Fullscreen">⛶ Full Screen</button>
             <div class="header-time" id="clock-display">--:--:--</div>
@@ -449,9 +448,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Hidden iframe สำหรับสั่งปริ้นตรงแบบไม่โชว์หน้าพรีวิว -->
-    <iframe id="print-iframe"></iframe>
 
     <!-- Modals -->
     <div class="modal-overlay" id="table-modal">
@@ -614,7 +610,7 @@
         </div>
     </div>
 
-    <!-- On-Screen English Keyboard Modal -->
+    <!-- On-Screen English Keyboard Modal (Supports Note and New Order with built-in price input) -->
     <div class="modal-overlay" id="keyboard-modal">
         <div class="modal-content keyboard-modal">
             <div class="modal-header">
@@ -622,8 +618,13 @@
                 <button class="close-modal" onclick="closeKeyboardModal()" style="font-size: 24px;">✕</button>
             </div>
             <div style="font-size: 15px; color: #555; font-weight: bold;" id="keyboard-target-info">Type custom note or special instruction:</div>
-            <input type="text" id="keyboard-text-input" class="keyboard-screen-input" placeholder="e.g. Cut burger in half, No onion..." readonly>
+            <input type="text" id="keyboard-text-input" class="keyboard-screen-input" placeholder="Type here..." readonly>
             
+            <div id="keyboard-price-container" style="display: none; margin-bottom: 10px;">
+                <label style="font-size: 14px; font-weight: bold; color: #2c3e50;">Enter Price ($):</label>
+                <input type="number" id="keyboard-price-input" class="keyboard-screen-input" placeholder="0" style="margin-top: 4px; margin-bottom: 0;" readonly>
+            </div>
+
             <div class="kb-row">
                 <div class="kb-key" onclick="pressKey('Q')">Q</div>
                 <div class="kb-key" onclick="pressKey('W')">W</div>
@@ -662,6 +663,23 @@
             <div class="kb-row">
                 <div class="kb-key space" onclick="pressKey('SPACE')">SPACE</div>
                 <div class="kb-key action" onclick="confirmKeyboardAction()">APPLY TO CART</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sauce Popup Modal (Grid 2 columns, no vertical scrolling needed) -->
+    <div class="modal-overlay" id="sauce-modal">
+        <div class="modal-content" style="width: 540px;">
+            <div class="modal-header">
+                <span id="sauce-modal-title">🥣 Select Sauce</span>
+                <button class="close-modal" onclick="closeSauceModal()">✕</button>
+            </div>
+            <div style="font-size: 14px; color: #555;" id="sauce-modal-subtitle">Select sauce(s):</div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;" id="sauce-options-grid">
+                <!-- Populated dynamically -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal-action" onclick="applySauceSelection()">Apply Sauce</button>
             </div>
         </div>
     </div>
@@ -946,9 +964,22 @@
 
         let systemPassword = localStorage.getItem('pos_system_password') || '8989';
         let isPassProtectionEnabled = JSON.parse(localStorage.getItem('pos_pass_protect_enabled') ?? 'true');
+        let isPrinterEnabled = JSON.parse(localStorage.getItem('pos_printer_enabled') ?? 'true');
 
         let sundayRumpCounts = JSON.parse(localStorage.getItem('pos_sunday_rump_counts')) || {};
         let fpInstance = null;
+
+        const allSauceOptions = [
+            "Mushroom Sauce",
+            "Pepper Sauce",
+            "Plain Gravy",
+            "Aioli",
+            "Mayonnaise",
+            "Sour Cream",
+            "Sweet Chili Sauce",
+            "Sweet Chili Sauce & Sour Cream",
+            "Chilli Mayo"
+        ];
 
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
@@ -1015,6 +1046,23 @@
             }
         }
 
+        function togglePrinterMode() {
+            isPrinterEnabled = !isPrinterEnabled;
+            localStorage.setItem('pos_printer_enabled', JSON.stringify(isPrinterEnabled));
+            updatePrinterBtnUI();
+        }
+
+        function updatePrinterBtnUI() {
+            let btn = document.getElementById('printer-toggle-btn');
+            if (isPrinterEnabled) {
+                btn.innerText = "🖨️ Printer: ON";
+                btn.className = "printer-toggle-btn";
+            } else {
+                btn.innerText = "🚫 Printer: OFF";
+                btn.className = "printer-toggle-btn off";
+            }
+        }
+
         function switchCategory(cat) {
             currentMode = cat;
             document.querySelectorAll('.cat-btn').forEach(b => {
@@ -1065,10 +1113,8 @@
                     </div>
                     <div class="opt-box" style="border-top: 4px solid #f39c12;">
                         <div class="opt-title">🥣 Sauce</div>
-                        <div class="opt-grid-3col">
-                            <button class="opt-btn sauce-btn" onclick="toggleMainOption('sauce', 'Gravy', this)">Gravy</button>
-                            <button class="opt-btn sauce-btn" onclick="toggleMainOption('sauce', 'Pepper', this)">Pepper</button>
-                            <button class="opt-btn sauce-btn" onclick="toggleMainOption('sauce', 'Mushroom', this)">Mushroom</button>
+                        <div class="opt-grid-1col">
+                            <button class="opt-btn" id="main-sauce-popup-btn" onclick="openSauceModal('main')" style="background: #fef9e7; border-color: #f39c12; color: #d35400;">🥣 Select Sauce (0)</button>
                         </div>
                     </div>
                     <div class="opt-box" style="border-top: 4px solid #e67e22;">
@@ -1107,11 +1153,9 @@
                         </div>
                     </div>
                     <div class="opt-box" style="border-top: 4px solid #f39c12;">
-                        <div class="opt-title">🥣 Sauce (คลิกซ้ำเพื่อเพิ่มจำนวน)</div>
-                        <div class="opt-grid-3col">
-                            <button class="opt-btn sunday-sauce-btn" id="ssauce-Gravy" onclick="addSundayItem('sauce', 'Gravy', this)">Gravy</button>
-                            <button class="opt-btn sunday-sauce-btn" id="ssauce-Pepper" onclick="addSundayItem('sauce', 'Pepper', this)">Pepper</button>
-                            <button class="opt-btn sunday-sauce-btn" id="ssauce-Mushroom" onclick="addSundayItem('sauce', 'Mushroom', this)">Mushroom</button>
+                        <div class="opt-title">🥣 Sauce</div>
+                        <div class="opt-grid-1col">
+                            <button class="opt-btn" id="sunday-sauce-popup-btn" onclick="openSauceModal('sunday')" style="background: #fef9e7; border-color: #f39c12; color: #d35400;">🥣 Select Sauce (0)</button>
                         </div>
                     </div>
                     <div class="opt-box" style="border-top: 4px solid #e67e22;">
@@ -1156,7 +1200,7 @@
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Chilli Mayo', 3, this)" style="grid-column: span 2;">Chilli Mayo</button>
                         </div>
                     </div>
-                    <div class="opt-box" style="border-top: 4px solid #8e44ad;">
+                    <div class="opt-box" style="border-top: 8px solid #8e44ad;">
                         <div class="opt-title">📦 Container</div>
                         <div class="opt-grid-1col">
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Plastic Container', 1, this)">Plastic Container</button>
@@ -1201,12 +1245,84 @@
             }
         }
 
+        let activeSauceMode = 'main'; // 'main' or 'temp_sunday'
+        let tempSelectedSauces = [];
+
+        function openSauceModal(mode) {
+            activeSauceMode = mode;
+            if (mode === 'main') {
+                tempSelectedSauces = [...selectedSauces];
+            } else {
+                tempSelectedSauces = [...sundaySauces];
+            }
+
+            let html = '';
+            allSauceOptions.forEach(sName => {
+                let isSelected = tempSelectedSauces.includes(sName);
+                let selClass = isSelected ? 'selected' : '';
+                html += `<div class="no-opt-item ${selClass}" onclick="toggleSaucePopupItem('${sName}', this)">${sName}</div>`;
+            });
+            document.getElementById('sauce-options-grid').innerHTML = html;
+            document.getElementById('sauce-modal').style.display = 'flex';
+        }
+
+        function closeSauceModal() {
+            document.getElementById('sauce-modal').style.display = 'none';
+        }
+
+        function toggleSaucePopupItem(sName, el) {
+            let idx = tempSelectedSauces.indexOf(sName);
+            if (idx > -1) {
+                tempSelectedSauces.splice(idx, 1);
+                el.classList.remove('selected');
+            } else {
+                tempSelectedSauces.push(sName);
+                el.classList.add('selected');
+            }
+        }
+
+        function applySauceSelection() {
+            if (activeSauceMode === 'main') {
+                selectedSauces = [...tempSelectedSauces];
+                let btn = document.getElementById('main-sauce-popup-btn');
+                if (btn) {
+                    if (selectedSauces.length > 0) {
+                        btn.innerText = `🥣 Select Sauce (${selectedSauces.length})`;
+                        btn.style.background = '#e67e22';
+                        btn.style.color = 'white';
+                    } else {
+                        btn.innerText = `🥣 Select Sauce (0)`;
+                        btn.style.background = '#fef9e7';
+                        btn.style.color = '#d35400';
+                    }
+                }
+                addToCartMain(false);
+            } else {
+                sundaySauces = [...tempSelectedSauces];
+                let btn = document.getElementById('sunday-sauce-popup-btn');
+                if (btn) {
+                    if (sundaySauces.length > 0) {
+                        btn.innerText = `🥣 Select Sauce (${sundaySauces.length})`;
+                        btn.style.background = '#e67e22';
+                        btn.style.color = 'white';
+                    } else {
+                        btn.innerText = `🥣 Select Sauce (0)`;
+                        btn.style.background = '#fef9e7';
+                        btn.style.color = '#d35400';
+                    }
+                }
+                addToCartSunday(false);
+            }
+            closeSauceModal();
+        }
+
         function openKeyboardForNote() {
             keyboardActionMode = 'note';
             customNoteText = '';
             document.getElementById('keyboard-modal-title').innerText = '⌨️ Add Custom Note (English)';
             document.getElementById('keyboard-target-info').innerText = 'Type custom note or special instruction:';
             document.getElementById('keyboard-text-input').value = '';
+            document.getElementById('keyboard-price-container').style.display = 'none';
             document.getElementById('keyboard-modal').style.display = 'flex';
         }
 
@@ -1214,8 +1330,10 @@
             keyboardActionMode = 'new_order';
             customNoteText = '';
             document.getElementById('keyboard-modal-title').innerText = '⌨️ Add New Order Item (English)';
-            document.getElementById('keyboard-target-info').innerText = 'Type custom order item name:';
+            document.getElementById('keyboard-target-info').innerText = 'Type custom order item name & price:';
             document.getElementById('keyboard-text-input').value = '';
+            document.getElementById('keyboard-price-input').value = '';
+            document.getElementById('keyboard-price-container').style.display = 'block';
             document.getElementById('keyboard-modal').style.display = 'flex';
         }
 
@@ -1225,6 +1343,9 @@
 
         function pressKey(keyVal) {
             let input = document.getElementById('keyboard-text-input');
+            if (keyboardActionMode === 'new_order') {
+                // ถ้าโฟกัสหรือต้องการพิมพ์ที่ราคา
+            }
             if (keyVal === 'CLEAR') {
                 customNoteText = '';
             } else if (keyVal === 'DEL') {
@@ -1254,11 +1375,10 @@
                     updateCartUI();
                 }
             } else if (keyboardActionMode === 'new_order') {
-                let itemPrice = prompt(`Enter price for "${textStr}" ($):`, "0");
-                let parsedPrice = parseFloat(itemPrice);
-                if (isNaN(parsedPrice) || parsedPrice < 0) parsedPrice = 0;
+                let itemPrice = parseFloat(document.getElementById('keyboard-price-input').value);
+                if (isNaN(itemPrice) || itemPrice < 0) itemPrice = 0;
 
-                cart.push({ title: textStr, price: parsedPrice, details: [] });
+                cart.push({ title: textStr, price: itemPrice, details: [] });
                 activeCartIndex = cart.length - 1;
                 updateCartUI();
             }
@@ -1437,15 +1557,13 @@
 
             if (type === 'side') {
                 sundaySides.push(value);
-            } else if (type === 'sauce') {
-                sundaySauces.push(value);
             }
             updateSundayBadgesUI();
             addToCartSunday(false);
         }
 
         function updateSundayBadgesUI() {
-            document.querySelectorAll('.sunday-side-btn, .sunday-sauce-btn').forEach(btn => {
+            document.querySelectorAll('.sunday-side-btn').forEach(btn => {
                 let badge = btn.querySelector('.opt-badge-count');
                 if (badge) badge.remove();
                 btn.classList.remove('selected');
@@ -1461,21 +1579,6 @@
                         let badge = document.createElement('span');
                         badge.className = 'opt-badge-count';
                         badge.innerText = sideCounts[sName];
-                        btn.appendChild(badge);
-                    }
-                }
-            });
-
-            let sauceCounts = {};
-            sundaySauces.forEach(sc => sauceCounts[sc] = (sauceCounts[sc] || 0) + 1);
-            Object.keys(sauceCounts).forEach(scName => {
-                let btn = document.getElementById('ssauce-' + scName);
-                if (btn) {
-                    btn.classList.add('selected');
-                    if (sauceCounts[scName] > 1) {
-                        let badge = document.createElement('span');
-                        badge.className = 'opt-badge-count';
-                        badge.innerText = sauceCounts[scName];
                         btn.appendChild(badge);
                     }
                 }
@@ -1573,10 +1676,6 @@
                 let idx = selectedSides.indexOf(value);
                 if (idx > -1) { selectedSides.splice(idx, 1); el.classList.remove('selected'); }
                 else { selectedSides.push(value); el.classList.add('selected'); }
-            } else if (category === 'sauce') {
-                let idx = selectedSauces.indexOf(value);
-                if (idx > -1) { selectedSauces.splice(idx, 1); el.classList.remove('selected'); }
-                else { selectedSauces.push(value); el.classList.add('selected'); }
             }
             addToCartMain(false);
         }
@@ -1983,7 +2082,9 @@
                 totalAmount: total
             };
 
-            printReceipt(newOrderLog);
+            if (isPrinterEnabled) {
+                printReceipt(newOrderLog);
+            }
 
             if (pendingPaymentType === 'Split') checkoutSplitOrder(pendingCashPaid, pendingCardPaid, tableNum, finalOrderNo, targetOrderNo, newOrderLog);
             else checkoutOrder(pendingPaymentType, tableNum, finalOrderNo, targetOrderNo, newOrderLog);
@@ -2198,16 +2299,17 @@
                 </html>
             `;
 
-            let iframe = document.getElementById('print-iframe');
-            let doc = iframe.contentWindow.document;
-            doc.open();
-            doc.write(receiptHtml);
-            doc.close();
-
-            setTimeout(() => {
-                iframe.contentWindow.focus();
-                iframe.contentWindow.print();
-            }, 150);
+            let printWin = window.open('', '_blank', 'width=300,height=300,left=-1000,top=-1000');
+            if (printWin) {
+                printWin.document.open();
+                printWin.document.write(receiptHtml);
+                printWin.document.close();
+                setTimeout(() => {
+                    printWin.focus();
+                    printWin.print();
+                    printWin.close();
+                }, 250);
+            }
         }
 
         function loadCurrentKitchenOrderForEdit() {
@@ -2585,16 +2687,17 @@
                 </html>
             `;
 
-            let iframe = document.getElementById('print-iframe');
-            let doc = iframe.contentWindow.document;
-            doc.open();
-            doc.write(printHtml);
-            doc.close();
-
-            setTimeout(() => {
-                iframe.contentWindow.focus();
-                iframe.contentWindow.print();
-            }, 150);
+            let printWin = window.open('', '_blank', 'width=300,height=300,left=-1000,top=-1000');
+            if (printWin) {
+                printWin.document.open();
+                printWin.document.write(printHtml);
+                printWin.document.close();
+                setTimeout(() => {
+                    printWin.focus();
+                    printWin.print();
+                    printWin.close();
+                }, 250);
+            }
         }
 
         async function loadReportData() {
@@ -2907,6 +3010,7 @@
             updateClock();
             updateDailyReportUI();
             updatePassProtectBtnUI();
+            updatePrinterBtnUI();
             updateSundayRumpBadgeUI();
             initRealtimeSync();
             switchCategory('lunch');

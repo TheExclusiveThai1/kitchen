@@ -302,7 +302,7 @@
         .btn-modal-close { background: #e74c3c; color: white; border: none; padding: 12px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; flex: 1; font-family: 'Calibri', Arial, sans-serif; font-size: 15px; }
 
         .no-opt-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-        .no-opt-item { background: #fdfefe; border: 1px solid #bdc3c7; padding: 10px; border-radius: 4px; font-size: 15px; font-weight: bold; cursor: pointer; text-align: center; }
+        .no-opt-item { background: #fdfefe; border: 1px solid #bdc3c7; padding: 10px; border-radius: 4px; font-size: 15px; font-weight: bold; cursor: pointer; text-align: center; position: relative; }
         .no-opt-item.selected { background: #e74c3c; color: white; border-color: #c0392b; }
         .no-opt-section-title { font-weight: bold; font-size: 15px; color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 4px; margin-top: 6px; }
 
@@ -610,7 +610,7 @@
         </div>
     </div>
 
-    <!-- On-Screen English Keyboard Modal (Supports Note and New Order with built-in price input) -->
+    <!-- On-Screen English Keyboard Modal -->
     <div class="modal-overlay" id="keyboard-modal">
         <div class="modal-content keyboard-modal">
             <div class="modal-header">
@@ -667,14 +667,14 @@
         </div>
     </div>
 
-    <!-- Sauce Popup Modal (Grid 2 columns, no vertical scrolling needed) -->
+    <!-- Sauce Popup Modal (Grid 2 columns, clicking again increments count) -->
     <div class="modal-overlay" id="sauce-modal">
         <div class="modal-content" style="width: 540px;">
             <div class="modal-header">
                 <span id="sauce-modal-title">🥣 Select Sauce</span>
                 <button class="close-modal" onclick="closeSauceModal()">✕</button>
             </div>
-            <div style="font-size: 14px; color: #555;" id="sauce-modal-subtitle">Select sauce(s):</div>
+            <div style="font-size: 14px; color: #555;" id="sauce-modal-subtitle">Select sauce(s) - คลิกซ้ำเพื่อเพิ่มจำนวน:</div>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;" id="sauce-options-grid">
                 <!-- Populated dynamically -->
             </div>
@@ -716,7 +716,7 @@
         </div>
     </div>
 
-    <!-- Sales & Orders Report Modal with Single Date Range Picker -->
+    <!-- Sales & Orders Report Modal -->
     <div class="modal-overlay" id="report-modal">
         <div class="modal-content" style="width: 580px;">
             <div class="modal-header">
@@ -734,7 +734,6 @@
                 </div>
             </div>
 
-            <!-- Toggle View Mode Buttons -->
             <div style="display: flex; gap: 8px; margin-top: 6px;">
                 <button class="cat-btn active" id="btn-rep-all" onclick="setReportViewMode('all')" style="padding: 10px; font-size: 14px;">📜 ภาพรวมทั้งหมด</button>
                 <button class="cat-btn" id="btn-rep-steak" onclick="setReportViewMode('steak')" style="background: #27ae60; padding: 10px; font-size: 14px;">🥩 เฉพาะ Sunday Rump Steak ($7)</button>
@@ -1255,14 +1254,7 @@
             } else {
                 tempSelectedSauces = [...sundaySauces];
             }
-
-            let html = '';
-            allSauceOptions.forEach(sName => {
-                let isSelected = tempSelectedSauces.includes(sName);
-                let selClass = isSelected ? 'selected' : '';
-                html += `<div class="no-opt-item ${selClass}" onclick="toggleSaucePopupItem('${sName}', this)">${sName}</div>`;
-            });
-            document.getElementById('sauce-options-grid').innerHTML = html;
+            renderSauceGridModal();
             document.getElementById('sauce-modal').style.display = 'flex';
         }
 
@@ -1270,15 +1262,20 @@
             document.getElementById('sauce-modal').style.display = 'none';
         }
 
-        function toggleSaucePopupItem(sName, el) {
-            let idx = tempSelectedSauces.indexOf(sName);
-            if (idx > -1) {
-                tempSelectedSauces.splice(idx, 1);
-                el.classList.remove('selected');
-            } else {
-                tempSelectedSauces.push(sName);
-                el.classList.add('selected');
-            }
+        function renderSauceGridModal() {
+            let html = '';
+            allSauceOptions.forEach(sName => {
+                let count = tempSelectedSauces.filter(s => s === sName).length;
+                let selClass = count > 0 ? 'selected' : '';
+                let badgeHtml = count > 1 ? `<span class="opt-badge-count">${count}</span>` : '';
+                html += `<div class="no-opt-item ${selClass}" onclick="incrementSaucePopupItem('${sName}')">${sName}${badgeHtml}</div>`;
+            });
+            document.getElementById('sauce-options-grid').innerHTML = html;
+        }
+
+        function incrementSaucePopupItem(sName) {
+            tempSelectedSauces.push(sName);
+            renderSauceGridModal();
         }
 
         function applySauceSelection() {
@@ -1343,9 +1340,6 @@
 
         function pressKey(keyVal) {
             let input = document.getElementById('keyboard-text-input');
-            if (keyboardActionMode === 'new_order') {
-                // ถ้าโฟกัสหรือต้องการพิมพ์ที่ราคา
-            }
             if (keyVal === 'CLEAR') {
                 customNoteText = '';
             } else if (keyVal === 'DEL') {
@@ -1710,7 +1704,10 @@
                     sauceCost = (selectedSauces.length - 1) * 3;
                     extraPrice += sauceCost;
                 }
-                details.push({ text: `Sauce: ${selectedSauces.join(', ')}`, price: sauceCost });
+                let sauceSummary = {};
+                selectedSauces.forEach(sc => sauceSummary[sc] = (sauceSummary[sc] || 0) + 1);
+                let sauceStrArr = Object.keys(sauceSummary).map(k => sauceSummary[k] > 1 ? `${k} (${sauceSummary[k]})` : k);
+                details.push({ text: `Sauce: ${sauceStrArr.join(', ')}`, price: sauceCost });
             }
 
             if (windowExtras && windowExtras.length > 0) {
@@ -2978,7 +2975,6 @@
                     updatePaymentButtonsDisplay();
                 }
 
-                isRemoteOutput = false;
                 isRemoteUpdate = false;
             });
 

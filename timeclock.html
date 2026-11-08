@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Time Tracker & Payroll</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .clock-hand {
+            transform-origin: bottom center;
+            transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @media print {
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+    <!-- HEADER / NAVIGATION BAR -->
+    <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-40 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-700 p-2 rounded-lg text-white">
+                    <i class="fa-solid fa-user-clock text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg sm:text-xl leading-tight">Employee Time & Payroll</h1>
+                    <p class="text-xs text-indigo-200">Real-time Clock-In & Payroll Management (AUD)</p>
+                </div>
+            </div>
+
+            <!-- Mode Switcher -->
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="requestManagerAccess()" id="btnToggleView" class="flex items-center gap-2 bg-indigo-700 hover:bg-indigo-800 text-white text-xs sm:text-sm font-medium px-4 py-2 rounded-xl transition shadow-sm active:scale-95">
+                    <i id="viewToggleIcon" class="fa-solid fa-shield-halved text-amber-300"></i>
+                    <span id="viewToggleText">Manager Mode (PIN)</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- KIOSK VIEW -->
+        <div id="kioskView" class="space-y-6">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="text-center md:text-left">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 mb-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Time Clock Terminal Active
+                    </span>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-800">Employee Clock In / Out</h2>
+                    <p class="text-sm text-slate-500 mt-1">Select your name from the list and tap the button below</p>
+                </div>
+                <div class="bg-indigo-900 text-white px-8 py-4 rounded-xl text-center shadow-inner min-w-[260px]">
+                    <div id="liveClock" class="text-3xl sm:text-4xl font-mono font-bold tracking-wider text-indigo-200">00:00:00</div>
+                    <div id="liveDate" class="text-xs text-indigo-300 font-medium mt-1">Date Loading...</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Employee Selector -->
+                <div class="lg:col-span-1 bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col">
+                    <h3 class="font-bold text-slate-800 text-base mb-3 flex items-center justify-between">
+                        <span><i class="fa-solid fa-users text-indigo-600 mr-2"></i>Select Employee</span>
+                        <span class="text-xs font-normal text-indigo-500">Tap to select</span>
+                    </h3>
+                    <div id="employeeGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2.5 overflow-y-auto max-h-[380px] pr-1"></div>
+                </div>
+
+                <!-- Action Panel -->
+                <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <div class="border-b border-slate-100 pb-4 mb-6">
+                            <span class="text-xs font-semibold uppercase text-slate-400 tracking-wider">Selected Employee</span>
+                            <div class="flex items-center justify-between mt-1">
+                                <h3 id="selectedEmpName" class="text-2xl font-bold text-slate-900">-- Please Select Employee --</h3>
+                                <div id="selectedEmpStatus" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span> Awaiting Selection
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-4">
+                            <button id="btnClockIn" type="button" onclick="handleClockIn()" disabled class="h-32 rounded-xl bg-emerald-600 text-white font-bold text-xl shadow-md hover:bg-emerald-700 active:scale-[0.98] transition-all flex flex-col items-center justify-center gap-2 border border-emerald-500 opacity-50 cursor-not-allowed">
+                                <i class="fa-solid fa-right-to-bracket text-4xl"></i>
+                                <span>CLOCK IN</span>
+                            </button>
+                            <button id="btnClockOut" type="button" onclick="handleClockOut()" disabled class="h-32 rounded-xl bg-rose-600 text-white font-bold text-xl shadow-md hover:bg-rose-700 active:scale-[0.98] transition-all flex flex-col items-center justify-center gap-2 border border-rose-500 opacity-50 cursor-not-allowed">
+                                <i class="fa-solid fa-right-from-bracket text-4xl"></i>
+                                <span>CLOCK OUT</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex justify-between items-center">
+                            <span>Currently Working On Shift</span>
+                            <span id="activeCountBadge" class="bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0 Staff</span>
+                        </h4>
+                        <div id="activeEmpList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MANAGER VIEW -->
+        <div id="managerView" class="space-y-6 hidden">
+            <!-- Top Dashboard Header (Matches Image 1 Header Bar) -->
+            <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row items-center justify-between gap-4 border border-slate-800">
+                <div>
+                    <span class="bg-amber-400/10 text-amber-300 text-xs font-semibold px-3 py-1 rounded-full border border-amber-400/20">
+                        <i class="fa-solid fa-user-shield mr-1"></i> Manager Authorized Dashboard (Weekly Payroll)
+                    </span>
+                    <h2 class="text-2xl font-bold mt-2">Hours & Payroll Summary (AUD)</h2>
+                    <p class="text-xs text-slate-300 mt-0.5">Manage staff, weekly payroll cut-off (Sundays), and archive historical reports</p>
+                </div>
+                <div class="flex flex-wrap gap-2 no-print">
+                    <button type="button" onclick="openArchivesModal()" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-box-archive"></i> Weekly Archives
+                    </button>
+                    <button type="button" onclick="openEmpManageModal()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-slate-700 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-user-plus text-indigo-300"></i> Manage Staff
+                    </button>
+                    <button type="button" onclick="openManualLogModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-clock-rotate-left"></i> Add Entry
+                    </button>
+                    <button type="button" onclick="openChangePinModal()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-slate-700 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-key text-amber-300"></i> Change PIN
+                    </button>
+                    <button type="button" onclick="lockManagerView()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-lock"></i> Exit
+                    </button>
+                </div>
+            </div>
+
+            <!-- Metric Cards (Matches Image 1 Metrics) -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                    <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">ACTIVE STAFF ON SHIFT</div>
+                    <div id="dashActiveNow" class="text-3xl font-extrabold text-slate-900 mt-2">0</div>
+                </div>
+                <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                    <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">CURRENT WEEK TOTAL HOURS</div>
+                    <div id="dashTotalHours" class="text-3xl font-extrabold text-indigo-600 mt-2">0.00 hrs</div>
+                </div>
+                <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+                    <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">CURRENT WEEK NET PAYROLL</div>
+                    <div id="dashTotalPay" class="text-3xl font-extrabold text-emerald-600 mt-2">$0.00 AUD</div>
+                </div>
+            </div>
+
+            <!-- WEEKLY PAYROLL SUMMARY TABLE (Matches Image 1 Exact Layout) -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                            <i class="fa-solid fa-receipt text-emerald-600"></i> Weekly Payroll Summary (Cut-off Every Sunday)
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Review totals per employee, click (View Shifts) to view/edit shifts, and process payouts</p>
+                    </div>
+                    <button type="button" onclick="archiveCurrentWeekAll()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-circle-check"></i> Close Week & Mark All Paid (Archive)
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-100 text-slate-700 font-semibold text-xs border-b border-slate-200">
+                            <tr>
+                                <th class="px-4 py-3.5 rounded-l-xl">Employee Name</th>
+                                <th class="px-4 py-3.5">Current Week</th>
+                                <th class="px-4 py-3.5">Hourly Rate</th>
+                                <th class="px-4 py-3.5">Shifts Logged</th>
+                                <th class="px-4 py-3.5">Total Hours</th>
+                                <th class="px-4 py-3.5">Total Payout ($ AUD)</th>
+                                <th class="px-4 py-3.5 text-center rounded-r-xl">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="weeklySummaryTableBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ALL SHIFT LOGS TABLE -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 no-print border-b border-slate-100 pb-4">
+                    <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                        <h4 class="font-bold text-slate-800 text-sm">Detailed Shift Logs</h4>
+                        <input type="text" id="filterSearch" placeholder="Search employee..." oninput="renderPayrollTable()" class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs w-full sm:w-44 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <div class="flex items-center gap-1">
+                            <input type="text" id="filterDate" readonly placeholder="Filter by Date" onclick="openCalendarPicker('filterDate')" class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
+                            <button type="button" onclick="clearDateFilter()" class="px-2 py-1.5 text-xs text-slate-500 hover:text-slate-700 bg-slate-100 rounded-xl">Clear</button>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-xl transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-excel"></i> Export CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-100 text-slate-700 font-semibold text-xs border-b border-slate-200">
+                            <tr>
+                                <th class="px-4 py-3 rounded-l-xl">Date</th>
+                                <th class="px-4 py-3">Employee Name</th>
+                                <th class="px-4 py-3">Clock In</th>
+                                <th class="px-4 py-3">Clock Out</th>
+                                <th class="px-4 py-3">Break</th>
+                                <th class="px-4 py-3">Total Hrs</th>
+                                <th class="px-4 py-3">Hourly Rate</th>
+                                <th class="px-4 py-3">Total Pay ($ AUD)</th>
+                                <th class="px-4 py-3 text-right rounded-r-xl no-print">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payrollTableBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW SHIFTS BREAKDOWN MODAL (Matches Image 2 Layout) -->
+        <div id="shiftsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <div>
+                        <h3 id="shiftsModalTitle" class="text-lg font-bold text-slate-800">Employee - Shift Breakdown</h3>
+                        <p id="shiftsModalSubtitle" class="text-xs text-slate-500">Current Week | Rate: $0.00/hr</p>
+                    </div>
+                    <button type="button" onclick="closeShiftsModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div id="shiftsModalList" class="max-h-[380px] overflow-y-auto space-y-3 pr-1"></div>
+                <div class="flex justify-end pt-2">
+                    <button type="button" onclick="closeShiftsModal()" class="px-5 py-2 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORICAL WEEKLY ARCHIVES MODAL (Matches Image 3 & Image 4 Combined Layout) -->
+        <div id="archivesModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-box-archive text-amber-600"></i> Historical Weekly Archives (Paid Records)
+                    </h3>
+                    <button type="button" onclick="closeArchivesModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div id="archivesContentList" class="max-h-[420px] overflow-y-auto space-y-4 pr-1"></div>
+                <div class="flex justify-end pt-2">
+                    <button type="button" onclick="closeArchivesModal()" class="px-5 py-2 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EDIT LOG MODAL -->
+        <div id="editModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-indigo-600"></i> Edit Time Log Entry
+                </h3>
+                <form onsubmit="saveLogEdit(event)">
+                    <input type="hidden" id="editLogId">
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 mb-1">Employee Name</label>
+                            <input type="text" id="editEmpName" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 mb-1">Date (YYYY-MM-DD)</label>
+                            <div class="relative">
+                                <input type="text" id="editLogDate" readonly onclick="openCalendarPicker('editLogDate')" class="w-full px-3 py-2 pr-10 border border-slate-300 rounded-xl text-sm cursor-pointer bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                                <i class="fa-solid fa-calendar-days text-indigo-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 mb-1">Clock In Time</label>
+                                <div class="relative">
+                                    <input type="text" id="editClockIn" readonly onclick="openClockPicker('editClockIn', 'editClockOut')" class="w-full px-3 py-2 pr-10 border border-slate-300 rounded-xl text-sm cursor-pointer bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                                    <i class="fa-solid fa-clock text-indigo-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 mb-1">Clock Out Time</label>
+                                <div class="relative">
+                                    <input type="text" id="editClockOut" readonly onclick="openClockPicker('editClockOut')" class="w-full px-3 py-2 pr-10 border border-slate-300 rounded-xl text-sm cursor-pointer bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                                    <i class="fa-solid fa-clock text-indigo-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 mb-1">Break (Hours)</label>
+                                <input type="number" id="editBreakHours" step="0.5" min="0" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 mb-1">Rate/Hour ($ AUD)</label>
+                                <input type="number" id="editEmpRate" min="0" step="0.5" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition">Cancel</button>
+                            <button type="submit" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium shadow-sm transition">Save Changes</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MANUAL LOG MODAL -->
+        <div id="manualModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-clock text-indigo-600"></i> Add Manual Shift Entry
+                </h3>
+                <form onsubmit="saveManualLog(event)" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Select Employee *</label>
+                        <select id="manualEmpSelect" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Date *</label>
+                        <div class="relative">
+                            <input type="text" id="manualLogDate" readonly onclick="openCalendarPicker('manualLogDate')" class="w-full px-3 py-2 pr-10 border border-slate-300 rounded-xl text-sm cursor-pointer bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <i class="fa-solid fa-calendar-days text-indigo-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 mb-1">Clock In Time *</label>
+                            <div class="relative">
+                                <input type="text" id="manualClockIn" readonly onclick="openClockPicker('manualClockIn', 'manualClockOut')" class="w-full px-3 py-2 pr-10 border border-slate-300 rounded-xl text-sm cursor-pointer bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                                <i class="fa-solid fa-clock text-indigo-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-700 mb-1">Clock Out Time *</label>
+                            <div class="relative">
+                                <input type="text" id="manualClockOut" readonly onclick="openClockPicker('manualClockOut')" class="w-full px-3 py-2 pr-10 border border-slate-300 rounded-xl text-sm cursor-pointer bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                                <i class="fa-solid fa-clock text-indigo-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Unpaid Break (Hours)</label>
+                        <input type="number" id="manualBreakHours" step="0.5" value="0" min="0" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" onclick="closeManualLogModal()" class="px-4 py-2 text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition">Cancel</button>
+                        <button type="submit" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium shadow-sm transition">Save Entry</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- EMPLOYEE MANAGE MODAL -->
+        <div id="empManageModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-users-gear text-indigo-600"></i> Manage Staff Directory
+                </h3>
+                <form onsubmit="addNewEmployee(event)" class="flex gap-2">
+                    <input type="text" id="newEmpName" placeholder="Employee Name" required class="flex-grow px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    <input type="number" id="newEmpRate" placeholder="Rate ($/hr)" required min="0" step="0.5" class="w-28 px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-sm transition">Add</button>
+                </form>
+                <div id="empManageList" class="max-h-60 overflow-y-auto space-y-2 pr-1"></div>
+                <div class="flex justify-end pt-2">
+                    <button type="button" onclick="closeEmpManageModal()" class="px-4 py-2 text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition">Close Window</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHANGE PIN MODAL -->
+        <div id="changePinModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-key text-indigo-600"></i> Change Manager PIN
+                </h3>
+                <form onsubmit="saveNewPin(event)" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">Current PIN Code</label>
+                        <input type="password" id="currentPinInput" maxlength="6" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-center text-lg tracking-widest focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-700 mb-1">New PIN Code (4-6 digits)</label>
+                        <input type="password" id="newPinInput" maxlength="6" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-center text-lg tracking-widest focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" onclick="closeChangePinModal()" class="px-4 py-2 text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition">Cancel</button>
+                        <button type="submit" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium shadow-sm transition">Update PIN</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MANAGER PIN NUMPAD VERIFICATION MODAL (Automatic Flow) -->
+        <div id="pinAuthModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-2xl max-w-xs w-full p-6 shadow-2xl space-y-4 text-center">
+                <div>
+                    <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <i class="fa-solid fa-shield-halved text-xl"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-slate-800">Manager Security PIN</h3>
+                    <p class="text-xs text-slate-500 mt-1">Tap digits (Default: <span class="font-bold text-slate-700">1234</span>)</p>
+                </div>
+                
+                <div class="flex justify-center items-center gap-3 my-2">
+                    <div id="pinDot0" class="w-4 h-4 rounded-full border-2 border-indigo-600 bg-slate-100 transition-all"></div>
+                    <div id="pinDot1" class="w-4 h-4 rounded-full border-2 border-indigo-600 bg-slate-100 transition-all"></div>
+                    <div id="pinDot2" class="w-4 h-4 rounded-full border-2 border-indigo-600 bg-slate-100 transition-all"></div>
+                    <div id="pinDot3" class="w-4 h-4 rounded-full border-2 border-indigo-600 bg-slate-100 transition-all"></div>
+                </div>
+                <p id="pinAuthError" class="text-xs text-rose-600 font-medium hidden">Incorrect PIN. Try again.</p>
+
+                <div class="grid grid-cols-3 gap-2 pt-2">
+                    <button type="button" onclick="appendPinDigit('1')" class="h-12 bg-slate-100 hover:bg-slate-200 active:bg-indigo-100 text-slate-800 font-bold text-lg rounded-xl transition">1</button>
+                    <button type="button" onclick="appendPinDigit('2')" class="h-12 bg-slate-100 hover:bg-slate-200 active:bg-indigo-100 text-slate-800 font-bold text-lg rounded-xl transition">2</button>
+                    <button type="button" onclick="appendPinDigit('3')" class="h-12 bg-slate-100 hover:bg-slate-200 active:bg-indigo-100 text-slate-800 font-bold text-lg rounded-xl transition">3</button>
+                    <button type="button" onclick="appendPinDigit('4')" class="h-12 bg-slate-100 hover:bg-slate-200 active:bg-indigo-100 text-slate-800 font-bold text-lg rounded-xl transition">4</button>
+                    <button type="button" onclick="appendPinDigit('5')" class="h-12 bg-slate-100 hover:bg-slate-200 active:bg-indigo-100 text-slate-800 font-bold text-lg rounded-xl transition">5</button>
+                    <button type="button" onclick="appendPinDigit('6')" class="h-12 bg-slate-100 hover:bg-slate-200 active:bg-indigo-100 text-slate-800 font-bold text-lg rounded-xl transition">6</button>
+                    <button type="button" onclick="appendPinDigit('7')" class="h-12 bg-slate-100 hover:bg-slate-200 active:bg-indigo-100 text-slate-800 font-bold text-lg rounded-xl transition">7</button>
+                    <button type="button" onclick="appendPinDigit('8')" class="h-12 bg-slate-100 hover:bg-slate-200 active:bg-indigo-100 text-slate-800 font-bold text-lg rounded-xl transition">8</button>
+                    <button type="button" onclick="appendPinDigit('9')" class="h-12 bg-slate-100 hover:bg-slate-200 active:bg-indigo-100 text-slate-800 font-bold text-lg rounded-xl transition">9</button>
+                    <button type="button" onclick="clearPinInput()" class="h-12 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs rounded-xl transition flex items-center justify-center">Clear</button>
+                    <button type="button" onclick="appendPinDigit('0')" class="h-12 bg-slate-100 hover:bg-slate-200 active:bg-indigo-100 text-slate-800 font-bold text-lg rounded-xl transition">0</button>
+                    <button type="button" onclick="backspacePin()" class="h-12 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center justify-center"><i class="fa-solid fa-delete-left text-base"></i></button>
+                </div>
+
+                <div class="pt-2">
+                    <button type="button" onclick="closePinAuthModal()" class="w-full py-2.5 text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VISUAL CALENDAR GRID MODAL -->
+        <div id="calendarModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-2xl max-w-xs w-full p-5 shadow-2xl space-y-3">
+                <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                    <button type="button" onclick="changeCalMonth(-1)" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <span id="calMonthYearTitle" class="font-bold text-slate-800 text-sm">Month Year</span>
+                    <button type="button" onclick="changeCalMonth(1)" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="grid grid-cols-7 gap-1 text-center font-semibold text-[10px] text-slate-400 uppercase">
+                    <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+                </div>
+                <div id="calDaysGrid" class="grid grid-cols-7 gap-1 text-center text-xs"></div>
+                <div class="flex justify-end pt-2">
+                    <button type="button" onclick="closeCalendarPicker()" class="w-full py-2 text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded-xl">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ANALOG CLOCK FACE PICKER MODAL -->
+        <div id="clockFaceModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4 hidden">
+            <div class="bg-white rounded-2xl max-w-xs w-full p-5 shadow-2xl space-y-4 text-center">
+                <div id="clockTitle" class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 py-1 px-3 rounded-full inline-block">
+                    Set Time
+                </div>
+
+                <div class="flex justify-center items-center gap-2">
+                    <button type="button" onclick="setClockMode('hours')" id="clkDisplayHour" class="text-3xl font-bold px-3 py-1 bg-indigo-100 text-indigo-700 rounded-xl">08</button>
+                    <span class="text-2xl font-bold text-slate-400">:</span>
+                    <button type="button" onclick="setClockMode('minutes')" id="clkDisplayMinute" class="text-3xl font-bold px-3 py-1 bg-slate-100 text-slate-600 rounded-xl">00</button>
+                    <div class="flex flex-col gap-1 ml-2">
+                        <button type="button" id="btnAmPm" onclick="toggleAmPm()" class="text-xs font-bold px-2 py-1 bg-indigo-600 text-white rounded-md">AM</button>
+                    </div>
+                </div>
+
+                <p id="clockInstruction" class="text-xs text-slate-400 font-medium">Tap clock dial numbers to set [Hours]</p>
+
+                <div class="relative w-52 h-52 mx-auto bg-slate-100 rounded-full border-4 border-slate-200 flex items-center justify-center select-none shadow-inner" id="clockDial">
+                    <div class="absolute w-3 h-3 bg-indigo-600 rounded-full z-20"></div>
+                    <div id="clockHand" class="clock-hand absolute w-1 bg-indigo-600 rounded-full z-10" style="height: 70px; bottom: 50%; transform: rotate(0deg);">
+                        <div class="w-4 h-4 bg-indigo-600 rounded-full -ml-1.5 -mt-2"></div>
+                    </div>
+                    <div id="clockDialNumbers" class="absolute inset-0"></div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeClockPicker()" class="w-1/2 py-2 text-xs bg-slate-100 text-slate-600 font-medium rounded-xl">Cancel</button>
+                    <button type="button" onclick="confirmClockSelection()" class="w-1/2 py-2 text-xs bg-indigo-600 text-white font-medium rounded-xl shadow-sm">OK</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // State Management - Guaranteed data preservation across all key versions
+        let managerPin = localStorage.getItem('tp_manager_pin') || '1234';
+        let enteredPin = '';
+        let isManagerLoggedIn = false;
+        let selectedEmpId = null;
+        let targetInputId = null;
+        let nextTargetInputId = null;
+
+        // Load employees from any existing storage or default list
+        let employees = JSON.parse(localStorage.getItem('tp_employees_aud')) || JSON.parse(localStorage.getItem('tp_employees')) || [
+            { id: 'emp_1', name: 'Bee', rate: 25.00 },
+            { id: 'emp_2', name: 'Kai', rate: 25.00 },
+            { id: 'emp_3', name: 'Noi', rate: 25.00 },
+            { id: 'emp_4', name: 'Imm', rate: 20.00 },
+            { id: 'emp_5', name: 'Alex', rate: 25.00 }
+        ];
+
+        // Safely load all logs, paid archives, and active clock-ins
+        let timeLogs = JSON.parse(localStorage.getItem('tp_timelogs_aud')) || JSON.parse(localStorage.getItem('tp_timelogs')) || [];
+        let paidArchives = JSON.parse(localStorage.getItem('tp_paid_archives_aud')) || JSON.parse(localStorage.getItem('tp_paid_archives')) || [];
+        let activeClockIns = JSON.parse(localStorage.getItem('tp_active_clockins_aud')) || JSON.parse(localStorage.getItem('tp_active_clockins')) || {};
+
+        // Sync storage keys
+        saveToLocalStorage();
+
+        function saveToLocalStorage() {
+            localStorage.setItem('tp_employees_aud', JSON.stringify(employees));
+            localStorage.setItem('tp_timelogs_aud', JSON.stringify(timeLogs));
+            localStorage.setItem('tp_paid_archives_aud', JSON.stringify(paidArchives));
+            localStorage.setItem('tp_active_clockins_aud', JSON.stringify(activeClockIns));
+        }
+
+        // Calendar & Clock Picker States
+        let calCurrentDate = new Date();
+        let clockMode = 'hours';
+        let clockSelectedHour = 8;
+        let clockSelectedMinute = 0;
+        let clockIsPm = false;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateLiveClock();
+            setInterval(updateLiveClock, 1000);
+            renderEmployeeGrid();
+            renderActiveEmpList();
+            renderPayrollTable();
+        });
+
+        // ALWAYS SORT EMPLOYEES ALPHABETICALLY (A-Z)
+        function getSortedEmployees() {
+            return [...employees].sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        // LIVE CLOCK
+        function updateLiveClock() {
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            const dateOptions = { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short' };
+            const dateStr = now.toLocaleDateString('en-AU', dateOptions);
+
+            const clockEl = document.getElementById('liveClock');
+            const dateEl = document.getElementById('liveDate');
+            if (clockEl) clockEl.innerText = timeStr;
+            if (dateEl) dateEl.innerText = dateStr;
+        }
+
+        // ALWAYS SORT LOGS BY DATE DESCENDING (NEWEST FIRST)
+        function sortLogsByDate(logsArr) {
+            return logsArr.sort((a, b) => {
+                if (b.date !== a.date) {
+                    return b.date.localeCompare(a.date);
+                }
+                return b.clockIn.localeCompare(a.clockIn);
+            });
+        }
+
+        // NUMPAD PIN VERIFICATION
+        function requestManagerAccess() {
+            if (isManagerLoggedIn) {
+                lockManagerView();
+                return;
+            }
+            clearPinInput();
+            document.getElementById('pinAuthModal').classList.remove('hidden');
+        }
+
+        function closePinAuthModal() {
+            document.getElementById('pinAuthModal').classList.add('hidden');
+        }
+
+        function appendPinDigit(digit) {
+            if (enteredPin.length < 4) {
+                enteredPin += digit;
+                updatePinDots();
+                if (enteredPin.length === 4) {
+                    setTimeout(verifyNumpadPin, 150);
+                }
+            }
+        }
+
+        function backspacePin() {
+            if (enteredPin.length > 0) {
+                enteredPin = enteredPin.slice(0, -1);
+                updatePinDots();
+                document.getElementById('pinAuthError').classList.add('hidden');
+            }
+        }
+
+        function clearPinInput() {
+            enteredPin = '';
+            updatePinDots();
+            document.getElementById('pinAuthError').classList.add('hidden');
+        }
+
+        function updatePinDots() {
+            for (let i = 0; i < 4; i++) {
+                const dot = document.getElementById(`pinDot${i}`);
+                if (dot) {
+                    if (i < enteredPin.length) {
+                        dot.className = "w-4 h-4 rounded-full border-2 border-indigo-600 bg-indigo-600 scale-110 transition-all";
+                    } else {
+                        dot.className = "w-4 h-4 rounded-full border-2 border-indigo-600 bg-slate-100 transition-all";
+                    }
+                }
+            }
+        }
+
+        function verifyNumpadPin() {
+            if (enteredPin === managerPin) {
+                isManagerLoggedIn = true;
+                closePinAuthModal();
+
+                document.getElementById('kioskView').classList.add('hidden');
+                document.getElementById('managerView').classList.remove('hidden');
+
+                document.getElementById('viewToggleText').innerText = "Kiosk View";
+                document.getElementById('viewToggleIcon').className = "fa-solid fa-desktop text-white";
+
+                renderPayrollTable();
+            } else {
+                document.getElementById('pinAuthError').classList.remove('hidden');
+                setTimeout(clearPinInput, 800);
+            }
+        }
+
+        function lockManagerView() {
+            isManagerLoggedIn = false;
+            document.getElementById('managerView').classList.add('hidden');
+            document.getElementById('kioskView').classList.remove('hidden');
+
+            document.getElementById('viewToggleText').innerText = "Manager Mode (PIN)";
+            document.getElementById('viewToggleIcon').className = "fa-solid fa-shield-halved text-amber-300";
+        }
+
+        // VISUAL CALENDAR GRID LOGIC
+        function openCalendarPicker(inputId) {
+            targetInputId = inputId;
+            calCurrentDate = new Date();
+            renderCalendarGrid();
+            document.getElementById('calendarModal').classList.remove('hidden');
+        }
+
+        function closeCalendarPicker() {
+            document.getElementById('calendarModal').classList.add('hidden');
+        }
+
+        function changeCalMonth(offset) {
+            calCurrentDate.setMonth(calCurrentDate.getMonth() + offset);
+            renderCalendarGrid();
+        }
+
+        function renderCalendarGrid() {
+            const year = calCurrentDate.getFullYear();
+            const month = calCurrentDate.getMonth();
+
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            document.getElementById('calMonthYearTitle').innerText = `${monthNames[month]} ${year}`;
+
+            let firstDay = new Date(year, month, 1).getDay();
+            firstDay = firstDay === 0 ? 6 : firstDay - 1; // Monday First
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            const grid = document.getElementById('calDaysGrid');
+            grid.innerHTML = '';
+
+            for (let i = 0; i < firstDay; i++) {
+                grid.innerHTML += `<div></div>`;
+            }
+
+            const today = new Date();
+            const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = isCurrentMonth && today.getDate() === day;
+
+                grid.innerHTML += `
+                    <button type="button" onclick="selectCalDate('${dateStr}')" class="h-8 w-8 mx-auto rounded-full font-medium text-xs transition flex items-center justify-center ${
+                        isToday 
+                        ? 'bg-indigo-600 text-white font-bold ring-2 ring-indigo-300 shadow-sm' 
+                        : 'text-slate-700 hover:bg-indigo-100 hover:text-indigo-700'
+                    }">
+                        ${day}
+                    </button>
+                `;
+            }
+        }
+
+        function selectCalDate(dateStr) {
+            if (targetInputId) {
+                document.getElementById(targetInputId).value = dateStr;
+                if (targetInputId === 'filterDate') renderPayrollTable();
+            }
+            closeCalendarPicker();
+        }
+
+        // ANALOG CLOCK FACE PICKER LOGIC
+        function openClockPicker(inputId, nextInputId = null) {
+            targetInputId = inputId;
+            nextTargetInputId = nextInputId;
+
+            const titleEl = document.getElementById('clockTitle');
+            if (inputId.toLowerCase().includes('in')) {
+                titleEl.innerText = "Select Clock In Time";
+                titleEl.className = "text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 py-1 px-3 rounded-full inline-block border border-emerald-200";
+            } else {
+                titleEl.innerText = "Select Clock Out Time";
+                titleEl.className = "text-xs font-bold uppercase tracking-wider text-rose-700 bg-rose-50 py-1 px-3 rounded-full inline-block border border-rose-200";
+            }
+
+            const currentVal = document.getElementById(inputId)?.value || '08:00';
+            let [h, m] = currentVal.split(':').map(Number);
+            
+            clockIsPm = h >= 12;
+            clockSelectedHour = h % 12 || 12;
+            clockSelectedMinute = m || 0;
+
+            updateAmPmBtn();
+            setClockMode('hours');
+            document.getElementById('clockFaceModal').classList.remove('hidden');
+        }
+
+        function closeClockPicker() {
+            document.getElementById('clockFaceModal').classList.add('hidden');
+            nextTargetInputId = null;
+        }
+
+        function toggleAmPm() {
+            clockIsPm = !clockIsPm;
+            updateAmPmBtn();
+        }
+
+        function updateAmPmBtn() {
+            const btn = document.getElementById('btnAmPm');
+            btn.innerText = clockIsPm ? 'PM' : 'AM';
+            btn.className = clockIsPm ? 'text-xs font-bold px-2 py-1 bg-amber-500 text-white rounded-md' : 'text-xs font-bold px-2 py-1 bg-indigo-600 text-white rounded-md';
+        }
+
+        function setClockMode(mode) {
+            clockMode = mode;
+            const hBtn = document.getElementById('clkDisplayHour');
+            const mBtn = document.getElementById('clkDisplayMinute');
+            const instr = document.getElementById('clockInstruction');
+
+            if (mode === 'hours') {
+                hBtn.className = "text-3xl font-bold px-3 py-1 bg-indigo-600 text-white rounded-xl shadow-sm";
+                mBtn.className = "text-3xl font-bold px-3 py-1 bg-slate-100 text-slate-600 rounded-xl";
+                instr.innerText = "Tap clock dial numbers to set [Hours]";
+            } else {
+                hBtn.className = "text-3xl font-bold px-3 py-1 bg-slate-100 text-slate-600 rounded-xl";
+                mBtn.className = "text-3xl font-bold px-3 py-1 bg-indigo-600 text-white rounded-xl shadow-sm";
+                instr.innerText = "Tap clock dial numbers to set [Minutes]";
+            }
+
+            renderClockDial();
+        }
+
+        function renderClockDial() {
+            document.getElementById('clkDisplayHour').innerText = String(clockSelectedHour).padStart(2, '0');
+            document.getElementById('clkDisplayMinute').innerText = String(clockSelectedMinute).padStart(2, '0');
+
+            const dialGrid = document.getElementById('clockDialNumbers');
+            dialGrid.innerHTML = '';
+
+            const hand = document.getElementById('clockHand');
+            let angle = 0;
+
+            if (clockMode === 'hours') {
+                angle = (clockSelectedHour % 12) * 30;
+                for (let i = 1; i <= 12; i++) {
+                    const rad = (i * 30 - 90) * (Math.PI / 180);
+                    const x = 85 + 68 * Math.cos(rad);
+                    const y = 85 + 68 * Math.sin(rad);
+
+                    dialGrid.innerHTML += `
+                        <button type="button" onclick="selectClockVal(${i})" class="absolute w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${i === clockSelectedHour ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-700 hover:bg-indigo-100'}" style="left: ${x}px; top: ${y}px;">
+                            ${i}
+                        </button>
+                    `;
+                }
+            } else {
+                angle = (clockSelectedMinute / 60) * 360;
+                for (let i = 0; i < 60; i += 5) {
+                    const rad = (i * 6 - 90) * (Math.PI / 180);
+                    const x = 85 + 68 * Math.cos(rad);
+                    const y = 85 + 68 * Math.sin(rad);
+
+                    dialGrid.innerHTML += `
+                        <button type="button" onclick="selectClockVal(${i})" class="absolute w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${i === clockSelectedMinute ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-700 hover:bg-indigo-100'}" style="left: ${x}px; top: ${y}px;">
+                            ${String(i).padStart(2, '0')}
+                        </button>
+                    `;
+                }
+            }
+
+            hand.style.transform = `rotate(${angle}deg)`;
+        }
+
+        function selectClockVal(val) {
+            if (clockMode === 'hours') {
+                clockSelectedHour = val;
+                setClockMode('minutes');
+            } else {
+                clockSelectedMinute = val;
+                renderClockDial();
+            }
+        }
+
+        function confirmClockSelection() {
+            let hour = clockSelectedHour % 12;
+            if (clockIsPm) hour += 12;
+            const finalTimeStr = `${String(hour).padStart(2, '0')}:${String(clockSelectedMinute).padStart(2, '0')}`;
+
+            if (targetInputId) {
+                document.getElementById(targetInputId).value = finalTimeStr;
+            }
+
+            const followUpId = nextTargetInputId;
+            closeClockPicker();
+
+            if (followUpId) {
+                setTimeout(() => {
+                    openClockPicker(followUpId);
+                }, 200);
+            }
+        }
+
+        // KIOSK LOGIC (ALPHABETICAL ORDER)
+        function renderEmployeeGrid() {
+            const grid = document.getElementById('employeeGrid');
+            if (!grid) return;
+
+            const sortedEmps = getSortedEmployees();
+
+            grid.innerHTML = sortedEmps.map(emp => {
+                const isActive = activeClockIns[emp.id];
+                const isSelected = selectedEmpId === emp.id;
+
+                return `
+                    <div onclick="selectEmployee('${emp.id}')" class="cursor-pointer p-3.5 rounded-xl border transition-all duration-200 flex flex-col justify-between ${
+                        isSelected 
+                        ? 'border-indigo-600 bg-indigo-50 shadow-sm ring-2 ring-indigo-200' 
+                        : 'border-slate-200 hover:border-indigo-300 bg-white'
+                    }">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-bold text-slate-800 text-sm truncate">${emp.name}</span>
+                            <span class="w-2.5 h-2.5 rounded-full ${isActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}"></span>
+                        </div>
+                        <div class="text-xs text-slate-500 flex justify-between items-center">
+                            <span>$${emp.rate.toFixed(2)}/hr</span>
+                            <span class="font-semibold ${isActive ? 'text-emerald-600' : 'text-slate-400'}">
+                                ${isActive ? 'On Shift' : 'Clocked Out'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectEmployee(empId) {
+            selectedEmpId = empId;
+            const emp = employees.find(e => e.id === empId);
+            if (!emp) return;
+
+            document.getElementById('selectedEmpName').innerText = emp.name;
+            const statusEl = document.getElementById('selectedEmpStatus');
+            const isActive = activeClockIns[emp.id];
+
+            if (isActive) {
+                statusEl.className = "inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700";
+                statusEl.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Clocked In at ${activeClockIns[emp.id]}`;
+                document.getElementById('btnClockIn').disabled = true;
+                document.getElementById('btnClockIn').classList.add('opacity-50', 'cursor-not-allowed');
+                document.getElementById('btnClockOut').disabled = false;
+                document.getElementById('btnClockOut').classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                statusEl.className = "inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600";
+                statusEl.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span> Ready to Clock In`;
+                document.getElementById('btnClockIn').disabled = false;
+                document.getElementById('btnClockIn').classList.remove('opacity-50', 'cursor-not-allowed');
+                document.getElementById('btnClockOut').disabled = true;
+                document.getElementById('btnClockOut').classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            renderEmployeeGrid();
+        }
+
+        function handleClockIn() {
+            if (!selectedEmpId) return;
+            const emp = employees.find(e => e.id === selectedEmpId);
+            if (!emp) return;
+
+            const now = new Date();
+            const timeStr = now.toTimeString().substring(0, 5);
+
+            activeClockIns[emp.id] = timeStr;
+            saveToLocalStorage();
+
+            selectEmployee(selectedEmpId);
+            renderActiveEmpList();
+            renderPayrollTable();
+        }
+
+        function handleClockOut() {
+            if (!selectedEmpId) return;
+            const emp = employees.find(e => e.id === selectedEmpId);
+            if (!emp || !activeClockIns[emp.id]) return;
+
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+            const timeStr = now.toTimeString().substring(0, 5);
+            const clockInTime = activeClockIns[emp.id];
+
+            const newLog = {
+                id: 'log_' + Date.now(),
+                empId: emp.id,
+                empName: emp.name,
+                date: dateStr,
+                clockIn: clockInTime,
+                clockOut: timeStr,
+                breakHours: 0,
+                rate: emp.rate
+            };
+
+            timeLogs.unshift(newLog);
+            delete activeClockIns[emp.id];
+
+            saveToLocalStorage();
+
+            selectEmployee(selectedEmpId);
+            renderActiveEmpList();
+            renderPayrollTable();
+        }
+
+        function renderActiveEmpList() {
+            const container = document.getElementById('activeEmpList');
+            const badge = document.getElementById('activeCountBadge');
+            const activeIds = Object.keys(activeClockIns);
+
+            if (badge) badge.innerText = `${activeIds.length} Staff`;
+
+            if (activeIds.length === 0) {
+                container.innerHTML = `<p class="text-slate-400 text-xs col-span-full text-center py-2">No employees currently on shift.</p>`;
+                return;
+            }
+
+            container.innerHTML = activeIds.map(id => {
+                const emp = employees.find(e => e.id === id);
+                return `
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 flex items-center justify-between">
+                        <div>
+                            <p class="font-bold text-emerald-950 text-xs">${emp ? emp.name : 'N/A'}</p>
+                            <p class="text-[10px] text-emerald-700">Clocked in ${activeClockIns[id]}</p>
+                        </div>
+                        <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // PAYROLL & CALCULATIONS
+        function calculateHours(clockIn, clockOut, breakHrs = 0) {
+            if (!clockIn || !clockOut) return 0;
+            const [inH, inM] = clockIn.split(':').map(Number);
+            const [outH, outM] = clockOut.split(':').map(Number);
+
+            let startMinutes = inH * 60 + inM;
+            let endMinutes = outH * 60 + outM;
+
+            if (endMinutes < startMinutes) endMinutes += 24 * 60;
+
+            let totalMinutes = endMinutes - startMinutes - (breakHrs * 60);
+            return Math.max(0, parseFloat((totalMinutes / 60).toFixed(2)));
+        }
+
+        function renderPayrollTable() {
+            // Sort logs by date descending automatically
+            sortLogsByDate(timeLogs);
+
+            const summaryTbody = document.getElementById('weeklySummaryTableBody');
+            const logsTbody = document.getElementById('payrollTableBody');
+
+            let totalHoursSum = 0;
+            let totalPaySum = 0;
+
+            // Render Weekly Payroll Summary Table (Sorted Alphabetically A-Z)
+            if (summaryTbody) {
+                const sortedEmps = getSortedEmployees();
+
+                summaryTbody.innerHTML = sortedEmps.map(emp => {
+                    const empLogs = timeLogs.filter(l => l.empId === emp.id || l.empName.toLowerCase() === emp.name.toLowerCase());
+                    let empHours = 0;
+                    empLogs.forEach(l => {
+                        empHours += calculateHours(l.clockIn, l.clockOut, l.breakHours);
+                    });
+                    const empPayout = empHours * emp.rate;
+
+                    totalHoursSum += empHours;
+                    totalPaySum += empPayout;
+
+                    return `
+                        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                            <td class="px-4 py-3.5 font-bold text-slate-900 flex items-center gap-2">
+                                <span>${emp.name}</span>
+                                <button type="button" onclick="openShiftsModal('${emp.id}', '${emp.name}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-semibold hover:underline">
+                                    (View Shifts)
+                                </button>
+                            </td>
+                            <td class="px-4 py-3.5 text-xs text-indigo-600 font-semibold">Nov 2 - Nov 8</td>
+                            <td class="px-4 py-3.5 text-slate-600">$${emp.rate.toFixed(2)}</td>
+                            <td class="px-4 py-3.5 font-semibold text-slate-700">${empLogs.length} shifts</td>
+                            <td class="px-4 py-3.5 font-bold text-indigo-600">${empHours.toFixed(2)} hrs</td>
+                            <td class="px-4 py-3.5 font-bold text-emerald-600">$${empPayout.toLocaleString('en-AU', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AUD</td>
+                            <td class="px-4 py-3.5 text-center">
+                                <button type="button" onclick="archiveEmployeeWeek('${emp.id}', '${emp.name}')" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-3.5 py-1.5 rounded-xl transition shadow-sm flex items-center gap-1 mx-auto">
+                                    <i class="fa-solid fa-check text-[10px]"></i> Paid
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // Render Detailed Shift Logs Table
+            if (logsTbody) {
+                const searchQuery = (document.getElementById('filterSearch')?.value || '').toLowerCase();
+                const dateQuery = document.getElementById('filterDate')?.value || '';
+
+                const filteredLogs = timeLogs.filter(log => {
+                    const matchesName = log.empName.toLowerCase().includes(searchQuery);
+                    const matchesDate = !dateQuery || log.date === dateQuery;
+                    return matchesName && matchesDate;
+                });
+
+                logsTbody.innerHTML = filteredLogs.map(log => {
+                    const hrs = calculateHours(log.clockIn, log.clockOut, log.breakHours);
+                    const pay = hrs * log.rate;
+
+                    return `
+                        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                            <td class="px-4 py-3 font-medium text-slate-700">${log.date}</td>
+                            <td class="px-4 py-3 font-semibold text-slate-900">${log.empName}</td>
+                            <td class="px-4 py-3 text-slate-600">${log.clockIn}</td>
+                            <td class="px-4 py-3 text-slate-600">${log.clockOut}</td>
+                            <td class="px-4 py-3 text-slate-600">${log.breakHours} hrs</td>
+                            <td class="px-4 py-3 font-bold text-indigo-600">${hrs.toFixed(2)}</td>
+                            <td class="px-4 py-3 text-slate-600">$${log.rate.toFixed(2)}</td>
+                            <td class="px-4 py-3 font-bold text-emerald-600">$${pay.toLocaleString('en-AU', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AUD</td>
+                            <td class="px-4 py-3 text-right no-print">
+                                <button type="button" onclick="openEditModal('${log.id}')" class="text-indigo-600 hover:text-indigo-900 text-xs font-semibold px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 transition mr-1">
+                                    <i class="fa-solid fa-pen"></i> Edit
+                                </button>
+                                <button type="button" onclick="deleteLog('${log.id}')" class="text-rose-600 hover:text-rose-900 text-xs font-semibold px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 transition">
+                                    <i class="fa-solid fa-trash"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            document.getElementById('dashActiveNow').innerText = `${Object.keys(activeClockIns).length}`;
+            document.getElementById('dashTotalHours').innerText = `${totalHoursSum.toFixed(2)} hrs`;
+            document.getElementById('dashTotalPay').innerText = `$${totalPaySum.toLocaleString('en-AU', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AUD`;
+        }
+
+        // VIEW SHIFTS BREAKDOWN MODAL (Matches Image 2)
+        function openShiftsModal(empId, empName) {
+            const emp = employees.find(e => e.id === empId || e.name === empName);
+            const rate = emp ? emp.rate : 25.00;
+
+            document.getElementById('shiftsModalTitle').innerText = `${empName} - Shift Breakdown`;
+            document.getElementById('shiftsModalSubtitle').innerText = `Current Week | Rate: $${rate.toFixed(2)}/hr`;
+
+            const empLogs = timeLogs.filter(l => l.empId === empId || l.empName.toLowerCase() === empName.toLowerCase());
+            sortLogsByDate(empLogs);
+
+            const listContainer = document.getElementById('shiftsModalList');
+            if (empLogs.length === 0) {
+                listContainer.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs">No shifts logged for this employee this week.</div>`;
+            } else {
+                listContainer.innerHTML = empLogs.map(l => {
+                    const hrs = calculateHours(l.clockIn, l.clockOut, l.breakHours);
+                    const pay = hrs * rate;
+
+                    return `
+                        <div class="bg-indigo-50/50 border border-indigo-100 rounded-xl p-3.5 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-calendar-day text-indigo-500"></i> ${l.date}
+                                </span>
+                                <div class="flex items-center gap-1">
+                                    <button type="button" onclick="openEditModal('${l.id}')" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold px-2 py-0.5 rounded hover:bg-indigo-100 transition flex items-center gap-1">
+                                        <i class="fa-solid fa-pen text-[10px]"></i> Edit
+                                    </button>
+                                    <button type="button" onclick="deleteLog('${l.id}')" class="text-xs text-rose-500 hover:text-rose-700 p-1 rounded hover:bg-rose-100 transition">
+                                        <i class="fa-solid fa-trash text-[10px]"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="text-xs text-slate-600">
+                                Time: <span class="font-medium text-slate-800">${l.clockIn} - ${l.clockOut}</span> (Break: ${l.breakHours} hrs)
+                            </div>
+                            <div class="text-xs font-bold text-indigo-700 pt-1 border-t border-indigo-100/60 flex justify-between">
+                                <span>Worked: ${hrs.toFixed(2)} hrs</span>
+                                <span class="text-emerald-600">• $${pay.toFixed(2)} AUD</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            document.getElementById('shiftsModal').classList.remove('hidden');
+        }
+
+        function closeShiftsModal() {
+            document.getElementById('shiftsModal').classList.add('hidden');
+        }
+
+        // WEEKLY ARCHIVES LOGIC (Clean single week header centered, list employees underneath)
+        function archiveEmployeeWeek(empId, empName) {
+            const empLogsIndex = timeLogs.filter(l => l.empId === empId || l.empName.toLowerCase() === empName.toLowerCase());
+            if (empLogsIndex.length === 0) {
+                alert(`No active shifts found for ${empName} to process payout.`);
+                return;
+            }
+
+            if (!confirm(`Mark payout as PAID for ${empName} and archive shifts?`)) return;
+
+            const archivedRecord = {
+                archiveId: 'arc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                empId: empId,
+                empName: empName,
+                weekPeriod: '2-8 November 2026',
+                archiveDate: new Date().toLocaleDateString('en-AU'),
+                logs: [...empLogsIndex]
+            };
+
+            paidArchives.unshift(archivedRecord);
+
+            // Remove archived shifts from active timeLogs
+            timeLogs = timeLogs.filter(l => l.empId !== empId && l.empName.toLowerCase() !== empName.toLowerCase());
+
+            saveToLocalStorage();
+            renderPayrollTable();
+            alert(`Marked weekly payout for ${empName} as PAID successfully!`);
+        }
+
+        function archiveCurrentWeekAll() {
+            if (timeLogs.length === 0) {
+                alert("No active shifts available to archive.");
+                return;
+            }
+
+            if (!confirm("Are you sure you want to CLOSE WEEK and mark ALL employees as PAID?")) return;
+
+            employees.forEach(emp => {
+                const empLogsIndex = timeLogs.filter(l => l.empId === emp.id || l.empName.toLowerCase() === emp.name.toLowerCase());
+                if (empLogsIndex.length > 0) {
+                    paidArchives.unshift({
+                        archiveId: 'arc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                        empId: emp.id,
+                        empName: emp.name,
+                        weekPeriod: '2-8 November 2026',
+                        archiveDate: new Date().toLocaleDateString('en-AU'),
+                        logs: [...empLogsIndex]
+                    });
+                }
+            });
+
+            timeLogs = [];
+            saveToLocalStorage();
+            renderPayrollTable();
+            alert("All weekly payouts have been marked as PAID and archived!");
+        }
+
+        function openArchivesModal() {
+            renderArchivesList();
+            document.getElementById('archivesModal').classList.remove('hidden');
+        }
+
+        function closeArchivesModal() {
+            document.getElementById('archivesModal').classList.add('hidden');
+        }
+
+        // Render Archives grouped neatly with a SINGLE week header on top centered
+        function renderArchivesList() {
+            const container = document.getElementById('archivesContentList');
+            if (paidArchives.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs">No paid archives found.</div>`;
+                return;
+            }
+
+            // Group archives by weekPeriod
+            const groups = {};
+            paidArchives.forEach(arc => {
+                const period = arc.weekPeriod || '2-8 November 2026';
+                if (!groups[period]) groups[period] = [];
+                groups[period].push(arc);
+            });
+
+            let html = '';
+            for (const period in groups) {
+                html += `
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-4">
+                        <!-- Single Centered Week Header Header -->
+                        <div class="text-center border-b border-slate-200 pb-2">
+                            <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-4 py-1 rounded-full border border-indigo-200 inline-flex items-center gap-1.5">
+                                <i class="fa-solid fa-box text-amber-500"></i> weekly pay out: ${period}
+                            </span>
+                        </div>
+
+                        <div class="space-y-4">
+                            ${groups[period].map(arc => {
+                                let totalHrs = 0;
+                                let totalPay = 0;
+                                arc.logs.forEach(l => {
+                                    const hrs = calculateHours(l.clockIn, l.clockOut, l.breakHours);
+                                    totalHrs += hrs;
+                                    totalPay += hrs * l.rate;
+                                });
+
+                                return `
+                                    <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm space-y-2">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-bold text-slate-800">
+                                                Employee name : <span class="text-indigo-600">${arc.empName}</span>
+                                            </span>
+                                            <div class="flex items-center gap-2">
+                                                <span class="bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                                    Total Pay: $${totalPay.toLocaleString('en-AU', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AUD
+                                                </span>
+                                                <button type="button" onclick="restoreArchiveRecord('${arc.archiveId}')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1">
+                                                    <i class="fa-solid fa-rotate-left text-[10px]"></i> Restore
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="overflow-x-auto">
+                                            <table class="w-full text-left text-xs">
+                                                <thead class="text-slate-400 font-semibold border-b border-slate-100">
+                                                    <tr>
+                                                        <th class="py-1 px-2">Date</th>
+                                                        <th class="py-1 px-2">Name</th>
+                                                        <th class="py-1 px-2">In/Out</th>
+                                                        <th class="py-1 px-2">Hours</th>
+                                                        <th class="py-1 px-2">Pay</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-slate-100">
+                                                    ${arc.logs.map(l => {
+                                                        const h = calculateHours(l.clockIn, l.clockOut, l.breakHours);
+                                                        const p = h * l.rate;
+                                                        return `
+                                                            <tr class="text-slate-700">
+                                                                <td class="py-1 px-2 font-medium">${l.date}</td>
+                                                                <td class="py-1 px-2">${l.empName}</td>
+                                                                <td class="py-1 px-2 text-slate-500">${l.clockIn} - ${l.clockOut}</td>
+                                                                <td class="py-1 px-2 font-bold text-indigo-600">${h.toFixed(2)}</td>
+                                                                <td class="py-1 px-2 font-bold text-emerald-600">$${p.toFixed(2)}</td>
+                                                            </tr>
+                                                        `;
+                                                    }).join('')}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function restoreArchiveRecord(archiveId) {
+            const arcIndex = paidArchives.findIndex(a => a.archiveId === archiveId);
+            if (arcIndex === -1) return;
+
+            const arc = paidArchives[arcIndex];
+            if (!confirm(`Restore paid record for ${arc.empName} back to active shifts summary?`)) return;
+
+            // Push logs back to active timeLogs
+            timeLogs.unshift(...arc.logs);
+            // Remove from archives
+            paidArchives.splice(arcIndex, 1);
+
+            saveToLocalStorage();
+
+            renderPayrollTable();
+            renderArchivesList();
+            alert(`Record for ${arc.empName} has been restored back to active shifts!`);
+        }
+
+        function clearDateFilter() {
+            document.getElementById('filterDate').value = '';
+            renderPayrollTable();
+        }
+
+        // EDIT & MANUAL LOG MODALS
+        function openEditModal(logId) {
+            const log = timeLogs.find(l => l.id === logId);
+            if (!log) return;
+
+            document.getElementById('editLogId').value = log.id;
+            document.getElementById('editEmpName').value = log.empName;
+            document.getElementById('editLogDate').value = log.date;
+            document.getElementById('editClockIn').value = log.clockIn;
+            document.getElementById('editClockOut').value = log.clockOut;
+            document.getElementById('editBreakHours').value = log.breakHours;
+            document.getElementById('editEmpRate').value = log.rate;
+
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        function saveLogEdit(e) {
+            e.preventDefault();
+            const id = document.getElementById('editLogId').value;
+            const index = timeLogs.findIndex(l => l.id === id);
+            if (index === -1) return;
+
+            timeLogs[index].empName = document.getElementById('editEmpName').value;
+            timeLogs[index].date = document.getElementById('editLogDate').value;
+            timeLogs[index].clockIn = document.getElementById('editClockIn').value;
+            timeLogs[index].clockOut = document.getElementById('editClockOut').value;
+            timeLogs[index].breakHours = parseFloat(document.getElementById('editBreakHours').value) || 0;
+            timeLogs[index].rate = parseFloat(document.getElementById('editEmpRate').value) || 0;
+
+            saveToLocalStorage();
+            closeEditModal();
+            renderPayrollTable();
+            
+            // Refresh shifts modal if currently open
+            const modalTitle = document.getElementById('shiftsModalTitle').innerText;
+            if (!document.getElementById('shiftsModal').classList.contains('hidden') && modalTitle) {
+                const empName = modalTitle.split(' - ')[0];
+                const emp = employees.find(e => e.name === empName);
+                if (emp) openShiftsModal(emp.id, emp.name);
+            }
+        }
+
+        function deleteLog(logId) {
+            if (!confirm("Are you sure you want to delete this shift entry?")) return;
+            timeLogs = timeLogs.filter(l => l.id !== logId);
+            saveToLocalStorage();
+            renderPayrollTable();
+
+            // Refresh shifts modal if currently open
+            const modalTitle = document.getElementById('shiftsModalTitle').innerText;
+            if (!document.getElementById('shiftsModal').classList.contains('hidden') && modalTitle) {
+                const empName = modalTitle.split(' - ')[0];
+                const emp = employees.find(e => e.name === empName);
+                if (emp) openShiftsModal(emp.id, emp.name);
+            }
+        }
+
+        function openManualLogModal() {
+            const select = document.getElementById('manualEmpSelect');
+            const sortedEmps = getSortedEmployees();
+            select.innerHTML = sortedEmps.map(e => `<option value="${e.id}">${e.name} ($${e.rate.toFixed(2)}/hr)</option>`).join('');
+            document.getElementById('manualLogDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('manualClockIn').value = "08:00";
+            document.getElementById('manualClockOut').value = "17:00";
+            document.getElementById('manualModal').classList.remove('hidden');
+        }
+
+        function closeManualLogModal() {
+            document.getElementById('manualModal').classList.add('hidden');
+        }
+
+        function saveManualLog(e) {
+            e.preventDefault();
+            const empId = document.getElementById('manualEmpSelect').value;
+            const emp = employees.find(e => e.id === empId);
+
+            const newLog = {
+                id: 'log_' + Date.now(),
+                empId: empId,
+                empName: emp ? emp.name : 'Unknown',
+                date: document.getElementById('manualLogDate').value,
+                clockIn: document.getElementById('manualClockIn').value,
+                clockOut: document.getElementById('manualClockOut').value,
+                breakHours: parseFloat(document.getElementById('manualBreakHours').value) || 0,
+                rate: emp ? emp.rate : 0
+            };
+
+            timeLogs.unshift(newLog);
+            saveToLocalStorage();
+            closeManualLogModal();
+            renderPayrollTable();
+        }
+
+        // EMPLOYEE MANAGEMENT
+        function openEmpManageModal() {
+            renderEmpManageList();
+            document.getElementById('empManageModal').classList.remove('hidden');
+        }
+
+        function closeEmpManageModal() {
+            document.getElementById('empManageModal').classList.add('hidden');
+        }
+
+        function renderEmpManageList() {
+            const list = document.getElementById('empManageList');
+            const sortedEmps = getSortedEmployees();
+            list.innerHTML = sortedEmps.map(e => `
+                <div class="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                    <div>
+                        <p class="font-bold text-slate-800">${e.name}</p>
+                        <p class="text-xs text-slate-500">Hourly Rate: $${e.rate.toFixed(2)} AUD/hr</p>
+                    </div>
+                    <button type="button" onclick="removeEmployee('${e.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-semibold px-2 py-1 rounded hover:bg-rose-50 transition">
+                        Delete
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function addNewEmployee(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('newEmpName');
+            const rateInput = document.getElementById('newEmpRate');
+
+            const newEmp = {
+                id: 'emp_' + Date.now(),
+                name: nameInput.value.trim(),
+                rate: parseFloat(rateInput.value) || 0
+            };
+
+            employees.push(newEmp);
+            saveToLocalStorage();
+
+            nameInput.value = '';
+            rateInput.value = '';
+
+            renderEmpManageList();
+            renderEmployeeGrid();
+            renderPayrollTable();
+        }
+
+        function removeEmployee(empId) {
+            if (!confirm("Are you sure you want to remove this employee?")) return;
+            employees = employees.filter(e => e.id !== empId);
+            saveToLocalStorage();
+            renderEmpManageList();
+            renderEmployeeGrid();
+            renderPayrollTable();
+        }
+
+        // PIN MANAGEMENT
+        function openChangePinModal() {
+            document.getElementById('changePinModal').classList.remove('hidden');
+        }
+
+        function closeChangePinModal() {
+            document.getElementById('changePinModal').classList.add('hidden');
+        }
+
+        function saveNewPin(e) {
+            e.preventDefault();
+            const current = document.getElementById('currentPinInput').value;
+            const newPin = document.getElementById('newPinInput').value;
+
+            if (current !== managerPin) {
+                alert("Current Security PIN is incorrect!");
+                return;
+            }
+
+            managerPin = newPin;
+            localStorage.setItem('tp_manager_pin', newPin);
+            alert("Security PIN successfully updated.");
+            closeChangePinModal();
+        }
+
+        // CSV EXPORT
+        function exportToCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+            csvContent += "Date,Employee Name,Clock In,Clock Out,Break (hrs),Total Hours,Rate/Hr ($ AUD),Total Pay ($ AUD)\n";
+
+            timeLogs.forEach(log => {
+                const hrs = calculateHours(log.clockIn, log.clockOut, log.breakHours);
+                const pay = hrs * log.rate;
+                csvContent += `"${log.date}","${log.empName}","${log.clockIn}","${log.clockOut}",${log.breakHours},${hrs.toFixed(2)},${log.rate.toFixed(2)},${pay.toFixed(2)}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `payroll_report_AUD_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>

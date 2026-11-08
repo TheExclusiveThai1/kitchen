@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Time Tracker & Payroll</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -23,7 +20,7 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
 
-    <!-- HEADER / NAVIGATION BAR -->
+    <!-- HEADER -->
     <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-40 no-print">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -35,8 +32,6 @@
                     <p class="text-xs text-indigo-200">Real-time Clock-In & Payroll Management (AUD)</p>
                 </div>
             </div>
-
-            <!-- Mode Switcher -->
             <div class="flex items-center gap-3">
                 <button type="button" onclick="requestManagerAccess()" id="btnToggleView" class="flex items-center gap-2 bg-indigo-700 hover:bg-indigo-800 text-white text-xs sm:text-sm font-medium px-4 py-2 rounded-xl transition shadow-sm active:scale-95">
                     <i id="viewToggleIcon" class="fa-solid fa-shield-halved text-amber-300"></i>
@@ -46,7 +41,7 @@
         </div>
     </header>
 
-    <!-- MAIN CONTAINER -->
+    <!-- MAIN -->
     <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
 
         <!-- KIOSK VIEW -->
@@ -66,7 +61,6 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Employee Selector -->
                 <div class="lg:col-span-1 bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col">
                     <h3 class="font-bold text-slate-800 text-base mb-3 flex items-center justify-between">
                         <span><i class="fa-solid fa-users text-indigo-600 mr-2"></i>Select Employee</span>
@@ -75,7 +69,6 @@
                     <div id="employeeGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2.5 overflow-y-auto max-h-[380px] pr-1"></div>
                 </div>
 
-                <!-- Action Panel -->
                 <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between">
                     <div>
                         <div class="border-b border-slate-100 pb-4 mb-6">
@@ -113,7 +106,6 @@
 
         <!-- MANAGER VIEW -->
         <div id="managerView" class="space-y-6 hidden">
-            <!-- Top Dashboard Header -->
             <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row items-center justify-between gap-4 border border-slate-800">
                 <div>
                     <span class="bg-amber-400/10 text-amber-300 text-xs font-semibold px-3 py-1 rounded-full border border-amber-400/20">
@@ -141,7 +133,6 @@
                 </div>
             </div>
 
-            <!-- Metric Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
                     <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">ACTIVE STAFF ON SHIFT</div>
@@ -157,7 +148,7 @@
                 </div>
             </div>
 
-            <!-- WEEKLY PAYROLL SUMMARY TABLE -->
+            <!-- WEEKLY PAYROLL SUMMARY -->
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
                     <div>
@@ -189,7 +180,7 @@
                 </div>
             </div>
 
-            <!-- ALL SHIFT LOGS TABLE -->
+            <!-- DETAILED SHIFT LOGS -->
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 no-print border-b border-slate-100 pb-4">
                     <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
@@ -505,7 +496,6 @@
     </main>
 
     <script>
-        // State Management
         let managerPin = localStorage.getItem('tp_manager_pin') || '1234';
         let enteredPin = '';
         let isManagerLoggedIn = false;
@@ -513,23 +503,8 @@
         let targetInputId = null;
         let nextTargetInputId = null;
 
-        // Comprehensive LocalStorage Data Aggregator (Prevents Any Data Loss)
-        function loadAllStorageData(keys) {
-            for (let key of keys) {
-                const data = localStorage.getItem(key);
-                if (data) {
-                    try {
-                        const parsed = JSON.parse(data);
-                        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-                        if (typeof parsed === 'object' && Object.keys(parsed).length > 0) return parsed;
-                    } catch (e) {}
-                }
-            }
-            return null;
-        }
-
-        // Load Employees
-        let employees = loadAllStorageData(['tp_employees_aud', 'tp_employees']) || [
+        // Force Default Sample Data on First Load
+        let employees = JSON.parse(localStorage.getItem('tp_employees_aud')) || [
             { id: 'emp_1', name: 'Bee', rate: 25.00 },
             { id: 'emp_2', name: 'Kai', rate: 25.00 },
             { id: 'emp_3', name: 'Noi', rate: 25.00 },
@@ -537,10 +512,19 @@
             { id: 'emp_5', name: 'Alex', rate: 25.00 }
         ];
 
-        // Load Time Logs & Archives
-        let timeLogs = loadAllStorageData(['tp_timelogs_aud', 'tp_timelogs']) || [];
-        let paidArchives = loadAllStorageData(['tp_paid_archives_aud', 'tp_paid_archives']) || [];
-        let activeClockIns = loadAllStorageData(['tp_active_clockins_aud', 'tp_active_clockins']) || {};
+        let timeLogs = JSON.parse(localStorage.getItem('tp_timelogs_aud')) || [
+            { id: 'l1', empId: 'emp_2', empName: 'Kai', date: '2026-11-08', clockIn: '11:30', clockOut: '20:30', breakHours: 0, rate: 25 },
+            { id: 'l2', empId: 'emp_1', empName: 'Bee', date: '2026-11-08', clockIn: '11:30', clockOut: '20:30', breakHours: 0, rate: 25 },
+            { id: 'l3', empId: 'emp_2', empName: 'Kai', date: '2026-11-07', clockIn: '11:30', clockOut: '22:00', breakHours: 0, rate: 25 },
+            { id: 'l4', empId: 'emp_1', empName: 'Bee', date: '2026-11-07', clockIn: '17:30', clockOut: '22:30', breakHours: 0, rate: 25 },
+            { id: 'l5', empId: 'emp_4', empName: 'Imm', date: '2026-11-06', clockIn: '11:30', clockOut: '14:00', breakHours: 0, rate: 20 },
+            { id: 'l6', empId: 'emp_3', empName: 'Noi', date: '2026-11-04', clockIn: '11:30', clockOut: '15:00', breakHours: 0, rate: 25 },
+            { id: 'l7', empId: 'emp_3', empName: 'Noi', date: '2026-11-03', clockIn: '11:30', clockOut: '15:00', breakHours: 0, rate: 25 },
+            { id: 'l8', empId: 'emp_3', empName: 'Noi', date: '2026-11-02', clockIn: '11:30', clockOut: '15:00', breakHours: 0, rate: 25 }
+        ];
+
+        let paidArchives = JSON.parse(localStorage.getItem('tp_paid_archives_aud')) || [];
+        let activeClockIns = JSON.parse(localStorage.getItem('tp_active_clockins_aud')) || {};
 
         saveToLocalStorage();
 
@@ -551,7 +535,6 @@
             localStorage.setItem('tp_active_clockins_aud', JSON.stringify(activeClockIns));
         }
 
-        // Calendar & Clock Picker States
         let calCurrentDate = new Date();
         let clockMode = 'hours';
         let clockSelectedHour = 8;
@@ -565,7 +548,6 @@
             renderActiveEmpList();
             renderPayrollTable();
 
-            // Keyboard Numpad Event Listener for Manager PIN
             window.addEventListener('keydown', (e) => {
                 const modal = document.getElementById('pinAuthModal');
                 if (modal && !modal.classList.contains('hidden')) {
@@ -605,7 +587,6 @@
             });
         }
 
-        // NUMPAD & KEYBOARD PIN VERIFICATION
         function requestManagerAccess() {
             if (isManagerLoggedIn) {
                 lockManagerView();
@@ -683,7 +664,6 @@
             document.getElementById('viewToggleIcon').className = "fa-solid fa-shield-halved text-amber-300";
         }
 
-        // VISUAL CALENDAR GRID LOGIC
         function openCalendarPicker(inputId) {
             targetInputId = inputId;
             calCurrentDate = new Date();
@@ -703,7 +683,6 @@
         function renderCalendarGrid() {
             const year = calCurrentDate.getFullYear();
             const month = calCurrentDate.getMonth();
-
             const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
             document.getElementById('calMonthYearTitle').innerText = `${monthNames[month]} ${year}`;
 
@@ -727,12 +706,8 @@
 
                 grid.innerHTML += `
                     <button type="button" onclick="selectCalDate('${dateStr}')" class="h-8 w-8 mx-auto rounded-full font-medium text-xs transition flex items-center justify-center ${
-                        isToday 
-                        ? 'bg-indigo-600 text-white font-bold ring-2 ring-indigo-300 shadow-sm' 
-                        : 'text-slate-700 hover:bg-indigo-100 hover:text-indigo-700'
-                    }">
-                        ${day}
-                    </button>
+                        isToday ? 'bg-indigo-600 text-white font-bold ring-2 ring-indigo-300 shadow-sm' : 'text-slate-700 hover:bg-indigo-100 hover:text-indigo-700'
+                    }">${day}</button>
                 `;
             }
         }
@@ -745,11 +720,9 @@
             closeCalendarPicker();
         }
 
-        // ANALOG CLOCK PICKER LOGIC
         function openClockPicker(inputId, nextInputId = null) {
             targetInputId = inputId;
             nextTargetInputId = nextInputId;
-
             const titleEl = document.getElementById('clockTitle');
             if (inputId.toLowerCase().includes('in')) {
                 titleEl.innerText = "Select Clock In Time";
@@ -761,7 +734,6 @@
 
             const currentVal = document.getElementById(inputId)?.value || '08:00';
             let [h, m] = currentVal.split(':').map(Number);
-            
             clockIsPm = h >= 12;
             clockSelectedHour = h % 12 || 12;
             clockSelectedMinute = m || 0;
@@ -802,7 +774,6 @@
                 mBtn.className = "text-3xl font-bold px-3 py-1 bg-indigo-600 text-white rounded-xl shadow-sm";
                 instr.innerText = "Tap clock dial numbers to set [Minutes]";
             }
-
             renderClockDial();
         }
 
@@ -812,7 +783,6 @@
 
             const dialGrid = document.getElementById('clockDialNumbers');
             dialGrid.innerHTML = '';
-
             const hand = document.getElementById('clockHand');
             let angle = 0;
 
@@ -822,11 +792,8 @@
                     const rad = (i * 30 - 90) * (Math.PI / 180);
                     const x = 85 + 68 * Math.cos(rad);
                     const y = 85 + 68 * Math.sin(rad);
-
                     dialGrid.innerHTML += `
-                        <button type="button" onclick="selectClockVal(${i})" class="absolute w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${i === clockSelectedHour ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-700 hover:bg-indigo-100'}" style="left: ${x}px; top: ${y}px;">
-                            ${i}
-                        </button>
+                        <button type="button" onclick="selectClockVal(${i})" class="absolute w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${i === clockSelectedHour ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-700 hover:bg-indigo-100'}" style="left: ${x}px; top: ${y}px;">${i}</button>
                     `;
                 }
             } else {
@@ -835,15 +802,11 @@
                     const rad = (i * 6 - 90) * (Math.PI / 180);
                     const x = 85 + 68 * Math.cos(rad);
                     const y = 85 + 68 * Math.sin(rad);
-
                     dialGrid.innerHTML += `
-                        <button type="button" onclick="selectClockVal(${i})" class="absolute w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${i === clockSelectedMinute ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-700 hover:bg-indigo-100'}" style="left: ${x}px; top: ${y}px;">
-                            ${String(i).padStart(2, '0')}
-                        </button>
+                        <button type="button" onclick="selectClockVal(${i})" class="absolute w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${i === clockSelectedMinute ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-700 hover:bg-indigo-100'}" style="left: ${x}px; top: ${y}px;">${String(i).padStart(2, '0')}</button>
                     `;
                 }
             }
-
             hand.style.transform = `rotate(${angle}deg)`;
         }
 
@@ -862,46 +825,32 @@
             if (clockIsPm) hour += 12;
             const finalTimeStr = `${String(hour).padStart(2, '0')}:${String(clockSelectedMinute).padStart(2, '0')}`;
 
-            if (targetInputId) {
-                document.getElementById(targetInputId).value = finalTimeStr;
-            }
+            if (targetInputId) document.getElementById(targetInputId).value = finalTimeStr;
 
             const followUpId = nextTargetInputId;
             closeClockPicker();
-
             if (followUpId) {
-                setTimeout(() => {
-                    openClockPicker(followUpId);
-                }, 200);
+                setTimeout(() => openClockPicker(followUpId), 200);
             }
         }
 
-        // KIOSK LOGIC (ALPHABETICAL ORDER)
         function renderEmployeeGrid() {
             const grid = document.getElementById('employeeGrid');
             if (!grid) return;
-
             const sortedEmps = getSortedEmployees();
 
             grid.innerHTML = sortedEmps.map(emp => {
                 const isActive = activeClockIns[emp.id];
                 const isSelected = selectedEmpId === emp.id;
-
                 return `
-                    <div onclick="selectEmployee('${emp.id}')" class="cursor-pointer p-3.5 rounded-xl border transition-all duration-200 flex flex-col justify-between ${
-                        isSelected 
-                        ? 'border-indigo-600 bg-indigo-50 shadow-sm ring-2 ring-indigo-200' 
-                        : 'border-slate-200 hover:border-indigo-300 bg-white'
-                    }">
+                    <div onclick="selectEmployee('${emp.id}')" class="cursor-pointer p-3.5 rounded-xl border transition-all duration-200 flex flex-col justify-between ${isSelected ? 'border-indigo-600 bg-indigo-50 shadow-sm ring-2 ring-indigo-200' : 'border-slate-200 hover:border-indigo-300 bg-white'}">
                         <div class="flex items-center justify-between mb-2">
                             <span class="font-bold text-slate-800 text-sm truncate">${emp.name}</span>
                             <span class="w-2.5 h-2.5 rounded-full ${isActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}"></span>
                         </div>
                         <div class="text-xs text-slate-500 flex justify-between items-center">
                             <span>$${emp.rate.toFixed(2)}/hr</span>
-                            <span class="font-semibold ${isActive ? 'text-emerald-600' : 'text-slate-400'}">
-                                ${isActive ? 'On Shift' : 'Clocked Out'}
-                            </span>
+                            <span class="font-semibold ${isActive ? 'text-emerald-600' : 'text-slate-400'}">${isActive ? 'On Shift' : 'Clocked Out'}</span>
                         </div>
                     </div>
                 `;
@@ -932,7 +881,6 @@
                 document.getElementById('btnClockOut').disabled = true;
                 document.getElementById('btnClockOut').classList.add('opacity-50', 'cursor-not-allowed');
             }
-
             renderEmployeeGrid();
         }
 
@@ -940,13 +888,9 @@
             if (!selectedEmpId) return;
             const emp = employees.find(e => e.id === selectedEmpId);
             if (!emp) return;
-
             const now = new Date();
-            const timeStr = now.toTimeString().substring(0, 5);
-
-            activeClockIns[emp.id] = timeStr;
+            activeClockIns[emp.id] = now.toTimeString().substring(0, 5);
             saveToLocalStorage();
-
             selectEmployee(selectedEmpId);
             renderActiveEmpList();
             renderPayrollTable();
@@ -958,26 +902,19 @@
             if (!emp || !activeClockIns[emp.id]) return;
 
             const now = new Date();
-            const dateStr = now.toISOString().split('T')[0];
-            const timeStr = now.toTimeString().substring(0, 5);
-            const clockInTime = activeClockIns[emp.id];
-
             const newLog = {
                 id: 'log_' + Date.now(),
                 empId: emp.id,
                 empName: emp.name,
-                date: dateStr,
-                clockIn: clockInTime,
-                clockOut: timeStr,
+                date: now.toISOString().split('T')[0],
+                clockIn: activeClockIns[emp.id],
+                clockOut: now.toTimeString().substring(0, 5),
                 breakHours: 0,
                 rate: emp.rate
             };
-
             timeLogs.unshift(newLog);
             delete activeClockIns[emp.id];
-
             saveToLocalStorage();
-
             selectEmployee(selectedEmpId);
             renderActiveEmpList();
             renderPayrollTable();
@@ -987,14 +924,12 @@
             const container = document.getElementById('activeEmpList');
             const badge = document.getElementById('activeCountBadge');
             const activeIds = Object.keys(activeClockIns);
-
             if (badge) badge.innerText = `${activeIds.length} Staff`;
 
             if (activeIds.length === 0) {
                 container.innerHTML = `<p class="text-slate-400 text-xs col-span-full text-center py-2">No employees currently on shift.</p>`;
                 return;
             }
-
             container.innerHTML = activeIds.map(id => {
                 const emp = employees.find(e => e.id === id);
                 return `
@@ -1009,24 +944,19 @@
             }).join('');
         }
 
-        // PAYROLL & CALCULATIONS
         function calculateHours(clockIn, clockOut, breakHrs = 0) {
             if (!clockIn || !clockOut) return 0;
             const [inH, inM] = clockIn.split(':').map(Number);
             const [outH, outM] = clockOut.split(':').map(Number);
-
             let startMinutes = inH * 60 + inM;
             let endMinutes = outH * 60 + outM;
-
             if (endMinutes < startMinutes) endMinutes += 24 * 60;
-
             let totalMinutes = endMinutes - startMinutes - (breakHrs * 60);
             return Math.max(0, parseFloat((totalMinutes / 60).toFixed(2)));
         }
 
         function renderPayrollTable() {
             sortLogsByDate(timeLogs);
-
             const summaryTbody = document.getElementById('weeklySummaryTableBody');
             const logsTbody = document.getElementById('payrollTableBody');
 
@@ -1035,13 +965,10 @@
 
             if (summaryTbody) {
                 const sortedEmps = getSortedEmployees();
-
                 summaryTbody.innerHTML = sortedEmps.map(emp => {
                     const empLogs = timeLogs.filter(l => l.empId === emp.id || l.empName.toLowerCase() === emp.name.toLowerCase());
                     let empHours = 0;
-                    empLogs.forEach(l => {
-                        empHours += calculateHours(l.clockIn, l.clockOut, l.breakHours);
-                    });
+                    empLogs.forEach(l => empHours += calculateHours(l.clockIn, l.clockOut, l.breakHours));
                     const empPayout = empHours * emp.rate;
 
                     totalHoursSum += empHours;
@@ -1051,9 +978,7 @@
                         <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                             <td class="px-4 py-3.5 font-bold text-slate-900 flex items-center gap-2">
                                 <span>${emp.name}</span>
-                                <button type="button" onclick="openShiftsModal('${emp.id}', '${emp.name}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-semibold hover:underline">
-                                    (View Shifts)
-                                </button>
+                                <button type="button" onclick="openShiftsModal('${emp.id}', '${emp.name}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-semibold hover:underline">(View Shifts)</button>
                             </td>
                             <td class="px-4 py-3.5 text-xs text-indigo-600 font-semibold">Nov 2 - Nov 8</td>
                             <td class="px-4 py-3.5 text-slate-600">$${emp.rate.toFixed(2)}</td>
@@ -1073,7 +998,6 @@
             if (logsTbody) {
                 const searchQuery = (document.getElementById('filterSearch')?.value || '').toLowerCase();
                 const dateQuery = document.getElementById('filterDate')?.value || '';
-
                 const filteredLogs = timeLogs.filter(log => {
                     const matchesName = log.empName.toLowerCase().includes(searchQuery);
                     const matchesDate = !dateQuery || log.date === dateQuery;
@@ -1083,7 +1007,6 @@
                 logsTbody.innerHTML = filteredLogs.map(log => {
                     const hrs = calculateHours(log.clockIn, log.clockOut, log.breakHours);
                     const pay = hrs * log.rate;
-
                     return `
                         <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                             <td class="px-4 py-3 font-medium text-slate-700">${log.date}</td>
@@ -1095,12 +1018,8 @@
                             <td class="px-4 py-3 text-slate-600">$${log.rate.toFixed(2)}</td>
                             <td class="px-4 py-3 font-bold text-emerald-600">$${pay.toLocaleString('en-AU', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AUD</td>
                             <td class="px-4 py-3 text-right no-print">
-                                <button type="button" onclick="openEditModal('${log.id}')" class="text-indigo-600 hover:text-indigo-900 text-xs font-semibold px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 transition mr-1">
-                                    <i class="fa-solid fa-pen"></i> Edit
-                                </button>
-                                <button type="button" onclick="deleteLog('${log.id}')" class="text-rose-600 hover:text-rose-900 text-xs font-semibold px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 transition">
-                                    <i class="fa-solid fa-trash"></i> Delete
-                                </button>
+                                <button type="button" onclick="openEditModal('${log.id}')" class="text-indigo-600 hover:text-indigo-900 text-xs font-semibold px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 transition mr-1"><i class="fa-solid fa-pen"></i> Edit</button>
+                                <button type="button" onclick="deleteLog('${log.id}')" class="text-rose-600 hover:text-rose-900 text-xs font-semibold px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 transition"><i class="fa-solid fa-trash"></i> Delete</button>
                             </td>
                         </tr>
                     `;
@@ -1115,7 +1034,6 @@
         function openShiftsModal(empId, empName) {
             const emp = employees.find(e => e.id === empId || e.name === empName);
             const rate = emp ? emp.rate : 25.00;
-
             document.getElementById('shiftsModalTitle').innerText = `${empName} - Shift Breakdown`;
             document.getElementById('shiftsModalSubtitle').innerText = `Current Week | Rate: $${rate.toFixed(2)}/hr`;
 
@@ -1129,25 +1047,16 @@
                 listContainer.innerHTML = empLogs.map(l => {
                     const hrs = calculateHours(l.clockIn, l.clockOut, l.breakHours);
                     const pay = hrs * rate;
-
                     return `
                         <div class="bg-indigo-50/50 border border-indigo-100 rounded-xl p-3.5 space-y-2">
                             <div class="flex items-center justify-between">
-                                <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-calendar-day text-indigo-500"></i> ${l.date}
-                                </span>
+                                <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5"><i class="fa-solid fa-calendar-day text-indigo-500"></i> ${l.date}</span>
                                 <div class="flex items-center gap-1">
-                                    <button type="button" onclick="openEditModal('${l.id}')" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold px-2 py-0.5 rounded hover:bg-indigo-100 transition flex items-center gap-1">
-                                        <i class="fa-solid fa-pen text-[10px]"></i> Edit
-                                    </button>
-                                    <button type="button" onclick="deleteLog('${l.id}')" class="text-xs text-rose-500 hover:text-rose-700 p-1 rounded hover:bg-rose-100 transition">
-                                        <i class="fa-solid fa-trash text-[10px]"></i>
-                                    </button>
+                                    <button type="button" onclick="openEditModal('${l.id}')" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold px-2 py-0.5 rounded hover:bg-indigo-100 transition"><i class="fa-solid fa-pen text-[10px]"></i> Edit</button>
+                                    <button type="button" onclick="deleteLog('${l.id}')" class="text-xs text-rose-500 hover:text-rose-700 p-1 rounded hover:bg-rose-100 transition"><i class="fa-solid fa-trash text-[10px]"></i></button>
                                 </div>
                             </div>
-                            <div class="text-xs text-slate-600">
-                                Time: <span class="font-medium text-slate-800">${l.clockIn} - ${l.clockOut}</span> (Break: ${l.breakHours} hrs)
-                            </div>
+                            <div class="text-xs text-slate-600">Time: <span class="font-medium text-slate-800">${l.clockIn} - ${l.clockOut}</span> (Break: ${l.breakHours} hrs)</div>
                             <div class="text-xs font-bold text-indigo-700 pt-1 border-t border-indigo-100/60 flex justify-between">
                                 <span>Worked: ${hrs.toFixed(2)} hrs</span>
                                 <span class="text-emerald-600">• $${pay.toFixed(2)} AUD</span>
@@ -1156,7 +1065,6 @@
                     `;
                 }).join('');
             }
-
             document.getElementById('shiftsModal').classList.remove('hidden');
         }
 
@@ -1167,24 +1075,20 @@
         function archiveEmployeeWeek(empId, empName) {
             const empLogsIndex = timeLogs.filter(l => l.empId === empId || l.empName.toLowerCase() === empName.toLowerCase());
             if (empLogsIndex.length === 0) {
-                alert(`No active shifts found for ${empName} to process payout.`);
+                alert(`No active shifts found for ${empName}.`);
                 return;
             }
-
             if (!confirm(`Mark payout as PAID for ${empName} and archive shifts?`)) return;
 
-            const archivedRecord = {
+            paidArchives.unshift({
                 archiveId: 'arc_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
                 empId: empId,
                 empName: empName,
                 weekPeriod: '2-8 November 2026',
                 archiveDate: new Date().toLocaleDateString('en-AU'),
                 logs: [...empLogsIndex]
-            };
-
-            paidArchives.unshift(archivedRecord);
+            });
             timeLogs = timeLogs.filter(l => l.empId !== empId && l.empName.toLowerCase() !== empName.toLowerCase());
-
             saveToLocalStorage();
             renderPayrollTable();
             alert(`Marked weekly payout for ${empName} as PAID successfully!`);
@@ -1195,7 +1099,6 @@
                 alert("No active shifts available to archive.");
                 return;
             }
-
             if (!confirm("Are you sure you want to CLOSE WEEK and mark ALL employees as PAID?")) return;
 
             employees.forEach(emp => {
@@ -1211,7 +1114,6 @@
                     });
                 }
             });
-
             timeLogs = [];
             saveToLocalStorage();
             renderPayrollTable();
@@ -1250,33 +1152,19 @@
                                 <i class="fa-solid fa-box text-amber-500"></i> weekly pay out: ${period}
                             </span>
                         </div>
-
                         <div class="space-y-4">
                             ${groups[period].map(arc => {
-                                let totalHrs = 0;
                                 let totalPay = 0;
-                                arc.logs.forEach(l => {
-                                    const hrs = calculateHours(l.clockIn, l.clockOut, l.breakHours);
-                                    totalHrs += hrs;
-                                    totalPay += hrs * l.rate;
-                                });
-
+                                arc.logs.forEach(l => totalPay += calculateHours(l.clockIn, l.clockOut, l.breakHours) * l.rate);
                                 return `
                                     <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm space-y-2">
                                         <div class="flex items-center justify-between">
-                                            <span class="text-xs font-bold text-slate-800">
-                                                Employee name : <span class="text-indigo-600">${arc.empName}</span>
-                                            </span>
+                                            <span class="text-xs font-bold text-slate-800">Employee name : <span class="text-indigo-600">${arc.empName}</span></span>
                                             <div class="flex items-center gap-2">
-                                                <span class="bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-0.5 rounded-full border border-emerald-200">
-                                                    Total Pay: $${totalPay.toLocaleString('en-AU', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AUD
-                                                </span>
-                                                <button type="button" onclick="restoreArchiveRecord('${arc.archiveId}')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1">
-                                                    <i class="fa-solid fa-rotate-left text-[10px]"></i> Restore
-                                                </button>
+                                                <span class="bg-emerald-50 text-emerald-700 text-xs font-bold px-2.5 py-0.5 rounded-full border border-emerald-200">Total Pay: $${totalPay.toFixed(2)} AUD</span>
+                                                <button type="button" onclick="restoreArchiveRecord('${arc.archiveId}')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-sm transition flex items-center gap-1"><i class="fa-solid fa-rotate-left text-[10px]"></i> Restore</button>
                                             </div>
                                         </div>
-
                                         <div class="overflow-x-auto">
                                             <table class="w-full text-left text-xs">
                                                 <thead class="text-slate-400 font-semibold border-b border-slate-100">
@@ -1312,25 +1200,21 @@
                     </div>
                 `;
             }
-
             container.innerHTML = html;
         }
 
         function restoreArchiveRecord(archiveId) {
             const arcIndex = paidArchives.findIndex(a => a.archiveId === archiveId);
             if (arcIndex === -1) return;
-
             const arc = paidArchives[arcIndex];
-            if (!confirm(`Restore paid record for ${arc.empName} back to active shifts summary?`)) return;
+            if (!confirm(`Restore paid record for ${arc.empName}?`)) return;
 
             timeLogs.unshift(...arc.logs);
             paidArchives.splice(arcIndex, 1);
-
             saveToLocalStorage();
-
             renderPayrollTable();
             renderArchivesList();
-            alert(`Record for ${arc.empName} has been restored back to active shifts!`);
+            alert(`Restored ${arc.empName} successfully!`);
         }
 
         function clearDateFilter() {
@@ -1338,11 +1222,9 @@
             renderPayrollTable();
         }
 
-        // EDIT & MANUAL LOG MODALS
         function openEditModal(logId) {
             const log = timeLogs.find(l => l.id === logId);
             if (!log) return;
-
             document.getElementById('editLogId').value = log.id;
             document.getElementById('editEmpName').value = log.empName;
             document.getElementById('editLogDate').value = log.date;
@@ -1350,7 +1232,6 @@
             document.getElementById('editClockOut').value = log.clockOut;
             document.getElementById('editBreakHours').value = log.breakHours;
             document.getElementById('editEmpRate').value = log.rate;
-
             document.getElementById('editModal').classList.remove('hidden');
         }
 
@@ -1374,33 +1255,18 @@
             saveToLocalStorage();
             closeEditModal();
             renderPayrollTable();
-            
-            const modalTitle = document.getElementById('shiftsModalTitle').innerText;
-            if (!document.getElementById('shiftsModal').classList.contains('hidden') && modalTitle) {
-                const empName = modalTitle.split(' - ')[0];
-                const emp = employees.find(e => e.name === empName);
-                if (emp) openShiftsModal(emp.id, emp.name);
-            }
         }
 
         function deleteLog(logId) {
-            if (!confirm("Are you sure you want to delete this shift entry?")) return;
+            if (!confirm("Delete this shift entry?")) return;
             timeLogs = timeLogs.filter(l => l.id !== logId);
             saveToLocalStorage();
             renderPayrollTable();
-
-            const modalTitle = document.getElementById('shiftsModalTitle').innerText;
-            if (!document.getElementById('shiftsModal').classList.contains('hidden') && modalTitle) {
-                const empName = modalTitle.split(' - ')[0];
-                const emp = employees.find(e => e.name === empName);
-                if (emp) openShiftsModal(emp.id, emp.name);
-            }
         }
 
         function openManualLogModal() {
             const select = document.getElementById('manualEmpSelect');
-            const sortedEmps = getSortedEmployees();
-            select.innerHTML = sortedEmps.map(e => `<option value="${e.id}">${e.name} ($${e.rate.toFixed(2)}/hr)</option>`).join('');
+            select.innerHTML = getSortedEmployees().map(e => `<option value="${e.id}">${e.name} ($${e.rate.toFixed(2)}/hr)</option>`).join('');
             document.getElementById('manualLogDate').value = new Date().toISOString().split('T')[0];
             document.getElementById('manualClockIn').value = "08:00";
             document.getElementById('manualClockOut').value = "17:00";
@@ -1416,7 +1282,7 @@
             const empId = document.getElementById('manualEmpSelect').value;
             const emp = employees.find(e => e.id === empId);
 
-            const newLog = {
+            timeLogs.unshift({
                 id: 'log_' + Date.now(),
                 empId: empId,
                 empName: emp ? emp.name : 'Unknown',
@@ -1425,15 +1291,12 @@
                 clockOut: document.getElementById('manualClockOut').value,
                 breakHours: parseFloat(document.getElementById('manualBreakHours').value) || 0,
                 rate: emp ? emp.rate : 0
-            };
-
-            timeLogs.unshift(newLog);
+            });
             saveToLocalStorage();
             closeManualLogModal();
             renderPayrollTable();
         }
 
-        // EMPLOYEE MANAGEMENT
         function openEmpManageModal() {
             renderEmpManageList();
             document.getElementById('empManageModal').classList.remove('hidden');
@@ -1444,45 +1307,34 @@
         }
 
         function renderEmpManageList() {
-            const list = document.getElementById('empManageList');
-            const sortedEmps = getSortedEmployees();
-            list.innerHTML = sortedEmps.map(e => `
+            document.getElementById('empManageList').innerHTML = getSortedEmployees().map(e => `
                 <div class="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
                     <div>
                         <p class="font-bold text-slate-800">${e.name}</p>
-                        <p class="text-xs text-slate-500">Hourly Rate: $${e.rate.toFixed(2)} AUD/hr</p>
+                        <p class="text-xs text-slate-500">Rate: $${e.rate.toFixed(2)} AUD/hr</p>
                     </div>
-                    <button type="button" onclick="removeEmployee('${e.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-semibold px-2 py-1 rounded hover:bg-rose-50 transition">
-                        Delete
-                    </button>
+                    <button type="button" onclick="removeEmployee('${e.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-semibold px-2 py-1 rounded hover:bg-rose-50 transition">Delete</button>
                 </div>
             `).join('');
         }
 
         function addNewEmployee(e) {
             e.preventDefault();
-            const nameInput = document.getElementById('newEmpName');
-            const rateInput = document.getElementById('newEmpRate');
-
-            const newEmp = {
+            employees.push({
                 id: 'emp_' + Date.now(),
-                name: nameInput.value.trim(),
-                rate: parseFloat(rateInput.value) || 0
-            };
-
-            employees.push(newEmp);
+                name: document.getElementById('newEmpName').value.trim(),
+                rate: parseFloat(document.getElementById('newEmpRate').value) || 0
+            });
             saveToLocalStorage();
-
-            nameInput.value = '';
-            rateInput.value = '';
-
+            document.getElementById('newEmpName').value = '';
+            document.getElementById('newEmpRate').value = '';
             renderEmpManageList();
             renderEmployeeGrid();
             renderPayrollTable();
         }
 
         function removeEmployee(empId) {
-            if (!confirm("Are you sure you want to remove this employee?")) return;
+            if (!confirm("Remove this employee?")) return;
             employees = employees.filter(e => e.id !== empId);
             saveToLocalStorage();
             renderEmpManageList();
@@ -1490,7 +1342,6 @@
             renderPayrollTable();
         }
 
-        // PIN MANAGEMENT
         function openChangePinModal() {
             document.getElementById('changePinModal').classList.remove('hidden');
         }
@@ -1501,35 +1352,27 @@
 
         function saveNewPin(e) {
             e.preventDefault();
-            const current = document.getElementById('currentPinInput').value;
-            const newPin = document.getElementById('newPinInput').value;
-
-            if (current !== managerPin) {
-                alert("Current Security PIN is incorrect!");
+            if (document.getElementById('currentPinInput').value !== managerPin) {
+                alert("Incorrect current PIN!");
                 return;
             }
-
-            managerPin = newPin;
-            localStorage.setItem('tp_manager_pin', newPin);
-            alert("Security PIN successfully updated.");
+            managerPin = document.getElementById('newPinInput').value;
+            localStorage.setItem('tp_manager_pin', managerPin);
+            alert("PIN updated successfully.");
             closeChangePinModal();
         }
 
-        // CSV EXPORT
         function exportToCSV() {
             let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
             csvContent += "Date,Employee Name,Clock In,Clock Out,Break (hrs),Total Hours,Rate/Hr ($ AUD),Total Pay ($ AUD)\n";
-
             timeLogs.forEach(log => {
                 const hrs = calculateHours(log.clockIn, log.clockOut, log.breakHours);
                 const pay = hrs * log.rate;
                 csvContent += `"${log.date}","${log.empName}","${log.clockIn}","${log.clockOut}",${log.breakHours},${hrs.toFixed(2)},${log.rate.toFixed(2)},${pay.toFixed(2)}\n`;
             });
-
-            const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `payroll_report_AUD_${new Date().toISOString().split('T')[0]}.csv`);
+            link.setAttribute("href", encodeURI(csvContent));
+            link.setAttribute("download", `payroll_report_${new Date().toISOString().split('T')[0]}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);

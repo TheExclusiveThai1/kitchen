@@ -113,7 +113,7 @@
 
         <!-- MANAGER VIEW -->
         <div id="managerView" class="space-y-6 hidden">
-            <!-- Top Dashboard Header (Matches Image 1 Header Bar) -->
+            <!-- Top Dashboard Header -->
             <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row items-center justify-between gap-4 border border-slate-800">
                 <div>
                     <span class="bg-amber-400/10 text-amber-300 text-xs font-semibold px-3 py-1 rounded-full border border-amber-400/20">
@@ -141,7 +141,7 @@
                 </div>
             </div>
 
-            <!-- Metric Cards (Matches Image 1 Metrics) -->
+            <!-- Metric Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
                     <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">ACTIVE STAFF ON SHIFT</div>
@@ -157,7 +157,7 @@
                 </div>
             </div>
 
-            <!-- WEEKLY PAYROLL SUMMARY TABLE (Matches Image 1 Exact Layout) -->
+            <!-- WEEKLY PAYROLL SUMMARY TABLE -->
             <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
                     <div>
@@ -228,7 +228,7 @@
             </div>
         </div>
 
-        <!-- VIEW SHIFTS BREAKDOWN MODAL (Matches Image 2 Layout) -->
+        <!-- VIEW SHIFTS BREAKDOWN MODAL -->
         <div id="shiftsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
                 <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -247,7 +247,7 @@
             </div>
         </div>
 
-        <!-- HISTORICAL WEEKLY ARCHIVES MODAL (Matches Image 3 & Image 4 Combined Layout) -->
+        <!-- HISTORICAL WEEKLY ARCHIVES MODAL -->
         <div id="archivesModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4">
                 <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -407,7 +407,7 @@
             </div>
         </div>
 
-        <!-- MANAGER PIN NUMPAD VERIFICATION MODAL (Automatic Flow) -->
+        <!-- MANAGER PIN NUMPAD VERIFICATION MODAL -->
         <div id="pinAuthModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-white rounded-2xl max-w-xs w-full p-6 shadow-2xl space-y-4 text-center">
                 <div>
@@ -415,7 +415,7 @@
                         <i class="fa-solid fa-shield-halved text-xl"></i>
                     </div>
                     <h3 class="text-base font-bold text-slate-800">Manager Security PIN</h3>
-                    <p class="text-xs text-slate-500 mt-1">Tap digits (Default: <span class="font-bold text-slate-700">1234</span>)</p>
+                    <p class="text-xs text-slate-500 mt-1">Tap digits or press keyboard numbers</p>
                 </div>
                 
                 <div class="flex justify-center items-center gap-3 my-2">
@@ -505,7 +505,7 @@
     </main>
 
     <script>
-        // State Management - Guaranteed data preservation across all key versions
+        // State Management
         let managerPin = localStorage.getItem('tp_manager_pin') || '1234';
         let enteredPin = '';
         let isManagerLoggedIn = false;
@@ -513,8 +513,23 @@
         let targetInputId = null;
         let nextTargetInputId = null;
 
-        // Load employees from any existing storage or default list
-        let employees = JSON.parse(localStorage.getItem('tp_employees_aud')) || JSON.parse(localStorage.getItem('tp_employees')) || [
+        // Comprehensive LocalStorage Data Aggregator (Prevents Any Data Loss)
+        function loadAllStorageData(keys) {
+            for (let key of keys) {
+                const data = localStorage.getItem(key);
+                if (data) {
+                    try {
+                        const parsed = JSON.parse(data);
+                        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+                        if (typeof parsed === 'object' && Object.keys(parsed).length > 0) return parsed;
+                    } catch (e) {}
+                }
+            }
+            return null;
+        }
+
+        // Load Employees
+        let employees = loadAllStorageData(['tp_employees_aud', 'tp_employees']) || [
             { id: 'emp_1', name: 'Bee', rate: 25.00 },
             { id: 'emp_2', name: 'Kai', rate: 25.00 },
             { id: 'emp_3', name: 'Noi', rate: 25.00 },
@@ -522,12 +537,11 @@
             { id: 'emp_5', name: 'Alex', rate: 25.00 }
         ];
 
-        // Safely load all logs, paid archives, and active clock-ins
-        let timeLogs = JSON.parse(localStorage.getItem('tp_timelogs_aud')) || JSON.parse(localStorage.getItem('tp_timelogs')) || [];
-        let paidArchives = JSON.parse(localStorage.getItem('tp_paid_archives_aud')) || JSON.parse(localStorage.getItem('tp_paid_archives')) || [];
-        let activeClockIns = JSON.parse(localStorage.getItem('tp_active_clockins_aud')) || JSON.parse(localStorage.getItem('tp_active_clockins')) || {};
+        // Load Time Logs & Archives
+        let timeLogs = loadAllStorageData(['tp_timelogs_aud', 'tp_timelogs']) || [];
+        let paidArchives = loadAllStorageData(['tp_paid_archives_aud', 'tp_paid_archives']) || [];
+        let activeClockIns = loadAllStorageData(['tp_active_clockins_aud', 'tp_active_clockins']) || {};
 
-        // Sync storage keys
         saveToLocalStorage();
 
         function saveToLocalStorage() {
@@ -550,14 +564,26 @@
             renderEmployeeGrid();
             renderActiveEmpList();
             renderPayrollTable();
+
+            // Keyboard Numpad Event Listener for Manager PIN
+            window.addEventListener('keydown', (e) => {
+                const modal = document.getElementById('pinAuthModal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    if (e.key >= '0' && e.key <= '9') {
+                        appendPinDigit(e.key);
+                    } else if (e.key === 'Backspace') {
+                        backspacePin();
+                    } else if (e.key === 'Escape') {
+                        closePinAuthModal();
+                    }
+                }
+            });
         });
 
-        // ALWAYS SORT EMPLOYEES ALPHABETICALLY (A-Z)
         function getSortedEmployees() {
             return [...employees].sort((a, b) => a.name.localeCompare(b.name));
         }
 
-        // LIVE CLOCK
         function updateLiveClock() {
             const now = new Date();
             const timeStr = now.toTimeString().split(' ')[0];
@@ -570,7 +596,6 @@
             if (dateEl) dateEl.innerText = dateStr;
         }
 
-        // ALWAYS SORT LOGS BY DATE DESCENDING (NEWEST FIRST)
         function sortLogsByDate(logsArr) {
             return logsArr.sort((a, b) => {
                 if (b.date !== a.date) {
@@ -580,7 +605,7 @@
             });
         }
 
-        // NUMPAD PIN VERIFICATION
+        // NUMPAD & KEYBOARD PIN VERIFICATION
         function requestManagerAccess() {
             if (isManagerLoggedIn) {
                 lockManagerView();
@@ -683,7 +708,7 @@
             document.getElementById('calMonthYearTitle').innerText = `${monthNames[month]} ${year}`;
 
             let firstDay = new Date(year, month, 1).getDay();
-            firstDay = firstDay === 0 ? 6 : firstDay - 1; // Monday First
+            firstDay = firstDay === 0 ? 6 : firstDay - 1;
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
             const grid = document.getElementById('calDaysGrid');
@@ -720,7 +745,7 @@
             closeCalendarPicker();
         }
 
-        // ANALOG CLOCK FACE PICKER LOGIC
+        // ANALOG CLOCK PICKER LOGIC
         function openClockPicker(inputId, nextInputId = null) {
             targetInputId = inputId;
             nextTargetInputId = nextInputId;
@@ -1000,7 +1025,6 @@
         }
 
         function renderPayrollTable() {
-            // Sort logs by date descending automatically
             sortLogsByDate(timeLogs);
 
             const summaryTbody = document.getElementById('weeklySummaryTableBody');
@@ -1009,7 +1033,6 @@
             let totalHoursSum = 0;
             let totalPaySum = 0;
 
-            // Render Weekly Payroll Summary Table (Sorted Alphabetically A-Z)
             if (summaryTbody) {
                 const sortedEmps = getSortedEmployees();
 
@@ -1047,7 +1070,6 @@
                 }).join('');
             }
 
-            // Render Detailed Shift Logs Table
             if (logsTbody) {
                 const searchQuery = (document.getElementById('filterSearch')?.value || '').toLowerCase();
                 const dateQuery = document.getElementById('filterDate')?.value || '';
@@ -1090,7 +1112,6 @@
             document.getElementById('dashTotalPay').innerText = `$${totalPaySum.toLocaleString('en-AU', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AUD`;
         }
 
-        // VIEW SHIFTS BREAKDOWN MODAL (Matches Image 2)
         function openShiftsModal(empId, empName) {
             const emp = employees.find(e => e.id === empId || e.name === empName);
             const rate = emp ? emp.rate : 25.00;
@@ -1143,7 +1164,6 @@
             document.getElementById('shiftsModal').classList.add('hidden');
         }
 
-        // WEEKLY ARCHIVES LOGIC (Clean single week header centered, list employees underneath)
         function archiveEmployeeWeek(empId, empName) {
             const empLogsIndex = timeLogs.filter(l => l.empId === empId || l.empName.toLowerCase() === empName.toLowerCase());
             if (empLogsIndex.length === 0) {
@@ -1163,8 +1183,6 @@
             };
 
             paidArchives.unshift(archivedRecord);
-
-            // Remove archived shifts from active timeLogs
             timeLogs = timeLogs.filter(l => l.empId !== empId && l.empName.toLowerCase() !== empName.toLowerCase());
 
             saveToLocalStorage();
@@ -1209,7 +1227,6 @@
             document.getElementById('archivesModal').classList.add('hidden');
         }
 
-        // Render Archives grouped neatly with a SINGLE week header on top centered
         function renderArchivesList() {
             const container = document.getElementById('archivesContentList');
             if (paidArchives.length === 0) {
@@ -1217,7 +1234,6 @@
                 return;
             }
 
-            // Group archives by weekPeriod
             const groups = {};
             paidArchives.forEach(arc => {
                 const period = arc.weekPeriod || '2-8 November 2026';
@@ -1229,7 +1245,6 @@
             for (const period in groups) {
                 html += `
                     <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-4">
-                        <!-- Single Centered Week Header Header -->
                         <div class="text-center border-b border-slate-200 pb-2">
                             <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-4 py-1 rounded-full border border-indigo-200 inline-flex items-center gap-1.5">
                                 <i class="fa-solid fa-box text-amber-500"></i> weekly pay out: ${period}
@@ -1308,9 +1323,7 @@
             const arc = paidArchives[arcIndex];
             if (!confirm(`Restore paid record for ${arc.empName} back to active shifts summary?`)) return;
 
-            // Push logs back to active timeLogs
             timeLogs.unshift(...arc.logs);
-            // Remove from archives
             paidArchives.splice(arcIndex, 1);
 
             saveToLocalStorage();
@@ -1362,7 +1375,6 @@
             closeEditModal();
             renderPayrollTable();
             
-            // Refresh shifts modal if currently open
             const modalTitle = document.getElementById('shiftsModalTitle').innerText;
             if (!document.getElementById('shiftsModal').classList.contains('hidden') && modalTitle) {
                 const empName = modalTitle.split(' - ')[0];
@@ -1377,7 +1389,6 @@
             saveToLocalStorage();
             renderPayrollTable();
 
-            // Refresh shifts modal if currently open
             const modalTitle = document.getElementById('shiftsModalTitle').innerText;
             if (!document.getElementById('shiftsModal').classList.contains('hidden') && modalTitle) {
                 const empName = modalTitle.split(' - ')[0];

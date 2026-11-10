@@ -1000,12 +1000,15 @@
 </div>
 
 <script>
-    // Firebase Configuration สำหรับโปรเจกต์ kitchen-timeclock
+    // Firebase Configuration ที่แก้ไขให้ถูกต้องสมบูรณ์
     const firebaseConfig = {
+        projectId: "kitchen-timeclock",
         databaseURL: "https://kitchen-timeclock-default-rtdb.firebaseio.com/"
     };
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
+    } else {
+        firebase.app();
     }
     const db = firebase.database();
 

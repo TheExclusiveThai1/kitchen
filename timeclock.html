@@ -4,1080 +4,2228 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Time & Payroll</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .clock-hand {
-            transform-origin: bottom center;
-            transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        :root {
+            --header-bg: #0284c7;
+            --card-bg: #ffffff;
+            --success-color: #22c55e;
+            --success-fade: #bbf7d0; 
+            --danger-color: #ef4444;
+            --danger-fade: #fecaca; 
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
         }
-        @media print {
-            .no-print { display: none !important; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f1f5f9;
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .top-header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 14px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #4ade80;
+            border-radius: 50%;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .header-btn {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        .main-container {
+            flex: 1;
+            padding: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .kiosk-sub-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+        }
+
+        .kiosk-title h1 {
+            margin: 0;
+            font-size: 22px;
+            color: #0f172a;
+        }
+
+        .cloud-sync-indicator {
+            font-size: 12px;
+            color: #0284c7;
+            background: #e0f2fe;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 4px;
+        }
+
+        .live-clock-card {
+            background: #e0f2fe; 
+            color: #0369a1; 
+            border: 1px solid #bae6fd;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-align: right;
+            min-width: 180px;
+        }
+
+        .live-time {
+            font-size: 24px;
+            font-weight: bold;
+            font-family: monospace;
+            letter-spacing: 1px;
+            color: #0c4a6e;
+        }
+
+        .live-date {
+            font-size: 12px;
+            color: #0369a1;
+            margin-top: 2px;
+            font-weight: 600;
+        }
+
+        .kiosk-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 24px;
+        }
+
+        .panel-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            height: 480px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #334155;
+        }
+
+        .employee-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .employee-card-item {
+            background: white;
+            border: 1px solid var(--border-color);
+            padding: 14px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .employee-card-item:hover {
+            border-color: var(--header-bg);
+            background: #eff6ff;
+        }
+
+        .employee-card-item.selected {
+            border-color: var(--header-bg);
+            background: #dbeafe;
+            box-shadow: 0 0 0 1px var(--header-bg);
+        }
+
+        .emp-status-text {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .action-panel {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 480px;
+            box-sizing: border-box;
+        }
+
+        .selected-display-box {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .selected-info-left .selected-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .selected-info-left .selected-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #0f172a;
+            margin-top: 4px;
+        }
+
+        .status-pill {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .status-pill.awaiting { background: #f1f5f9; color: #64748b; }
+        .status-pill.clocked-in { background: #dcfce7; color: #15803d; }
+        .status-pill.clocked-out { background: #fee2e2; color: #b91c1c; }
+
+        .clock-buttons-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 16px 0;
+        }
+
+        .btn-clock {
+            padding: 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-in { background-color: var(--success-color); color: white; }
+        .btn-out { background-color: var(--danger-color); color: white; }
+
+        .btn-clock.disabled-in {
+            background-color: var(--success-fade) !important;
+            color: #166534 !important;
+            cursor: not-allowed;
+            opacity: 0.55;
+            box-shadow: none;
+        }
+
+        .btn-clock.disabled-out {
+            background-color: var(--danger-fade) !important;
+            color: #991b1b !important;
+            cursor: not-allowed;
+            opacity: 0.55;
+            box-shadow: none;
+        }
+
+        .panel-footer-status {
+            background: white;
+            border: 1px solid var(--border-color);
+            padding: 14px 16px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .footer-status-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            color: var(--text-muted);
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        .staff-active-grid {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .active-staff-card {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 10px 14px;
+            border-radius: 8px;
+            min-width: 140px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .staff-card-info .staff-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        .staff-card-info .staff-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .pulse-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+
+        .manager-header-card {
+            background: #0f172a;
+            color: white;
+            padding: 24px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .manager-nav-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .m-btn {
+            background: #334155;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+        .m-btn:hover { background: #475569; }
+        .m-btn.danger { background: #dc2626; }
+        .m-btn.danger:hover { background: #b91c1c; }
+        .m-btn.warning { background: #d97706; }
+        .m-btn.success { background: #16a34a; }
+        .m-btn.success:hover { background: #15803d; }
+        .m-btn.primary { background: #0284c7; }
+        .m-btn.primary:hover { background: #0369a1; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            padding: 20px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .stat-title {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #0f172a;
+            margin-top: 8px;
+        }
+
+        .dashboard-section-box {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .section-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .section-box-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .table-custom {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        .table-custom th {
+            background: #f8fafc;
+            color: var(--text-muted);
+            padding: 12px 16px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table-custom td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #1e293b;
+        }
+
+        .table-custom tr:hover { background: #f8fafc; }
+
+        .badge-paid {
+            background: #166534;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        .link-action {
+            color: #0284c7;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .link-action:hover { text-decoration: underline; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #calendar-modal { z-index: 2000; }
+        #clock-modal { z-index: 2500; }
+
+        .modal-content {
+            background: white;
+            padding: 28px;
+            border-radius: 14px;
+            width: 380px;
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+            position: relative;
+            z-index: 1010;
+        }
+
+        .pin-display {
+            font-size: 32px;
+            letter-spacing: 12px;
+            margin: 20px 0;
+            height: 45px;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #0f172a;
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .key-btn {
+            padding: 14px;
+            font-size: 20px;
+            font-weight: bold;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        .key-btn:active { background: #cbd5e1; }
+
+        .staff-select-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 6px;
+            max-height: 160px;
+            overflow-y: auto;
+        }
+        .staff-chip-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-align: center;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .staff-chip-box:hover { background: #eff6ff; border-color: var(--header-bg); }
+        .staff-chip-box.selected { background: #dbeafe; border-color: var(--header-bg); color: #0284c7; }
+
+        .clock-face {
+            width: 200px;
+            height: 200px;
+            border: 6px solid #0f172a;
+            border-radius: 50%;
+            margin: 10px auto;
+            position: relative;
+            background: #f8fafc;
+            cursor: pointer;
+        }
+        .clock-number {
+            position: absolute;
+            font-size: 14px;
+            font-weight: bold;
+            color: #334155;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .clock-hand {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform-origin: bottom;
+            border-radius: 4px;
+            transition: transform 0.1s ease-out;
+        }
+
+        .quick-time-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+            margin-bottom: 12px;
+        }
+        .quick-time-btn {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #0f172a;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .quick-time-btn:hover {
+            background: #e0f2fe;
+            border-color: #0284c7;
+            color: #0284c7;
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+<body>
 
-    <!-- HEADER -->
-    <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-40 no-print">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="bg-indigo-700 p-2 rounded-lg text-white">
-                    <i class="fa-solid fa-user-clock text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-lg sm:text-xl leading-tight">Employee Time & Payroll</h1>
-                    <p class="text-xs text-indigo-200"><span id="syncStatusIndicator" class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-1"></span> Real-time Cloud Connected (AUD)</p>
-                </div>
+<div class="top-header">
+    <div class="header-title">
+        <span>👥</span> Employee Time & Payroll
+        <span class="status-badge"><span class="status-dot"></span> Real-time Cloud Connected (AUD)</span>
+    </div>
+    <div class="header-actions">
+        <button class="header-btn" onclick="toggleFullScreen()">⛶ Full Screen</button>
+        <button id="mode-switch-btn" class="header-btn" onclick="handleManagerToggle()">🔒 Manager Mode (PIN)</button>
+    </div>
+</div>
+
+<div class="main-container">
+    <div id="kiosk-section" class="section active">
+        <div class="kiosk-sub-header">
+            <div class="kiosk-title">
+                <h1>Employee Clock In / Out</h1>
+                <div class="cloud-sync-indicator">🟢 Cloud Terminal Active</div>
             </div>
-            <div class="flex items-center gap-3">
-                <button type="button" onclick="requestManagerAccess()" id="btnToggleView" class="flex items-center gap-2 bg-indigo-700 hover:bg-indigo-800 text-white text-xs sm:text-sm font-medium px-4 py-2 rounded-xl transition shadow-sm active:scale-95">
-                    <i id="viewToggleIcon" class="fa-solid fa-shield-halved text-amber-300"></i>
-                    <span id="viewToggleText">Manager Mode (PIN)</span>
-                </button>
+            <div class="live-clock-card">
+                <div class="live-time" id="live-clock">00:00:00</div>
+                <div class="live-date" id="live-date">Mon, 9 Nov 2026</div>
             </div>
         </div>
-    </header>
 
-    <!-- MAIN -->
-    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-
-        <!-- KIOSK VIEW -->
-        <div id="kioskView" class="space-y-6">
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
-                <div class="text-center md:text-left">
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 mb-2">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Cloud Terminal Active
+        <div class="kiosk-grid">
+            <div class="panel-box">
+                <div class="panel-header">
+                    <span style="display: flex; align-items: center; gap: 6px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        Select Employee
                     </span>
-                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-800">Employee Clock In / Out</h2>
-                    <p class="text-sm text-slate-500 mt-1">Select your name from the list and tap the button below</p>
+                    <span style="color: var(--text-muted); font-size: 12px;">Tap to select</span>
                 </div>
-                <div class="bg-indigo-900 text-white px-8 py-4 rounded-xl text-center shadow-inner min-w-[260px]">
-                    <div id="liveClock" class="text-3xl sm:text-4xl font-mono font-bold tracking-wider text-indigo-200">00:00:00</div>
-                    <div id="liveDate" class="text-xs text-indigo-300 font-medium mt-1">Date Loading...</div>
-                </div>
+                <div class="employee-list" id="employee-list-ui"></div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-1 bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col">
-                    <h3 class="font-bold text-slate-800 text-base mb-3 flex items-center justify-between">
-                        <span><i class="fa-solid fa-users text-indigo-600 mr-2"></i>Select Employee</span>
-                        <span class="text-xs font-normal text-indigo-500">Tap to select</span>
-                    </h3>
-                    <div id="employeeGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2.5 overflow-y-auto max-h-[380px] pr-1"></div>
-                </div>
-
-                <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between">
+            <div class="action-panel">
+                <div class="selected-display-box">
+                    <div class="selected-info-left">
+                        <div class="selected-label">SELECTED EMPLOYEE</div>
+                        <div class="selected-name" id="selected-name-display">-- Please Select --</div>
+                    </div>
                     <div>
-                        <div class="border-b border-slate-100 pb-4 mb-6">
-                            <span class="text-xs font-semibold uppercase text-slate-400 tracking-wider">Selected Employee</span>
-                            <div class="flex items-center justify-between mt-1">
-                                <h3 id="selectedEmpName" class="text-2xl font-bold text-slate-900">-- Please Select Employee --</h3>
-                                <div id="selectedEmpStatus" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span> Awaiting Selection
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-4">
-                            <button id="btnClockIn" type="button" onclick="handleClockIn()" disabled class="h-32 rounded-xl bg-emerald-600 text-white font-bold text-xl shadow-md hover:bg-emerald-700 active:scale-[0.98] transition-all flex flex-col items-center justify-center gap-2 border border-emerald-500 opacity-50 cursor-not-allowed">
-                                <i class="fa-solid fa-right-to-bracket text-4xl"></i>
-                                <span>CLOCK IN</span>
-                            </button>
-                            <button id="btnClockOut" type="button" onclick="handleClockOut()" disabled class="h-32 rounded-xl bg-rose-600 text-white font-bold text-xl shadow-md hover:bg-rose-700 active:scale-[0.98] transition-all flex flex-col items-center justify-center gap-2 border border-rose-500 opacity-50 cursor-not-allowed">
-                                <i class="fa-solid fa-right-from-bracket text-4xl"></i>
-                                <span>CLOCK OUT</span>
-                            </button>
-                        </div>
+                        <span id="selected-status-pill" class="status-pill awaiting">Awaiting Selection</span>
                     </div>
+                </div>
 
-                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                        <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex justify-between items-center">
-                            <span>Currently Working On Shift</span>
-                            <span id="activeCountBadge" class="bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0 Staff</span>
-                        </h4>
-                        <div id="activeEmpList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2"></div>
+                <div class="clock-buttons-grid">
+                    <button id="btn-clock-in" class="btn-clock btn-in" onclick="performClockAction('Clock In')">
+                        <span>➡️</span> CLOCK IN
+                    </button>
+                    <button id="btn-clock-out" class="btn-clock btn-out" onclick="performClockAction('Clock Out')">
+                        <span>🚪</span> CLOCK OUT
+                    </button>
+                </div>
+
+                <div class="panel-footer-status">
+                    <div class="footer-status-top">
+                        <span>CURRENTLY WORKING ON SHIFT</span>
+                    </div>
+                    <div class="staff-active-grid" id="active-staff-chips-container">
+                        <span style="color: var(--text-muted); font-size: 12px;">No employees currently on shift</span>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- MANAGER VIEW -->
-        <div id="managerView" class="space-y-6 hidden">
-            <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row items-center justify-between gap-4 border border-slate-800">
-                <div>
-                    <span class="bg-amber-400/10 text-amber-300 text-xs font-semibold px-3 py-1 rounded-full border border-amber-400/20">
-                        <i class="fa-solid fa-user-shield mr-1"></i> Manager Authorized Dashboard (Real-time Cloud Sync)
-                    </span>
-                    <h2 class="text-2xl font-bold mt-2">Hours & Payroll Summary (AUD)</h2>
-                    <p class="text-xs text-slate-300 mt-0.5">Manage staff, weekly payroll cut-off (Sundays), and archive historical reports</p>
-                </div>
-                <div class="flex flex-wrap gap-2 no-print">
-                    <button type="button" onclick="openArchivesModal()" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-sm">
-                        <i class="fa-solid fa-box-archive"></i> Weekly Archives
-                    </button>
-                    <button type="button" onclick="openEmpManageModal()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-slate-700 transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-user-plus text-indigo-300"></i> Manage Staff
-                    </button>
-                    <button type="button" onclick="openManualLogModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-sm">
-                        <i class="fa-solid fa-clock-rotate-left"></i> Add Entry
-                    </button>
-                    <button type="button" onclick="openChangePinModal()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-slate-700 transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-key text-amber-300"></i> Change PIN
-                    </button>
-                    <button type="button" onclick="lockManagerView()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-lock"></i> Exit
-                    </button>
-                </div>
+    <div id="manager-section" class="section">
+        <div class="manager-header-card">
+            <div>
+                <div style="font-size: 11px; color: #94a3b8; font-weight: bold; letter-spacing: 0.5px;">🔓 MANAGER AUTHORIZED DASHBOARD (REAL-TIME CLOUD SYNC)</div>
+                <h2 style="margin: 4px 0 0 0; font-size: 24px;">Hours & Payroll Summary (AUD)</h2>
+                <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">Manage staff, weekly payroll cut-off (Sundays), and archive historical reports</div>
             </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                    <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">ACTIVE STAFF ON SHIFT</div>
-                    <div id="dashActiveNow" class="text-3xl font-extrabold text-slate-900 mt-2">0</div>
-                </div>
-                <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                    <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">CURRENT WEEK TOTAL HOURS</div>
-                    <div id="dashTotalHours" class="text-3xl font-extrabold text-indigo-600 mt-2">0.00 hrs</div>
-                </div>
-                <div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
-                    <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">CURRENT WEEK NET PAYROLL</div>
-                    <div id="dashTotalPay" class="text-3xl font-extrabold text-emerald-600 mt-2">$0.00 AUD</div>
-                </div>
-            </div>
-
-            <!-- WEEKLY PAYROLL SUMMARY -->
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 space-y-4">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
-                    <div>
-                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
-                            <i class="fa-solid fa-receipt text-emerald-600"></i> Weekly Payroll Summary (Cut-off Every Sunday)
-                        </h3>
-                        <p class="text-xs text-slate-500 mt-0.5">Review totals per employee, click (View Shifts) to view/edit shifts, and process payouts</p>
-                    </div>
-                    <button type="button" onclick="archiveCurrentWeekAll()" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm">
-                        <i class="fa-solid fa-circle-check"></i> Close Week & Mark All Paid (Archive)
-                    </button>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-slate-100 text-slate-700 font-semibold text-xs border-b border-slate-200">
-                            <tr>
-                                <th class="px-4 py-3.5 rounded-l-xl">Employee Name</th>
-                                <th class="px-4 py-3.5">Current Week</th>
-                                <th class="px-4 py-3.5">Hourly Rate</th>
-                                <th class="px-4 py-3.5">Shifts Logged</th>
-                                <th class="px-4 py-3.5">Total Hours</th>
-                                <th class="px-4 py-3.5">Total Payout ($ AUD)</th>
-                                <th class="px-4 py-3.5 text-center rounded-r-xl">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="weeklySummaryTableBody" class="divide-y divide-slate-100"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- DETAILED SHIFT LOGS -->
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 space-y-4">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 no-print border-b border-slate-100 pb-4">
-                    <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-                        <h4 class="font-bold text-slate-800 text-sm">Detailed Shift Logs</h4>
-                        <input type="text" id="filterSearch" placeholder="Search employee..." oninput="renderPayrollTable()" class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs w-full sm:w-44 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                        <div class="flex items-center gap-1">
-                            <input type="text" id="filterDate" readonly placeholder="Filter by Date" onclick="openCalendarPicker('filterDate')" class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
-                            <button type="button" onclick="clearDateFilter()" class="px-2 py-1.5 text-xs text-slate-500 hover:text-slate-700 bg-slate-100 rounded-xl">Clear</button>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button type="button" onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-xl transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-file-excel"></i> Export CSV
-                        </button>
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-slate-100 text-slate-700 font-semibold text-xs border-b border-slate-200">
-                            <tr>
-                                <th class="px-4 py-3 rounded-l-xl">Date</th>
-                                <th class="px-4 py-3">Employee Name</th>
-                                <th class="px-4 py-3">Clock In</th>
-                                <th class="px-4 py-3">Clock Out</th>
-                                <th class="px-4 py-3">Break</th>
-                                <th class="px-4 py-3">Total Hrs</th>
-                                <th class="px-4 py-3">Hourly Rate</th>
-                                <th class="px-4 py-3">Total Pay ($ AUD)</th>
-                                <th class="px-4 py-3 text-right rounded-r-xl no-print">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="payrollTableBody" class="divide-y divide-slate-100"></tbody>
-                    </table>
-                </div>
+            <div class="manager-nav-actions">
+                <button id="pin-toggle-btn" class="m-btn" style="background: #475569;" onclick="togglePinRequirement()">🔐 PIN: ON</button>
+                <button class="m-btn warning" onclick="openArchivesModal()">📁 Weekly Archives</button>
+                <button class="m-btn" onclick="openManageStaffModal()">👥 Manage Staff</button>
+                <button class="m-btn primary" onclick="openAddEntryModal()">➕ Add Entry</button>
+                <button class="m-btn" onclick="openChangePinModal()">🔑 Change PIN</button>
+                <button class="m-btn danger" onclick="exitManagerMode()">🚪 Exit</button>
             </div>
         </div>
 
-        <!-- MODALS -->
-        <div id="shiftsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-            <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                    <div>
-                        <h3 id="shiftsModalTitle" class="text-lg font-bold text-slate-800">Employee - Shift Breakdown</h3>
-                        <p id="shiftsModalSubtitle" class="text-xs text-slate-500">Current Week | Rate: $0.00/hr</p>
-                    </div>
-                    <button type="button" onclick="closeShiftsModal()" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-                <div id="shiftsModalList" class="max-h-[380px] overflow-y-auto space-y-3 pr-1"></div>
-                <div class="flex justify-end pt-2">
-                    <button type="button" onclick="closeShiftsModal()" class="px-5 py-2 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition">Close</button>
-                </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-title">Active Staff On Shift</div>
+                <div class="stat-value" id="mgr-active-count">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Current Week Total Hours</div>
+                <div class="stat-value" id="mgr-total-hours">0.00 hrs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Current Week Net Payroll</div>
+                <div class="stat-value" id="mgr-net-payroll">$0.00 AUD</div>
             </div>
         </div>
 
-        <div id="archivesModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-            <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4">
-                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                    <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-box-archive text-amber-600"></i> Historical Weekly Archives</h3>
-                    <button type="button" onclick="closeArchivesModal()" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-                <div id="archivesContentList" class="max-h-[420px] overflow-y-auto space-y-4 pr-1"></div>
-                <div class="flex justify-end pt-2">
-                    <button type="button" onclick="closeArchivesModal()" class="px-5 py-2 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition">Close</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="editModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden">
-            <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-indigo-600"></i> Edit Time Log Entry</h3>
-                <form onsubmit="saveLogEdit(event)">
-                    <input type="hidden" id="editLogId">
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-xs font-medium text-slate-700 mb-1">Employee Name</label>
-                            <input type="text" id="editEmpName" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        <div class="dashboard-section-box">
+            <div class="section-box-header">
+                <div class="section-box-title" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <span>📅</span> Weekly Payroll Summary
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 6px; background: #f1f5f9; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <button class="m-btn" style="padding: 2px 6px; font-size: 11px;" onclick="changeWeek(-1)">◀</button>
+                            <span id="summary-week-label" style="font-size: 13px; font-weight: bold; color: #0f172a; padding: 0 4px;">--</span>
+                            <button class="m-btn" style="padding: 2px 6px; font-size: 11px;" onclick="changeWeek(1)">▶</button>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-700 mb-1">Date (YYYY-MM-DD)</label>
-                            <div class="relative">
-                                <input type="text" id="editLogDate" readonly onclick="openCalendarPicker('editLogDate')" class="w-full px-3 py-2 pr-10 border border-slate-300 rounded-xl text-sm cursor-pointer bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                                <i class="fa-solid fa-calendar-days text-indigo-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-medium text-slate-700 mb-1">Clock In Time</label>
-                                <div class="relative">
-                                    <input type="text" id="editClockIn" readonly onclick="openClockPicker('editClockIn', 'editClockOut')" class="w-full px-3 py-2 pr-10 border border-slate-300 rounded-xl text-sm cursor-pointer bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                                    <i class="fa-solid fa-clock text-indigo-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-700 mb-1">Clock Out Time</label>
-                                <div class="relative">
-                                    <input type="text" id="editClockOut" readonly onclick="openClockPicker('editClockOut')" class="w-full px-3 py-2 pr-10 border border-slate-300 rounded-xl text-sm cursor-pointer bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                                    <i class="fa-solid fa-clock text-indigo-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-medium text-slate-700 mb-1">Break (Hours)</label>
-                                <input type="number" id="editBreakHours" step="0.5" min="0" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-700 mb-1">Rate/Hour ($ AUD)</label>
-                                <input type="number" id="editEmpRate" min="0" step="0.5" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            </div>
-                        </div>
-                        <div class="flex justify-end gap-2 pt-2">
-                            <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition">Cancel</button>
-                            <button type="submit" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium shadow-sm transition">Save Changes</button>
+                            <button class="m-btn primary" style="padding: 6px 12px; font-size: 12px;" onclick="resetToCurrentWeek()">Current Week</button>
                         </div>
                     </div>
-                </form>
-            </div>
-        </div>
-
-        <div id="manualModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-            <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-clock text-indigo-600"></i> Add Manual Shift Entry</h3>
-                <form onsubmit="saveManualLog(event)" class="space-y-3">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">Select Employee *</label>
-                        <select id="manualEmpSelect" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">Date *</label>
-                        <div class="relative">
-                            <input type="text" id="manualLogDate" readonly onclick="openCalendarPicker('manualLogDate')" class="w-full px-3 py-2 pr-10 border border-slate-300 rounded-xl text-sm cursor-pointer bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            <i class="fa-solid fa-calendar-days text-indigo-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-medium text-slate-700 mb-1">Clock In Time *</label>
-                            <div class="relative">
-                                <input type="text" id="manualClockIn" readonly onclick="openClockPicker('manualClockIn', 'manualClockOut')" class="w-full px-3 py-2 pr-10 border border-slate-300 rounded-xl text-sm cursor-pointer bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                                <i class="fa-solid fa-clock text-indigo-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-700 mb-1">Clock Out Time *</label>
-                            <div class="relative">
-                                <input type="text" id="manualClockOut" readonly onclick="openClockPicker('manualClockOut')" class="w-full px-3 py-2 pr-10 border border-slate-300 rounded-xl text-sm cursor-pointer bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                                <i class="fa-solid fa-clock text-indigo-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">Unpaid Break (Hours)</label>
-                        <input type="number" id="manualBreakHours" step="0.5" value="0" min="0" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                    <div class="flex justify-end gap-2 pt-2">
-                        <button type="button" onclick="closeManualLogModal()" class="px-4 py-2 text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition">Cancel</button>
-                        <button type="submit" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium shadow-sm transition">Save Entry</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div id="empManageModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-            <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-users-gear text-indigo-600"></i> Manage Staff Directory</h3>
-                <form onsubmit="addNewEmployee(event)" class="flex gap-2">
-                    <input type="text" id="newEmpName" placeholder="Employee Name" required class="flex-grow px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    <input type="number" id="newEmpRate" placeholder="Rate ($/hr)" required min="0" step="0.5" class="w-28 px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl text-sm transition">Add</button>
-                </form>
-                <div id="empManageList" class="max-h-60 overflow-y-auto space-y-2 pr-1"></div>
-                <div class="flex justify-end pt-2">
-                    <button type="button" onclick="closeEmpManageModal()" class="px-4 py-2 text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition">Close Window</button>
                 </div>
             </div>
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Employee Name</th>
+                        <th>Selected Week</th>
+                        <th>Hourly Rate</th>
+                        <th>Shifts Logged</th>
+                        <th>Total Hours</th>
+                        <th>Total Payout ($ AUD)</th>
+                        <th>Incentive</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="weekly-summary-tbody"></tbody>
+            </table>
         </div>
 
-        <div id="changePinModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-            <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
-                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-key text-indigo-600"></i> Change Manager PIN</h3>
-                <form onsubmit="saveNewPin(event)" class="space-y-3">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">Current PIN Code</label>
-                        <input type="password" id="currentPinInput" maxlength="6" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-center text-lg tracking-widest focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-700 mb-1">New PIN Code (4-6 digits)</label>
-                        <input type="password" id="newPinInput" maxlength="6" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-center text-lg tracking-widest focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-                    <div class="flex justify-end gap-2 pt-2">
-                        <button type="button" onclick="closeChangePinModal()" class="px-4 py-2 text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition">Cancel</button>
-                        <button type="submit" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium shadow-sm transition">Update PIN</button>
-                    </div>
-                </form>
+        <div class="dashboard-section-box">
+            <div class="section-box-header">
+                <div class="section-box-title">
+                    <span>📋</span> Detailed Shift Logs & History (<span id="detailed-week-label">--</span>)
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <select id="detailed-filter-staff" class="m-btn" style="background: white; color: #0f172a; border: 1px solid var(--border-color); padding: 6px 12px; font-weight: 600; cursor: pointer;" onchange="updateStats()">
+                        <option value="ALL">👥 All Employees</option>
+                    </select>
+                    <button class="m-btn" style="background: #0f172a; font-size: 12px; padding: 6px 12px;" onclick="exportCSV()">📥 Export CSV</button>
+                </div>
+            </div>
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Employee Name</th>
+                        <th>Clock In</th>
+                        <th>Clock Out</th>
+                        <th>Break</th>
+                        <th>Total Hrs</th>
+                        <th>Hourly Rate</th>
+                        <th>Total Pay ($ AUD)</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="detailed-logs-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal PIN Code -->
+<div id="pin-modal" class="modal" onclick="checkOutsideClose(event, 'pin-modal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3 style="margin-top: 0; color: #0f172a;">Enter Manager PIN</h3>
+        <p style="font-size: 13px; color: var(--text-muted);">Default PIN: <span id="current-pin-hint">1234</span></p>
+        
+        <input type="text" id="hidden-pin-input" style="position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px;" oninput="handleUniversalInput(this)">
+
+        <div class="pin-display" id="pin-dots">----</div>
+        <div class="keypad">
+            <button class="key-btn" onclick="pressPinKey('1')">1</button>
+            <button class="key-btn" onclick="pressPinKey('2')">2</button>
+            <button class="key-btn" onclick="pressPinKey('3')">3</button>
+            <button class="key-btn" onclick="pressPinKey('4')">4</button>
+            <button class="key-btn" onclick="pressPinKey('5')">5</button>
+            <button class="key-btn" onclick="pressPinKey('6')">6</button>
+            <button class="key-btn" onclick="pressPinKey('7')">7</button>
+            <button class="key-btn" onclick="pressPinKey('8')">8</button>
+            <button class="key-btn" onclick="pressPinKey('9')">9</button>
+            <button class="key-btn" onclick="clearPinInput()" style="font-size: 16px;">C</button>
+            <button class="key-btn" onclick="pressPinKey('0')">0</button>
+            <button class="key-btn" onclick="backspacePin()" style="font-size: 16px;">⌫</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Employee Detailed Shifts -->
+<div id="staff-detail-modal" class="modal" onclick="checkOutsideClose(event, 'staff-detail-modal')">
+    <div class="modal-content" style="width: 550px; text-align: left; max-height: 80vh; overflow-y: auto;" onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 id="staff-detail-title" style="margin: 0; color: #0f172a; font-size: 18px;">📋 Shift Details</h3>
+            <button class="m-btn danger" style="padding: 4px 10px; font-size: 12px;" onclick="document.getElementById('staff-detail-modal').style.display='none'">Close</button>
+        </div>
+        <div id="staff-detail-container"></div>
+    </div>
+</div>
+
+<!-- Modal: Add Manual Entry -->
+<div id="add-entry-modal" class="modal" onclick="checkOutsideClose(event, 'add-entry-modal')">
+    <div class="modal-content" style="width: 420px; text-align: left;" onclick="event.stopPropagation()">
+        <h3 style="margin-top: 0; color: #0f172a;">➕ Add Manual Entry</h3>
+        <div style="margin-bottom: 14px;">
+            <label style="font-size: 12px; font-weight: bold; color: var(--text-muted);">Select Employee:</label>
+            <div id="manual-staff-grid" class="staff-select-grid"></div>
+        </div>
+        <div style="margin-bottom: 14px;">
+            <label style="font-size: 12px; font-weight: bold; color: var(--text-muted);">Date (DD/MM/YYYY):</label>
+            <input type="text" id="manual-date" readonly placeholder="Click to select date..." onclick="openCalendarModal('manual')" style="width: 100%; padding: 10px; margin-top: 4px; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; background: white; font-weight: 600;">
+        </div>
+        <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+            <div style="flex: 1;">
+                <label style="font-size: 12px; font-weight: bold; color: var(--text-muted);">Clock In:</label>
+                <input type="text" id="manual-in" readonly placeholder="09:00 AM" onclick="openClockModal('in')" style="width: 100%; padding: 10px; margin-top: 4px; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; background: white; font-weight: 600; text-align: center;">
+            </div>
+            <div style="flex: 1;">
+                <label style="font-size: 12px; font-weight: bold; color: var(--text-muted);">Clock Out:</label>
+                <input type="text" id="manual-out" readonly placeholder="05:00 PM" onclick="openClockModal('out')" style="width: 100%; padding: 10px; margin-top: 4px; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; background: white; font-weight: 600; text-align: center;">
+            </div>
+        </div>
+        <button class="m-btn success" style="width: 100%; justify-content: center; padding: 12px;" onclick="saveManualEntry()">Save Shift Entry</button>
+    </div>
+</div>
+
+<!-- Modal: Calendar -->
+<div id="calendar-modal" class="modal" onclick="checkOutsideClose(event, 'calendar-modal')">
+    <div class="modal-content" style="width: 320px;" onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <button class="m-btn" style="padding: 4px 8px; font-size: 12px;" onclick="changeMonth(-1)">◀</button>
+            <h3 id="calendar-month-year" style="margin: 0; color: #0f172a; font-size: 15px;">November 2026</h3>
+            <button class="m-btn" style="padding: 4px 8px; font-size: 12px;" onclick="changeMonth(1)">▶</button>
+        </div>
+        <div id="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;"></div>
+    </div>
+</div>
+
+<!-- Modal: Analog Clock พร้อมปุ่มเลือกเวลาแบบสี่เหลี่ยมจัตุรัส Quick Time Buttons -->
+<div id="clock-modal" class="modal" onclick="checkOutsideClose(event, 'clock-modal')">
+    <div class="modal-content" style="width: 320px;" onclick="event.stopPropagation()">
+        <h3 id="clock-modal-title" style="margin-top: 0; color: #0f172a; font-size: 16px;">⏰ Select Time</h3>
+        <div style="font-size: 18px; font-weight: bold; color: #0284c7; margin: 4px 0;" id="clock-preview">09:00 AM</div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;" id="clock-instruction">Click clock or select quick preset below</div>
+        
+        <!-- Quick Time Presets (สี่เหลี่ยมจัตุรัส) -->
+        <div class="quick-time-grid" id="quick-time-container"></div>
+
+        <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 8px;">
+            <button id="btn-am" class="m-btn" style="padding: 4px 16px; font-size: 12px; background: #0284c7;" onclick="setMeridiem('AM')">AM</button>
+            <button id="btn-pm" class="m-btn" style="padding: 4px 16px; font-size: 12px; background: #334155;" onclick="setMeridiem('PM')">PM</button>
+        </div>
+
+        <div class="clock-face" id="clock-face" onclick="handleClockClick(event)">
+            <div class="clock-hand" id="hour-hand" style="width: 4px; height: 45px; background: #0f172a; transform: translate(-50%, 0) rotate(0deg);"></div>
+            <div class="clock-hand" id="minute-hand" style="width: 2px; height: 65px; background: #0284c7; transform: translate(-50%, 0) rotate(0deg);"></div>
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button class="m-btn success" style="flex:1; justify-content:center;" onclick="confirmClockTime()">Confirm Time</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Manage Staff -->
+<div id="manage-staff-modal" class="modal" onclick="checkOutsideClose(event, 'manage-staff-modal')">
+    <div class="modal-content" style="width: 420px; text-align: left;" onclick="event.stopPropagation()">
+        <h3 style="margin-top: 0; color: #0f172a;">👥 Manage Staff (Unlimited)</h3>
+        <div style="margin: 15px 0; display: flex; gap: 8px;">
+            <input type="text" id="new-staff-name" placeholder="Staff Name" style="flex:1; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
+            <input type="number" id="new-staff-rate" placeholder="Rate ($)" value="25.00" style="width: 80px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;" onfocus="this.select()">
+            <button class="m-btn success" onclick="addNewStaff()">Add</button>
+        </div>
+        <div id="staff-management-list" style="max-height: 220px; overflow-y: auto; margin-bottom: 15px; border-top: 1px solid var(--border-color); padding-top: 10px;"></div>
+    </div>
+</div>
+
+<!-- Modal: Edit Staff -->
+<div id="edit-staff-modal" class="modal" onclick="checkOutsideClose(event, 'edit-staff-modal')">
+    <div class="modal-content" style="width: 340px; text-align: left;" onclick="event.stopPropagation()">
+        <h3 style="margin-top: 0; color: #0f172a;">✏️ Edit Staff Details</h3>
+        <input type="hidden" id="edit-staff-index">
+        <div style="margin-bottom: 12px;">
+            <label style="font-size: 12px; font-weight: bold; color: var(--text-muted);">Staff Name:</label>
+            <input type="text" id="edit-staff-name-input" style="width: 100%; padding: 8px; margin-top: 4px; border: 1px solid var(--border-color); border-radius: 6px;">
+        </div>
+        <div style="margin-bottom: 16px;">
+            <label style="font-size: 12px; font-weight: bold; color: var(--text-muted);">Hourly Rate ($ AUD):</label>
+            <input type="number" id="edit-staff-rate-input" step="0.5" style="width: 100%; padding: 8px; margin-top: 4px; border: 1px solid var(--border-color); border-radius: 6px;">
+        </div>
+        <button class="m-btn success" style="width: 100%; justify-content: center; padding: 10px;" onclick="saveEditedStaff()">Save Changes</button>
+    </div>
+</div>
+
+<!-- Modal: Edit Shift -->
+<div id="edit-shift-modal" class="modal" onclick="checkOutsideClose(event, 'edit-shift-modal')">
+    <div class="modal-content" style="width: 380px; text-align: left;" onclick="event.stopPropagation()">
+        <h3 style="margin-top: 0; color: #0f172a;">✏️ Edit Shift Log</h3>
+        <input type="hidden" id="edit-shift-uuid">
+        
+        <div style="margin-bottom: 14px;">
+            <label style="font-size: 12px; font-weight: bold; color: var(--text-muted);">Date (DD/MM/YYYY):</label>
+            <input type="text" id="edit-date" readonly placeholder="Select date..." onclick="openCalendarModal('edit')" style="width: 100%; padding: 10px; margin-top: 4px; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; background: white; font-weight: 600;">
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+            <div style="flex: 1;">
+                <label style="font-size: 12px; font-weight: bold; color: var(--text-muted);">Clock In:</label>
+                <input type="text" id="edit-clock-in" readonly placeholder="09:00 AM" onclick="openClockModal('edit_in')" style="width: 100%; padding: 10px; margin-top: 4px; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; background: white; font-weight: 600; text-align: center;">
+            </div>
+            <div style="flex: 1;">
+                <label style="font-size: 12px; font-weight: bold; color: var(--text-muted);">Clock Out:</label>
+                <input type="text" id="edit-clock-out" readonly placeholder="05:00 PM" onclick="openClockModal('edit_out')" style="width: 100%; padding: 10px; margin-top: 4px; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; background: white; font-weight: 600; text-align: center;">
             </div>
         </div>
 
-        <div id="pinAuthModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-            <div class="bg-white rounded-2xl max-w-xs w-full p-6 shadow-2xl space-y-4 text-center">
-                <div>
-                    <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-2"><i class="fa-solid fa-shield-halved text-xl"></i></div>
-                    <h3 class="text-base font-bold text-slate-800">Manager Security PIN</h3>
-                    <p class="text-xs text-slate-500 mt-1">Tap digits or press keyboard numbers</p>
+        <button class="m-btn success" style="width: 100%; justify-content: center; padding: 12px;" onclick="saveEditedShift()">Save Changes</button>
+    </div>
+</div>
+
+<!-- Modal: Weekly Archives -->
+<div id="archives-modal" class="modal" onclick="checkOutsideClose(event, 'archives-modal')">
+    <div class="modal-content" style="width: 550px; text-align: left; max-height: 80vh; overflow-y: auto;" onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0; color: #0f172a; font-size: 18px;">📁 Weekly Archives</h3>
+            <button class="m-btn danger" style="padding: 4px 10px; font-size: 12px;" onclick="document.getElementById('archives-modal').style.display='none'">Close</button>
+        </div>
+        <div style="background: #f1f5f9; padding: 10px 14px; font-weight: bold; color: #0f172a; border-radius: 6px; margin-bottom: 14px; font-size: 14px; display: flex; justify-content: space-between; align-items: center;" id="archive-header-range">
+            <span>Weekly Pay Out</span>
+        </div>
+        <div id="archive-content-container"></div>
+    </div>
+</div>
+
+<div id="change-pin-modal" class="modal" onclick="checkOutsideClose(event, 'change-pin-modal')">
+    <div class="modal-content" style="width: 300px;" onclick="event.stopPropagation()">
+        <h3 style="margin-top: 0; color: #0f172a;">🔑 Change Manager PIN</h3>
+        <input type="password" id="new-pin-input" maxlength="4" placeholder="••••" style="font-size: 24px; text-align: center; width: 80%; padding: 8px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 6px;" onfocus="this.select()">
+        <button class="m-btn success" style="width: 100%; justify-content: center;" onclick="saveNewPin()">Save New PIN</button>
+    </div>
+</div>
+
+<script>
+    let CORRECT_PIN = localStorage.getItem('manager_pin') || "1234";
+    let isPinRequired = localStorage.getItem('is_pin_required') !== 'false';
+    let enteredPin = "";
+    let selectedEmployee = null;
+    let isManagerLoggedIn = false;
+
+    function getMondayOfCurrentWeek(d) {
+        d = new Date(d);
+        let day = d.getDay();
+        let diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        let monday = new Date(d.setDate(diff));
+        monday.setHours(0, 0, 0, 0);
+        return monday;
+    }
+
+    let currentWeekStart = getMondayOfCurrentWeek(new Date());
+
+    let manualSelectedStaff = "";
+    let manualSelectedDate = new Date().toLocaleDateString('en-GB');
+    let manualClockIn = "09:00 AM";
+    let manualClockOut = "05:00 PM";
+    let activeClockType = "in";
+    let clockTempHour = 9;
+    let clockTempMinute = 0;
+    let clockTempMeridiem = "AM";
+    let clockStep = 'hour';
+
+    let calendarMode = 'manual';
+    let calendarYear = new Date().getFullYear();
+    let calendarMonth = new Date().getMonth();
+
+    let editShiftId = null;
+    let editDateVal = "";
+    let editInVal = "09:00 AM";
+    let editOutVal = "05:00 PM";
+    let activeEmpDetailContext = null;
+
+    function getStaffList() {
+        return JSON.parse(localStorage.getItem('staff_list') || JSON.stringify([
+            { id: '1', name: 'Alex', rate: 25.00 },
+            { id: '2', name: 'Bee', rate: 25.00 },
+            { id: '3', name: 'Kai', rate: 25.00 },
+            { id: '4', name: 'Noi', rate: 25.00 },
+            { id: '5', name: 'Imm', rate: 25.00 }
+        ]));
+    }
+
+    let paidStatusMap = JSON.parse(localStorage.getItem('paid_status_map') || '{}');
+    let incentiveMap = JSON.parse(localStorage.getItem('incentive_map') || '{}');
+
+    function cleanOrphanLogs() {
+        let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
+        let validNames = getStaffList().map(e => e.name);
+        let cleanedLogs = logs.filter(log => validNames.includes(log.employee));
+        localStorage.setItem('time_logs', JSON.stringify(cleanedLogs));
+    }
+    cleanOrphanLogs();
+
+    function checkOutsideClose(event, modalId) {
+        if (event.target.id === modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+    }
+
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => console.error(err));
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+        }
+    }
+
+    setInterval(() => {
+        const now = new Date();
+        document.getElementById('live-clock').innerText = now.toLocaleTimeString('en-GB');
+        const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
+        document.getElementById('live-date').innerText = now.toLocaleDateString('en-GB', options);
+    }, 1000);
+
+    function getEmployeeStatuses() {
+        let employees = getStaffList();
+        let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
+        let sortedLogs = [...logs].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        
+        let activeStatusMap = {};
+        employees.forEach(emp => { activeStatusMap[emp.name] = 'Clocked Out'; });
+
+        let activeIns = {};
+        sortedLogs.forEach(log => {
+            if (!activeStatusMap.hasOwnProperty(log.employee)) return;
+            if (log.action === 'Clock In') {
+                activeIns[log.employee] = true;
+                activeStatusMap[log.employee] = 'On Shift';
+            } else if (log.action === 'Clock Out') {
+                delete activeIns[log.employee];
+                activeStatusMap[log.employee] = 'Clocked Out';
+            }
+        });
+
+        return activeStatusMap;
+    }
+
+    function renderEmployeeList() {
+        let employees = getStaffList();
+        const statusMap = getEmployeeStatuses();
+        const container = document.getElementById('employee-list-ui');
+        container.innerHTML = employees.map(emp => {
+            let empStatus = statusMap[emp.name] || 'Clocked Out';
+            let isSelected = selectedEmployee === emp.name;
+            return `
+                <div class="employee-card-item ${isSelected ? 'selected' : ''}" onclick="selectEmployee('${emp.name}')">
+                    <div style="font-weight: 600; font-size: 16px; color: #0f172a;">${emp.name}</div>
+                    <div class="emp-status-text" style="color: ${empStatus === 'On Shift' ? '#16a34a' : '#64748b'}; font-weight: 500;">
+                        ${empStatus === 'On Shift' ? 'On Shift' : 'Clocked Out'}
+                    </div>
                 </div>
+            `;
+        }).join('');
+        updateActionButtonsState();
+    }
+
+    function selectEmployee(name) {
+        selectedEmployee = name;
+        renderEmployeeList();
+        document.getElementById('selected-name-display').innerText = selectedEmployee;
+        updateActionButtonsState();
+    }
+
+    function updateActionButtonsState() {
+        const btnIn = document.getElementById('btn-clock-in');
+        const btnOut = document.getElementById('btn-clock-out');
+        const pill = document.getElementById('selected-status-pill');
+
+        if (!selectedEmployee) {
+            btnIn.classList.add('disabled-in');
+            btnIn.setAttribute('disabled', 'true');
+            btnOut.classList.add('disabled-out');
+            btnOut.setAttribute('disabled', 'true');
+            pill.innerText = "Awaiting Selection";
+            pill.className = "status-pill awaiting";
+            return;
+        }
+
+        const statusMap = getEmployeeStatuses();
+        let currentStatus = statusMap[selectedEmployee] || 'Clocked Out';
+
+        if (currentStatus === 'On Shift') {
+            btnIn.classList.add('disabled-in');
+            btnIn.setAttribute('disabled', 'true');
+            btnOut.classList.remove('disabled-out');
+            btnOut.removeAttribute('disabled');
+            pill.innerText = "Ready to Clock Out";
+            pill.className = "status-pill clocked-in";
+        } else {
+            btnIn.classList.remove('disabled-in');
+            btnIn.removeAttribute('disabled');
+            btnOut.classList.add('disabled-out');
+            btnOut.setAttribute('disabled', 'true');
+            pill.innerText = "Ready to Clock In";
+            pill.className = "status-pill clocked-out";
+        }
+    }
+
+    function clearSelectedEmployee() {
+        selectedEmployee = null;
+        document.getElementById('selected-name-display').innerText = "-- Please Select --";
+        renderEmployeeList();
+    }
+
+    function timeTo24Hour(timeStr) {
+        if (!timeStr || !timeStr.includes(':')) return 0;
+        let cleanStr = timeStr.trim().toUpperCase();
+        let parts = cleanStr.split(' ');
+        let hm = parts[0].split(':').map(Number);
+        let h = hm[0] || 0;
+        let m = hm[1] || 0;
+        let meridiem = parts[1] || 'AM';
+        
+        if (meridiem === 'PM' && h < 12) h += 12;
+        if (meridiem === 'AM' && h === 12) h = 0;
+        return h * 60 + m;
+    }
+
+    function performClockAction(type) {
+        if (!selectedEmployee) return;
+        const now = new Date();
+        let h24 = now.getHours();
+        let m = now.getMinutes();
+        let meridiem = h24 >= 12 ? 'PM' : 'AM';
+        let h12 = h24 % 12;
+        if (h12 === 0) h12 = 12;
+
+        const timeNow = `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${meridiem}`;
+        const dateNow = now.toLocaleDateString('en-GB');
+        let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
+
+        logs.push({
+            id: 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+            employee: selectedEmployee,
+            action: type,
+            time: timeNow,
+            date: dateNow,
+            timestamp: now.getTime()
+        });
+
+        localStorage.setItem('time_logs', JSON.stringify(logs));
+        updateStats();
+        clearSelectedEmployee();
+    }
+
+    function parseDateDMY(dateStr) {
+        if (!dateStr || !dateStr.includes('/')) return new Date();
+        let parts = dateStr.split('/');
+        let d = new Date(parts[2], parts[1] - 1, parts[0]);
+        d.setHours(0, 0, 0, 0);
+        return d;
+    }
+
+    function changeWeek(direction) {
+        currentWeekStart.setDate(currentWeekStart.getDate() + (direction * 7));
+        updateStats();
+    }
+
+    function resetToCurrentWeek() {
+        currentWeekStart = getMondayOfCurrentWeek(new Date());
+        updateStats();
+    }
+
+    function calculateShiftHistory() {
+        let employees = getStaffList();
+        let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
+        let sortedLogs = [...logs].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        let shifts = [];
+        let activeIns = {};
+
+        sortedLogs.forEach((log) => {
+            if (log.action === 'Clock In') {
+                activeIns[log.employee] = log;
+            } else if (log.action === 'Clock Out' && activeIns[log.employee]) {
+                let inLog = activeIns[log.employee];
                 
-                <div class="flex justify-center items-center gap-3 my-2">
-                    <div id="pinDot0" class="w-4 h-4 rounded-full border-2 border-indigo-600 bg-slate-100 transition-all"></div>
-                    <div id="pinDot1" class="w-4 h-4 rounded-full border-2 border-indigo-600 bg-slate-100 transition-all"></div>
-                    <div id="pinDot2" class="w-4 h-4 rounded-full border-2 border-indigo-600 bg-slate-100 transition-all"></div>
-                    <div id="pinDot3" class="w-4 h-4 rounded-full border-2 border-indigo-600 bg-slate-100 transition-all"></div>
-                </div>
-                <p id="pinAuthError" class="text-xs text-rose-600 font-medium hidden">Incorrect PIN. Try again.</p>
+                let hours = 0;
+                if (inLog.time && log.time) {
+                    let inMinutes = timeTo24Hour(inLog.time);
+                    let outMinutes = timeTo24Hour(log.time);
+                    let diffMinutes = outMinutes - inMinutes;
+                    if (diffMinutes < 0) diffMinutes += 24 * 60;
+                    hours = diffMinutes / 60.0;
+                }
 
-                <div class="grid grid-cols-3 gap-2 pt-2">
-                    <button type="button" onclick="appendPinDigit('1')" class="h-12 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-lg rounded-xl transition">1</button>
-                    <button type="button" onclick="appendPinDigit('2')" class="h-12 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-lg rounded-xl transition">2</button>
-                    <button type="button" onclick="appendPinDigit('3')" class="h-12 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-lg rounded-xl transition">3</button>
-                    <button type="button" onclick="appendPinDigit('4')" class="h-12 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-lg rounded-xl transition">4</button>
-                    <button type="button" onclick="appendPinDigit('5')" class="h-12 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-lg rounded-xl transition">5</button>
-                    <button type="button" onclick="appendPinDigit('6')" class="h-12 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-lg rounded-xl transition">6</button>
-                    <button type="button" onclick="appendPinDigit('7')" class="h-12 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-lg rounded-xl transition">7</button>
-                    <button type="button" onclick="appendPinDigit('8')" class="h-12 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-lg rounded-xl transition">8</button>
-                    <button type="button" onclick="appendPinDigit('9')" class="h-12 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-lg rounded-xl transition">9</button>
-                    <button type="button" onclick="clearPinInput()" class="h-12 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs rounded-xl transition flex items-center justify-center">Clear</button>
-                    <button type="button" onclick="appendPinDigit('0')" class="h-12 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-lg rounded-xl transition">0</button>
-                    <button type="button" onclick="backspacePin()" class="h-12 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition flex items-center justify-center"><i class="fa-solid fa-delete-left text-base"></i></button>
-                </div>
+                let rate = employees.find(e => e.name === log.employee)?.rate || 25.00;
+                let dObj = parseDateDMY(log.date);
+                shifts.push({
+                    id: inLog.id || log.id,
+                    date: log.date,
+                    employee: log.employee,
+                    clockIn: inLog.time,
+                    clockOut: log.time,
+                    break: '0 hrs',
+                    totalHrs: hours,
+                    rate: rate,
+                    totalPay: hours * rate,
+                    dateObj: dObj,
+                    clockInMinutes: timeTo24Hour(inLog.time)
+                });
+                delete activeIns[log.employee];
+            }
+        });
 
-                <div class="pt-2">
-                    <button type="button" onclick="closePinAuthModal()" class="w-full py-2.5 text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-medium transition">Cancel</button>
-                </div>
-            </div>
-        </div>
+        Object.keys(activeIns).forEach(empName => {
+            let inLog = activeIns[empName];
+            let rate = employees.find(e => e.name === empName)?.rate || 25.00;
+            let dObj = parseDateDMY(inLog.date);
+            shifts.push({
+                id: inLog.id,
+                date: inLog.date,
+                employee: inLog.employee,
+                clockIn: inLog.time,
+                clockOut: '--:--',
+                break: '0 hrs',
+                totalHrs: 0,
+                rate: rate,
+                totalPay: 0,
+                dateObj: dObj,
+                clockInMinutes: timeTo24Hour(inLog.time)
+            });
+        });
 
-        <div id="calendarModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4 hidden">
-            <div class="bg-white rounded-2xl max-w-xs w-full p-5 shadow-2xl space-y-3">
-                <div class="flex justify-between items-center pb-2 border-b border-slate-100">
-                    <button type="button" onclick="changeCalMonth(-1)" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center"><i class="fa-solid fa-chevron-left"></i></button>
-                    <span id="calMonthYearTitle" class="font-bold text-slate-800 text-sm">Month Year</span>
-                    <button type="button" onclick="changeCalMonth(1)" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center"><i class="fa-solid fa-chevron-right"></i></button>
-                </div>
-                <div class="grid grid-cols-7 gap-1 text-center font-semibold text-[10px] text-slate-400 uppercase">
-                    <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
-                </div>
-                <div id="calDaysGrid" class="grid grid-cols-7 gap-1 text-center text-xs"></div>
-                <div class="flex justify-end pt-2"><button type="button" onclick="closeCalendarPicker()" class="w-full py-2 text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded-xl">Close</button></div>
-            </div>
-        </div>
+        // จัดเรียงลำดับ: วันที่ใหม่ไปเก่า และภายในวันเดียวกัน จัดเรียงตาม AM/PM 
+        // โดยให้เวลา Login ทีหลัง (PM) อยู่ด้านบน และเวลา Login ก่อน (AM) อยู่ข้างล่างสุด
+        shifts.sort((a, b) => {
+            let dateDiff = b.dateObj - a.dateObj;
+            if (dateDiff !== 0) return dateDiff;
+            return b.clockInMinutes - a.clockInMinutes;
+        });
 
-        <div id="clockFaceModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4 hidden">
-            <div class="bg-white rounded-2xl max-w-xs w-full p-5 shadow-2xl space-y-4 text-center">
-                <div id="clockTitle" class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 py-1 px-3 rounded-full inline-block">Set Time</div>
-                <div class="flex justify-center items-center gap-2">
-                    <button type="button" onclick="setClockMode('hours')" id="clkDisplayHour" class="text-3xl font-bold px-3 py-1 bg-indigo-100 text-indigo-700 rounded-xl">08</button>
-                    <span class="text-2xl font-bold text-slate-400">:</span>
-                    <button type="button" onclick="setClockMode('minutes')" id="clkDisplayMinute" class="text-3xl font-bold px-3 py-1 bg-slate-100 text-slate-600 rounded-xl">00</button>
-                    <div class="flex flex-col gap-1 ml-2"><button type="button" id="btnAmPm" onclick="toggleAmPm()" class="text-xs font-bold px-2 py-1 bg-indigo-600 text-white rounded-md">AM</button></div>
-                </div>
-                <p id="clockInstruction" class="text-xs text-slate-400 font-medium">Tap clock dial numbers to set [Hours]</p>
-                <div class="relative w-52 h-52 mx-auto bg-slate-100 rounded-full border-4 border-slate-200 flex items-center justify-center select-none shadow-inner" id="clockDial">
-                    <div class="absolute w-3 h-3 bg-indigo-600 rounded-full z-20"></div>
-                    <div id="clockHand" class="clock-hand absolute w-1 bg-indigo-600 rounded-full z-10" style="height: 70px; bottom: 50%; transform: rotate(0deg);">
-                        <div class="w-4 h-4 bg-indigo-600 rounded-full -ml-1.5 -mt-2"></div>
+        return shifts;
+    }
+
+    function modifyIncentive(empName, weekKey, amount) {
+        let mapKey = empName + '_' + weekKey;
+        let currentInc = incentiveMap[mapKey] || 0;
+        let newInc = currentInc + amount;
+        if (newInc < 0) newInc = 0;
+        incentiveMap[mapKey] = newInc;
+        localStorage.setItem('incentive_map', JSON.stringify(incentiveMap));
+        updateStats();
+    }
+
+    function updateStaffFilterDropdown() {
+        let employees = getStaffList();
+        let select = document.getElementById('detailed-filter-staff');
+        if (!select) return;
+        let currentVal = select.value;
+        
+        let html = `<option value="ALL">👥 All Employees</option>`;
+        employees.forEach(emp => {
+            html += `<option value="${emp.name}">${emp.name}</option>`;
+        });
+        select.innerHTML = html;
+        select.value = employees.some(e => e.name === currentVal) || currentVal === 'ALL' ? currentVal : 'ALL';
+    }
+
+    function updateStats() {
+        cleanOrphanLogs();
+        updateStaffFilterDropdown();
+        let employees = getStaffList();
+        let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
+        
+        let statusMap = getEmployeeStatuses();
+        let activeStaffTimes = {};
+        for (let i = logs.length - 1; i >= 0; i--) {
+            let log = logs[i];
+            if (log.action === 'Clock In' && statusMap[log.employee] === 'On Shift' && !activeStaffTimes[log.employee]) {
+                activeStaffTimes[log.employee] = log.time;
+            }
+        }
+
+        let activeNames = Object.keys(activeStaffTimes);
+        const chipContainer = document.getElementById('active-staff-chips-container');
+        document.getElementById('mgr-active-count').innerText = activeNames.length;
+
+        if (activeNames.length > 0) {
+            chipContainer.innerHTML = activeNames.map(name => `
+                <div class="active-staff-card">
+                    <div class="staff-card-info">
+                        <div class="staff-name">${name}</div>
+                        <div class="staff-time">Clocked in ${activeStaffTimes[name]}</div>
                     </div>
-                    <div id="clockDialNumbers" class="absolute inset-0"></div>
+                    <div class="pulse-dot" title="Working"></div>
                 </div>
-                <div class="flex gap-2 pt-2">
-                    <button type="button" onclick="closeClockPicker()" class="w-1/2 py-2 text-xs bg-slate-100 text-slate-600 font-medium rounded-xl">Cancel</button>
-                    <button type="button" onclick="confirmClockSelection()" class="w-1/2 py-2 text-xs bg-indigo-600 text-white font-medium rounded-xl shadow-sm">OK</button>
-                </div>
-            </div>
-        </div>
+            `).join('');
+        } else {
+            chipContainer.innerHTML = `<span style="color: var(--text-muted); font-size: 12px;">No employees currently on shift</span>`;
+        }
 
-    </main>
+        let weekStart = new Date(currentWeekStart);
+        weekStart.setHours(0, 0, 0, 0);
+        let weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        weekEnd.setHours(23, 59, 59, 999);
 
-    <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyD8Xxfdgk8UKsKUsadGflxhkVDz2rWC6LY",
-            authDomain: "kitchen-timeclock.firebaseapp.com",
-            databaseURL: "https://kitchen-timeclock-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "kitchen-timeclock",
-            storageBucket: "kitchen-timeclock.firebasestorage.app",
-            messagingSenderId: "941941021097",
-            appId: "1:941941021097:web:0635e44ac7497b377b0cb8",
-            measurementId: "G-JKW0GCGYCB"
-        };
+        const optionsDate = { day: 'numeric', month: 'short' };
+        let weekRangeStr = `${weekStart.toLocaleDateString('en-GB', optionsDate)} - ${weekEnd.toLocaleDateString('en-GB', optionsDate)} ${weekEnd.getFullYear()}`;
+        
+        document.getElementById('summary-week-label').innerText = weekRangeStr;
+        document.getElementById('detailed-week-label').innerText = weekRangeStr;
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        let managerPin = '1234';
-        let enteredPin = '';
-        let isManagerLoggedIn = false;
-        let selectedEmpId = null;
-        let targetInputId = null;
-        let nextTargetInputId = null;
-
-        let employees = [];
-        let timeLogs = [];
-        let paidArchives = [];
-        let activeClockIns = {};
-
-        // Listen for Realtime Changes from Firebase Cloud
-        db.ref('timeclock_data').on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                employees = data.employees || [];
-                timeLogs = data.timeLogs || [];
-                paidArchives = data.paidArchives || [];
-                activeClockIns = data.activeClockIns || {};
-                managerPin = data.managerPin || '1234';
-            } else {
-                // Initialize default cloud data if empty
-                employees = [
-                    { id: 'emp_1', name: 'Bee', rate: 25.00 },
-                    { id: 'emp_2', name: 'Kai', rate: 25.00 },
-                    { id: 'emp_3', name: 'Noi', rate: 25.00 },
-                    { id: 'emp_4', name: 'Imm', rate: 20.00 },
-                    { id: 'emp_5', name: 'Alex', rate: 25.00 }
-                ];
-                timeLogs = [
-                    { id: 'l1', empId: 'emp_2', empName: 'Kai', date: '2026-11-08', clockIn: '11:30', clockOut: '20:30', breakHours: 0, rate: 25 },
-                    { id: 'l2', empId: 'emp_1', empName: 'Bee', date: '2026-11-08', clockIn: '11:30', clockOut: '20:30', breakHours: 0, rate: 25 },
-                    { id: 'l3', empId: 'emp_2', empName: 'Kai', date: '2026-11-07', clockIn: '11:30', clockOut: '22:00', breakHours: 0, rate: 25 },
-                    { id: 'l4', empId: 'emp_1', empName: 'Bee', date: '2026-11-07', clockIn: '17:30', clockOut: '22:30', breakHours: 0, rate: 25 }
-                ];
-                saveToCloud();
-            }
-            renderEmployeeGrid();
-            renderActiveEmpList();
-            renderPayrollTable();
-        }, (error) => {
-            console.error("Firebase Sync Error:", error);
-            document.getElementById('syncStatusIndicator').className = "inline-block w-2 h-2 rounded-full bg-rose-500 mr-1";
+        let allShifts = calculateShiftHistory();
+        let weekShifts = allShifts.filter(s => {
+            let d = new Date(s.dateObj);
+            d.setHours(12, 0, 0, 0);
+            let wsTime = new Date(weekStart); wsTime.setHours(0, 0, 0, 0);
+            let weTime = new Date(weekEnd); weTime.setHours(23, 59, 59, 999);
+            return d >= wsTime && d <= weTime;
         });
 
-        function saveToCloud() {
-            db.ref('timeclock_data').set({
-                employees: employees,
-                timeLogs: timeLogs,
-                paidArchives: paidArchives,
-                activeClockIns: activeClockIns,
-                managerPin: managerPin
-            });
-        }
-
-        let calCurrentDate = new Date();
-        let clockMode = 'hours';
-        let clockSelectedHour = 8;
-        let clockSelectedMinute = 0;
-        let clockIsPm = false;
-
-        window.addEventListener('DOMContentLoaded', () => {
-            updateLiveClock();
-            setInterval(updateLiveClock, 1000);
-
-            window.addEventListener('keydown', (e) => {
-                const modal = document.getElementById('pinAuthModal');
-                if (modal && !modal.classList.contains('hidden')) {
-                    if (e.key >= '0' && e.key <= '9') appendPinDigit(e.key);
-                    else if (e.key === 'Backspace') backspacePin();
-                    else if (e.key === 'Escape') closePinAuthModal();
-                }
-            });
+        let unpaidActiveEmployees = employees.filter(emp => {
+            let mapKey = emp.name + '_' + weekRangeStr;
+            if (paidStatusMap[mapKey] === true) return false;
+            let empShifts = weekShifts.filter(s => s.employee === emp.name);
+            let empHours = empShifts.reduce((sum, s) => sum + s.totalHrs, 0);
+            let empInc = incentiveMap[emp.name + '_' + weekRangeStr] || 0;
+            return empHours > 0 || empInc > 0;
         });
 
-        function getSortedEmployees() {
-            return [...employees].sort((a, b) => a.name.localeCompare(b.name));
-        }
+        let displayHoursTotal = 0;
+        let displayPayTotal = 0;
 
-        function updateLiveClock() {
-            const now = new Date();
-            const timeStr = now.toTimeString().split(' ')[0];
-            const dateStr = now.toLocaleDateString('en-AU', { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short' });
-            if (document.getElementById('liveClock')) document.getElementById('liveClock').innerText = timeStr;
-            if (document.getElementById('liveDate')) document.getElementById('liveDate').innerText = dateStr;
-        }
+        unpaidActiveEmployees.forEach(emp => {
+            let empShifts = weekShifts.filter(s => s.employee === emp.name);
+            let empHours = empShifts.reduce((sum, s) => sum + s.totalHrs, 0);
+            let empPay = empShifts.reduce((sum, s) => sum + s.totalPay, 0);
+            let empInc = incentiveMap[emp.name + '_' + weekRangeStr] || 0;
+            displayHoursTotal += empHours;
+            displayPayTotal += (empPay + empInc);
+        });
 
-        function sortLogsByDate(logsArr) {
-            return logsArr.sort((a, b) => (b.date !== a.date) ? b.date.localeCompare(a.date) : b.clockIn.localeCompare(a.clockIn));
-        }
+        document.getElementById('mgr-total-hours').innerText = `${displayHoursTotal.toFixed(2)} hrs`;
+        document.getElementById('mgr-net-payroll').innerText = `$${displayPayTotal.toFixed(2)} AUD`;
 
-        function requestManagerAccess() {
-            if (isManagerLoggedIn) { lockManagerView(); return; }
-            clearPinInput();
-            document.getElementById('pinAuthModal').classList.remove('hidden');
-        }
+        let summaryTbody = document.getElementById('weekly-summary-tbody');
+        if (unpaidActiveEmployees.length === 0) {
+            summaryTbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No pending unpaid payroll records for this week</td></tr>`;
+        } else {
+            summaryTbody.innerHTML = unpaidActiveEmployees.map(emp => {
+                let empShifts = weekShifts.filter(s => s.employee === emp.name);
+                let empHours = empShifts.reduce((sum, s) => sum + s.totalHrs, 0);
+                let empPay = empShifts.reduce((sum, s) => sum + s.totalPay, 0);
+                let empInc = incentiveMap[emp.name + '_' + weekRangeStr] || 0;
+                let totalWithInc = empPay + empInc;
 
-        function closePinAuthModal() { document.getElementById('pinAuthModal').classList.add('hidden'); }
-
-        function appendPinDigit(digit) {
-            if (enteredPin.length < 4) {
-                enteredPin += digit;
-                updatePinDots();
-                if (enteredPin.length === 4) setTimeout(verifyNumpadPin, 150);
-            }
-        }
-
-        function backspacePin() {
-            if (enteredPin.length > 0) { enteredPin = enteredPin.slice(0, -1); updatePinDots(); document.getElementById('pinAuthError').classList.add('hidden'); }
-        }
-
-        function clearPinInput() { enteredPin = ''; updatePinDots(); document.getElementById('pinAuthError').classList.add('hidden'); }
-
-        function updatePinDots() {
-            for (let i = 0; i < 4; i++) {
-                const dot = document.getElementById(`pinDot${i}`);
-                if (dot) dot.className = (i < enteredPin.length) ? "w-4 h-4 rounded-full border-2 border-indigo-600 bg-indigo-600 scale-110 transition-all" : "w-4 h-4 rounded-full border-2 border-indigo-600 bg-slate-100 transition-all";
-            }
-        }
-
-        function verifyNumpadPin() {
-            if (enteredPin === managerPin) {
-                isManagerLoggedIn = true;
-                closePinAuthModal();
-                document.getElementById('kioskView').classList.add('hidden');
-                document.getElementById('managerView').classList.remove('hidden');
-                document.getElementById('viewToggleText').innerText = "Kiosk View";
-                document.getElementById('viewToggleIcon').className = "fa-solid fa-desktop text-white";
-                renderPayrollTable();
-            } else {
-                document.getElementById('pinAuthError').classList.remove('hidden');
-                setTimeout(clearPinInput, 800);
-            }
-        }
-
-        function lockManagerView() {
-            isManagerLoggedIn = false;
-            document.getElementById('managerView').classList.add('hidden');
-            document.getElementById('kioskView').classList.remove('hidden');
-            document.getElementById('viewToggleText').innerText = "Manager Mode (PIN)";
-            document.getElementById('viewToggleIcon').className = "fa-solid fa-shield-halved text-amber-300";
-        }
-
-        function openCalendarPicker(inputId) {
-            targetInputId = inputId;
-            calCurrentDate = new Date();
-            renderCalendarGrid();
-            document.getElementById('calendarModal').classList.remove('hidden');
-        }
-
-        function closeCalendarPicker() { document.getElementById('calendarModal').classList.add('hidden'); }
-
-        function changeCalMonth(offset) { calCurrentDate.setMonth(calCurrentDate.getMonth() + offset); renderCalendarGrid(); }
-
-        function renderCalendarGrid() {
-            const year = calCurrentDate.getFullYear();
-            const month = calCurrentDate.getMonth();
-            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            document.getElementById('calMonthYearTitle').innerText = `${monthNames[month]} ${year}`;
-            let firstDay = new Date(year, month, 1).getDay();
-            firstDay = firstDay === 0 ? 6 : firstDay - 1;
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const grid = document.getElementById('calDaysGrid');
-            grid.innerHTML = '';
-            for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
-            const today = new Date();
-            const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const isToday = isCurrentMonth && today.getDate() === day;
-                grid.innerHTML += `<button type="button" onclick="selectCalDate('${dateStr}')" class="h-8 w-8 mx-auto rounded-full font-medium text-xs transition flex items-center justify-center ${isToday ? 'bg-indigo-600 text-white font-bold ring-2 ring-indigo-300 shadow-sm' : 'text-slate-700 hover:bg-indigo-100'}">${day}</button>`;
-            }
-        }
-
-        function selectCalDate(dateStr) {
-            if (targetInputId) {
-                document.getElementById(targetInputId).value = dateStr;
-                if (targetInputId === 'filterDate') renderPayrollTable();
-            }
-            closeCalendarPicker();
-        }
-
-        function openClockPicker(inputId, nextInputId = null) {
-            targetInputId = inputId;
-            nextTargetInputId = nextInputId;
-            const titleEl = document.getElementById('clockTitle');
-            if (inputId.toLowerCase().includes('in')) {
-                titleEl.innerText = "Select Clock In Time";
-                titleEl.className = "text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 py-1 px-3 rounded-full inline-block border border-emerald-200";
-            } else {
-                titleEl.innerText = "Select Clock Out Time";
-                titleEl.className = "text-xs font-bold uppercase tracking-wider text-rose-700 bg-rose-50 py-1 px-3 rounded-full inline-block border border-rose-200";
-            }
-            const currentVal = document.getElementById(inputId)?.value || '08:00';
-            let [h, m] = currentVal.split(':').map(Number);
-            clockIsPm = h >= 12;
-            clockSelectedHour = h % 12 || 12;
-            clockSelectedMinute = m || 0;
-            updateAmPmBtn();
-            setClockMode('hours');
-            document.getElementById('clockFaceModal').classList.remove('hidden');
-        }
-
-        function closeClockPicker() { document.getElementById('clockFaceModal').classList.add('hidden'); nextTargetInputId = null; }
-
-        function toggleAmPm() { clockIsPm = !clockIsPm; updateAmPmBtn(); }
-
-        function updateAmPmBtn() {
-            const btn = document.getElementById('btnAmPm');
-            btn.innerText = clockIsPm ? 'PM' : 'AM';
-            btn.className = clockIsPm ? 'text-xs font-bold px-2 py-1 bg-amber-500 text-white rounded-md' : 'text-xs font-bold px-2 py-1 bg-indigo-600 text-white rounded-md';
-        }
-
-        function setClockMode(mode) {
-            clockMode = mode;
-            document.getElementById('clkDisplayHour').className = mode === 'hours' ? "text-3xl font-bold px-3 py-1 bg-indigo-600 text-white rounded-xl shadow-sm" : "text-3xl font-bold px-3 py-1 bg-slate-100 text-slate-600 rounded-xl";
-            document.getElementById('clkDisplayMinute').className = mode === 'minutes' ? "text-3xl font-bold px-3 py-1 bg-indigo-600 text-white rounded-xl shadow-sm" : "text-3xl font-bold px-3 py-1 bg-slate-100 text-slate-600 rounded-xl";
-            document.getElementById('clockInstruction').innerText = mode === 'hours' ? "Tap clock dial numbers to set [Hours]" : "Tap clock dial numbers to set [Minutes]";
-            renderClockDial();
-        }
-
-        function renderClockDial() {
-            document.getElementById('clkDisplayHour').innerText = String(clockSelectedHour).padStart(2, '0');
-            document.getElementById('clkDisplayMinute').innerText = String(clockSelectedMinute).padStart(2, '0');
-            const dialGrid = document.getElementById('clockDialNumbers');
-            dialGrid.innerHTML = '';
-            const hand = document.getElementById('clockHand');
-            let angle = clockMode === 'hours' ? (clockSelectedHour % 12) * 30 : (clockSelectedMinute / 60) * 360;
-
-            if (clockMode === 'hours') {
-                for (let i = 1; i <= 12; i++) {
-                    const rad = (i * 30 - 90) * (Math.PI / 180);
-                    dialGrid.innerHTML += `<button type="button" onclick="selectClockVal(${i})" class="absolute w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${i === clockSelectedHour ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-700 hover:bg-indigo-100'}" style="left: ${85 + 68 * Math.cos(rad)}px; top: ${85 + 68 * Math.sin(rad)}px;">${i}</button>`;
-                }
-            } else {
-                for (let i = 0; i < 60; i += 5) {
-                    const rad = (i * 6 - 90) * (Math.PI / 180);
-                    dialGrid.innerHTML += `<button type="button" onclick="selectClockVal(${i})" class="absolute w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs ${i === clockSelectedMinute ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-700 hover:bg-indigo-100'}" style="left: ${85 + 68 * Math.cos(rad)}px; top: ${85 + 68 * Math.sin(rad)}px;">${String(i).padStart(2, '0')}</button>`;
-                }
-            }
-            hand.style.transform = `rotate(${angle}deg)`;
-        }
-
-        function selectClockVal(val) {
-            if (clockMode === 'hours') { clockSelectedHour = val; setClockMode('minutes'); }
-            else { clockSelectedMinute = val; renderClockDial(); }
-        }
-
-        function confirmClockSelection() {
-            let hour = clockSelectedHour % 12;
-            if (clockIsPm) hour += 12;
-            if (targetInputId) document.getElementById(targetInputId).value = `${String(hour).padStart(2, '0')}:${String(clockSelectedMinute).padStart(2, '0')}`;
-            const followUp = nextTargetInputId;
-            closeClockPicker();
-            if (followUp) setTimeout(() => openClockPicker(followUp), 200);
-        }
-
-        function renderEmployeeGrid() {
-            const grid = document.getElementById('employeeGrid');
-            if (!grid) return;
-            grid.innerHTML = getSortedEmployees().map(emp => {
-                const isActive = activeClockIns[emp.id];
-                const isSelected = selectedEmpId === emp.id;
                 return `
-                    <div onclick="selectEmployee('${emp.id}')" class="cursor-pointer p-3.5 rounded-xl border transition-all duration-200 flex flex-col justify-between ${isSelected ? 'border-indigo-600 bg-indigo-50 shadow-sm ring-2 ring-indigo-200' : 'border-slate-200 hover:border-indigo-300 bg-white'}">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="font-bold text-slate-800 text-sm truncate">${emp.name}</span>
-                            <span class="w-2.5 h-2.5 rounded-full ${isActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}"></span>
-                        </div>
-                        <div class="text-xs text-slate-500 flex justify-between items-center">
-                            <span>$${emp.rate.toFixed(2)}/hr</span>
-                            <span class="font-semibold ${isActive ? 'text-emerald-600' : 'text-slate-400'}">${isActive ? 'On Shift' : 'Clocked Out'}</span>
-                        </div>
-                    </div>
+                    <tr>
+                        <td><b>${emp.name}</b> <span class="link-action" style="font-size:12px;" onclick="openStaffDetailsModal('${emp.name}', '${weekRangeStr}')">(View Shifts)</span></td>
+                        <td>${weekRangeStr}</td>
+                        <td>$${emp.rate.toFixed(2)}</td>
+                        <td>${empShifts.length} shifts</td>
+                        <td>${empHours.toFixed(2)} hrs</td>
+                        <td>
+                            <b>$${totalWithInc.toFixed(2)} AUD</b>
+                            ${empInc > 0 ? `<div style="font-size:11px; color:#16a34a; font-weight:600;">(+$${empInc.toFixed(2)} Incentive)</div>` : ''}
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 4px; align-items: center;">
+                                <button class="m-btn success" style="padding: 4px 8px; font-size: 12px;" onclick="modifyIncentive('${emp.name}', '${weekRangeStr}', 5)">+ $5</button>
+                                <button class="m-btn danger" style="padding: 4px 8px; font-size: 12px;" onclick="modifyIncentive('${emp.name}', '${weekRangeStr}', -5)">- $5</button>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge-paid" onclick="togglePaidStatus('${emp.name}', '${weekRangeStr}')">
+                                💰 Paid
+                            </span>
+                        </td>
+                    </tr>
                 `;
             }).join('');
         }
 
-        function selectEmployee(empId) {
-            selectedEmpId = empId;
-            const emp = employees.find(e => e.id === empId);
-            if (!emp) return;
-            document.getElementById('selectedEmpName').innerText = emp.name;
-            const statusEl = document.getElementById('selectedEmpStatus');
-            const isActive = activeClockIns[emp.id];
+        let selectedFilterStaff = document.getElementById('detailed-filter-staff').value;
+        let filteredDetailedShifts = weekShifts;
+        if (selectedFilterStaff !== 'ALL') {
+            filteredDetailedShifts = weekShifts.filter(s => s.employee === selectedFilterStaff);
+        }
 
-            if (isActive) {
-                statusEl.className = "inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700";
-                statusEl.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Clocked In at ${activeClockIns[emp.id]}`;
-                document.getElementById('btnClockIn').disabled = true; document.getElementById('btnClockIn').classList.add('opacity-50', 'cursor-not-allowed');
-                document.getElementById('btnClockOut').disabled = false; document.getElementById('btnClockOut').classList.remove('opacity-50', 'cursor-not-allowed');
+        let detailedTbody = document.getElementById('detailed-logs-tbody');
+        if (filteredDetailedShifts.length === 0) {
+            detailedTbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted);">No shift logs found for this filter</td></tr>`;
+        } else {
+            detailedTbody.innerHTML = filteredDetailedShifts.map((s) => `
+                <tr>
+                    <td>${s.date}</td>
+                    <td><b>${s.employee}</b></td>
+                    <td>${s.clockIn}</td>
+                    <td>${s.clockOut}</td>
+                    <td>${s.break}</td>
+                    <td>${s.totalHrs.toFixed(2)} hrs</td>
+                    <td>$${s.rate.toFixed(2)}</td>
+                    <td><b>$${s.totalPay.toFixed(2)} AUD</b></td>
+                    <td>
+                        <span class="link-action" style="color:#0284c7; margin-right:8px;" onclick="openEditShiftModal('${s.id}')">✏️ Edit</span>
+                        <span class="link-action" style="color:#dc2626;" onclick="deleteShift('${s.id}', '${s.employee}')">🗑️ Delete</span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        if (activeEmpDetailContext && document.getElementById('staff-detail-modal').style.display === 'flex') {
+            openStaffDetailsModal(activeEmpDetailContext.empName, activeEmpDetailContext.weekRangeStr);
+        }
+    }
+
+    function openStaffDetailsModal(empName, weekRangeStr) {
+        activeEmpDetailContext = { empName, weekRangeStr };
+        let weekStart = new Date(currentWeekStart);
+        let weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+
+        let employees = getStaffList();
+        let allShifts = calculateShiftHistory();
+        let empShifts = allShifts.filter(s => {
+            let d = new Date(s.dateObj);
+            d.setHours(12, 0, 0, 0);
+            let wsTime = new Date(weekStart); wsTime.setHours(0, 0, 0, 0);
+            let weTime = new Date(weekEnd); weTime.setHours(23, 59, 59, 999);
+            return s.employee === empName && d >= wsTime && d <= weTime;
+        });
+
+        let totalHrs = empShifts.reduce((sum, s) => sum + s.totalHrs, 0);
+        let rate = employees.find(e => e.name === empName)?.rate || 25.00;
+        let empInc = incentiveMap[empName + '_' + weekRangeStr] || 0;
+        let totalPay = (totalHrs * rate) + empInc;
+
+        document.getElementById('staff-detail-title').innerText = `📋 Shift Details: ${empName} (${weekRangeStr})`;
+        let container = document.getElementById('staff-detail-container');
+
+        if (empShifts.length === 0 && empInc === 0) {
+            container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px;">No shift records found for ${empName} this week</div>`;
+        } else {
+            container.innerHTML = `
+                <div style="margin-bottom: 12px; font-size: 14px; font-weight: bold; color: #0f172a;">
+                    Total Hours: ${totalHrs.toFixed(2)} hrs (${empShifts.length} shifts) | Incentive: +$${empInc.toFixed(2)} | Total Pay: $${totalPay.toFixed(2)} AUD
+                </div>
+                <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 6px; overflow: hidden; font-size: 13px;">
+                    <thead>
+                        <tr style="background: #f1f5f9; color: var(--text-muted);">
+                            <th style="padding: 8px; text-align: left;">Date</th>
+                            <th style="padding: 8px; text-align: left;">In - Out</th>
+                            <th style="padding: 8px; text-align: left;">Hours</th>
+                            <th style="padding: 8px; text-align: left;">Total Pay</th>
+                            <th style="padding: 8px; text-align: center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${empShifts.map(s => `
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 8px;">${s.date}</td>
+                                <td style="padding: 8px;">${s.clockIn} - ${s.clockOut}</td>
+                                <td style="padding: 8px;">${s.totalHrs.toFixed(2)} hrs</td>
+                                <td style="padding: 8px;">$${s.totalPay.toFixed(2)}</td>
+                                <td style="padding: 8px; text-align: center;">
+                                    <span class="link-action" style="color:#0284c7; margin-right:8px;" onclick="openEditShiftModal('${s.id}')">✏️ Edit</span>
+                                    <span class="link-action" style="color:#dc2626;" onclick="deleteShift('${s.id}', '${s.employee}')">🗑️ Delete</span>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        document.getElementById('staff-detail-modal').style.display = 'flex';
+    }
+
+    function togglePaidStatus(empName, weekKey) {
+        let mapKey = empName + '_' + weekKey;
+        paidStatusMap[mapKey] = true;
+        localStorage.setItem('paid_status_map', JSON.stringify(paidStatusMap));
+        updateStats();
+    }
+
+    function restorePaidStatus(empName, weekKey) {
+        let mapKey = empName + '_' + weekKey;
+        delete paidStatusMap[mapKey];
+        localStorage.setItem('paid_status_map', JSON.stringify(paidStatusMap));
+        updateStats();
+        openArchivesModal();
+    }
+
+    function handleManagerToggle() {
+        if (isManagerLoggedIn) {
+            exitManagerMode();
+        } else {
+            if (isPinRequired) {
+                openPinModal();
             } else {
-                statusEl.className = "inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600";
-                statusEl.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span> Ready to Clock In`;
-                document.getElementById('btnClockIn').disabled = false; document.getElementById('btnClockIn').classList.remove('opacity-50', 'cursor-not-allowed');
-                document.getElementById('btnClockOut').disabled = true; document.getElementById('btnClockOut').classList.add('opacity-50', 'cursor-not-allowed');
+                loginManagerDirectly();
             }
-            renderEmployeeGrid();
+        }
+    }
+
+    function loginManagerDirectly() {
+        isManagerLoggedIn = true;
+        document.getElementById('mode-switch-btn').innerText = "🖥️ Kiosk View";
+        document.getElementById('mode-switch-btn').style.background = "#16a34a";
+        document.getElementById('kiosk-section').classList.remove('active');
+        document.getElementById('manager-section').classList.add('active');
+        updatePinToggleButton();
+        updateStats();
+    }
+
+    function togglePinRequirement() {
+        isPinRequired = !isPinRequired;
+        localStorage.setItem('is_pin_required', isPinRequired);
+        updatePinToggleButton();
+    }
+
+    function updatePinToggleButton() {
+        const btn = document.getElementById('pin-toggle-btn');
+        if (btn) {
+            if (isPinRequired) {
+                btn.innerText = "🔐 PIN: ON";
+                btn.style.background = "#16a34a";
+            } else {
+                btn.innerText = "🔓 PIN: OFF";
+                btn.style.background = "#dc2626";
+            }
+        }
+    }
+
+    function openPinModal() {
+        enteredPin = "";
+        updatePinDots();
+        document.getElementById('current-pin-hint').innerText = CORRECT_PIN;
+        document.getElementById('pin-modal').style.display = 'flex';
+        
+        setTimeout(() => {
+            const hiddenInput = document.getElementById('hidden-pin-input');
+            if (hiddenInput) {
+                hiddenInput.value = "";
+                hiddenInput.focus();
+            }
+        }, 50);
+    }
+
+    function handleUniversalInput(input) {
+        let val = input.value;
+        if (val.length > 0) {
+            let lastChar = val.slice(-1);
+            let numMap = { 'ๅ':'1', '/':'1', 'ภ':'2', '_':'2', 'ถ':'3', 'ุ':'3', 'ึ':'4', 'ู':'4', 'ค':'5', 'ถ':'5', 'ต':'6', '฿':'6', 'จ':'7', 'ร':'7', 'ข':'8', 'ต':'8', 'ช':'9', 'ค':'9', 'จ':'0' };
+            let targetChar = numMap[lastChar] || lastChar;
+
+            if (targetChar >= '0' && targetChar <= '9') {
+                pressPinKey(targetChar);
+            }
+            input.value = "";
+        }
+    }
+
+    function pressPinKey(num) {
+        if (enteredPin.length < 4) {
+            enteredPin += num;
+            updatePinDots();
+            if (enteredPin.length === 4) setTimeout(verifyPinCode, 200);
+        }
+    }
+
+    function clearPinInput() { 
+        enteredPin = ""; 
+        updatePinDots(); 
+        const hiddenInput = document.getElementById('hidden-pin-input');
+        if (hiddenInput) { hiddenInput.value = ""; hiddenInput.focus(); }
+    }
+
+    function backspacePin() { 
+        enteredPin = enteredPin.slice(0, -1); 
+        updatePinDots(); 
+        const hiddenInput = document.getElementById('hidden-pin-input');
+        if (hiddenInput) { hiddenInput.value = ""; hiddenInput.focus(); }
+    }
+
+    function updatePinDots() {
+        let dots = "";
+        for (let i = 0; i < 4; i++) dots += i < enteredPin.length ? "•" : "-";
+        document.getElementById('pin-dots').innerText = dots;
+    }
+
+    function verifyPinCode() {
+        if (enteredPin === CORRECT_PIN) {
+            document.getElementById('pin-modal').style.display = 'none';
+            loginManagerDirectly();
+        } else {
+            enteredPin = "";
+            updatePinDots();
+            const hiddenInput = document.getElementById('hidden-pin-input');
+            if (hiddenInput) { hiddenInput.value = ""; hiddenInput.focus(); }
+        }
+    }
+
+    function exitManagerMode() {
+        isManagerLoggedIn = false;
+        document.getElementById('mode-switch-btn').innerText = "🔒 Manager Mode (PIN)";
+        document.getElementById('mode-switch-btn').style.background = "";
+        document.getElementById('manager-section').classList.remove('active');
+        document.getElementById('kiosk-section').classList.add('active');
+    }
+
+    // --- Add Manual Entry ---
+    function openAddEntryModal() {
+        let employees = getStaffList();
+        if (!employees.some(e => e.name === manualSelectedStaff)) {
+            manualSelectedStaff = employees[0]?.name || "";
+        }
+        manualSelectedDate = new Date().toLocaleDateString('en-GB');
+        manualClockIn = "09:00 AM";
+        manualClockOut = "05:00 PM";
+        
+        renderManualStaffSelection();
+        document.getElementById('manual-date').value = manualSelectedDate;
+        document.getElementById('manual-in').value = manualClockIn;
+        document.getElementById('manual-out').value = manualClockOut;
+        document.getElementById('add-entry-modal').style.display = 'flex';
+    }
+
+    function renderManualStaffSelection() {
+        let employees = getStaffList();
+        const grid = document.getElementById('manual-staff-grid');
+        grid.innerHTML = employees.map(emp => `
+            <div class="staff-chip-box ${manualSelectedStaff === emp.name ? 'selected' : ''}" onclick="selectManualStaff('${emp.name}')">
+                ${emp.name}
+            </div>
+        `).join('');
+    }
+
+    function selectManualStaff(name) {
+        manualSelectedStaff = name;
+        renderManualStaffSelection();
+        
+        setTimeout(() => {
+            openCalendarModal('manual');
+        }, 150);
+    }
+
+    // --- Calendar ---
+    function openCalendarModal(mode) {
+        calendarMode = mode;
+        const now = new Date();
+        calendarYear = now.getFullYear();
+        calendarMonth = now.getMonth();
+        renderCalendar();
+        document.getElementById('calendar-modal').style.display = 'flex';
+    }
+
+    function changeMonth(direction) {
+        calendarMonth += direction;
+        if (calendarMonth > 11) { calendarMonth = 0; calendarYear++; }
+        else if (calendarMonth < 0) { calendarMonth = 11; calendarYear--; }
+        renderCalendar();
+    }
+
+    function renderCalendar() {
+        const grid = document.getElementById('calendar-grid');
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        document.getElementById('calendar-month-year').innerText = `${monthNames[calendarMonth]} ${calendarYear}`;
+
+        const daysHeader = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        let html = daysHeader.map(d => `<div style="font-weight:bold; font-size:12px; text-align:center; color:var(--text-muted);">${d}</div>`).join('');
+        
+        let firstDay = new Date(calendarYear, calendarMonth, 1).getDay();
+        let startIndex = firstDay === 0 ? 6 : firstDay - 1;
+        let daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+        let daysInPrevMonth = new Date(calendarYear, calendarMonth, 0).getDate();
+        
+        const today = new Date();
+
+        for (let i = startIndex - 1; i >= 0; i--) {
+            let dNum = daysInPrevMonth - i;
+            let prevMonth = calendarMonth - 1;
+            let prevYear = calendarYear;
+            if (prevMonth < 0) { prevMonth = 11; prevYear--; }
+            let dateStr = `${String(dNum).padStart(2, '0')}/${String(prevMonth + 1).padStart(2, '0')}/${prevYear}`;
+            
+            html += `<div onclick="selectCalendarDate('${dateStr}')" style="padding:8px; text-align:center; background:#f8fafc; border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:13px; font-weight:600; color:#cbd5e1; opacity:0.6;">${dNum}</div>`;
+        }
+        
+        for (let d = 1; d <= daysInMonth; d++) {
+            let dateStr = `${String(d).padStart(2, '0')}/${String(calendarMonth + 1).padStart(2, '0')}/${calendarYear}`;
+            let isToday = (d === today.getDate() && calendarMonth === today.getMonth() && calendarYear === today.getFullYear());
+            let bgStyle = isToday ? '#e0f2fe' : '#f8fafc';
+            let borderStyle = isToday ? '2px solid #0284c7' : '1px solid var(--border-color)';
+            
+            html += `<div onclick="selectCalendarDate('${dateStr}')" style="padding:8px; text-align:center; background:${bgStyle}; border:${borderStyle}; border-radius:4px; cursor:pointer; font-size:13px; font-weight:600; color:#0f172a;">${d}</div>`;
         }
 
-        function handleClockIn() {
-            if (!selectedEmpId) return;
-            const emp = employees.find(e => e.id === selectedEmpId);
-            if (!emp) return;
-            activeClockIns[emp.id] = new Date().toTimeString().substring(0, 5);
-            saveToCloud();
+        let totalCellsSoFar = startIndex + daysInMonth;
+        let totalCellsNeeded = totalCellsSoFar <= 35 ? 35 : 42;
+        let nextMonthDayCount = totalCellsNeeded - totalCellsSoFar;
+
+        for (let d = 1; d <= nextMonthDayCount; d++) {
+            let nextMonth = calendarMonth + 1;
+            let nextYear = calendarYear;
+            if (nextMonth > 11) { nextMonth = 0; nextYear++; }
+            let dateStr = `${String(d).padStart(2, '0')}/${String(nextMonth + 1).padStart(2, '0')}/${nextYear}`;
+
+            html += `<div onclick="selectCalendarDate('${dateStr}')" style="padding:8px; text-align:center; background:#f8fafc; border:1px solid var(--border-color); border-radius:4px; cursor:pointer; font-size:13px; font-weight:600; color:#cbd5e1; opacity:0.6;">${d}</div>`;
         }
 
-        function handleClockOut() {
-            if (!selectedEmpId) return;
-            const emp = employees.find(e => e.id === selectedEmpId);
-            if (!emp || !activeClockIns[emp.id]) return;
-            const now = new Date();
-            timeLogs.unshift({
-                id: 'log_' + Date.now(),
-                empId: emp.id,
-                empName: emp.name,
-                date: now.toISOString().split('T')[0],
-                clockIn: activeClockIns[emp.id],
-                clockOut: now.toTimeString().substring(0, 5),
-                breakHours: 0,
-                rate: emp.rate
+        grid.innerHTML = html;
+    }
+
+    function selectCalendarDate(dateStr) {
+        if (calendarMode === 'manual') {
+            manualSelectedDate = dateStr;
+            document.getElementById('manual-date').value = dateStr;
+            document.getElementById('calendar-modal').style.display = 'none';
+            
+            setTimeout(() => {
+                openClockModal('in');
+            }, 150);
+        } else if (calendarMode === 'edit') {
+            editDateVal = dateStr;
+            document.getElementById('edit-date').value = dateStr;
+            document.getElementById('calendar-modal').style.display = 'none';
+        }
+    }
+
+    // --- Analog Clock & Quick Presets ---
+    function openClockModal(type) {
+        activeClockType = type;
+        let titleText = '⏰ Select Time';
+        let currentTimeStr = "09:00 AM";
+
+        if (type === 'in') {
+            titleText = '⏰ Select Time (Clock In)';
+            currentTimeStr = manualClockIn;
+        } else if (type === 'out') {
+            titleText = '⏰ Select Time (Clock Out)';
+            currentTimeStr = manualClockOut;
+        } else if (type === 'edit_in') {
+            titleText = '⏰ Edit Time (Clock In)';
+            currentTimeStr = editInVal;
+        } else if (type === 'edit_out') {
+            titleText = '⏰ Edit Time (Clock Out)';
+            currentTimeStr = editOutVal;
+        }
+
+        document.getElementById('clock-modal-title').innerText = titleText;
+        
+        let parts = currentTimeStr.split(' ');
+        let hm = parts[0].split(':').map(Number);
+        clockTempHour = hm[0] || 9;
+        clockTempMinute = hm[1] || 0;
+        clockTempMeridiem = parts[1] || 'AM';
+        clockStep = 'hour';
+        
+        renderQuickTimeButtons();
+        updateClockDisplay();
+        document.getElementById('clock-modal').style.display = 'flex';
+    }
+
+    function renderQuickTimeButtons() {
+        const container = document.getElementById('quick-time-container');
+        let presets = [];
+        
+        if (activeClockType === 'in' || activeClockType === 'edit_in') {
+            presets = ['11:30 AM', '12:00 PM', '04:30 PM', '06:00 PM'];
+        } else {
+            presets = ['08:00 PM', '08:30 PM', '10:00 PM', '10:30 PM'];
+        }
+
+        container.innerHTML = presets.map(timeStr => `
+            <button class="quick-time-btn" onclick="selectQuickTime('${timeStr}')">${timeStr}</button>
+        `).join('');
+    }
+
+    function selectQuickTime(timeStr) {
+        let parts = timeStr.split(' ');
+        let hm = parts[0].split(':').map(Number);
+        clockTempHour = hm[0];
+        clockTempMinute = hm[1];
+        clockTempMeridiem = parts[1];
+        updateClockDisplay();
+        confirmClockTime();
+    }
+
+    function setMeridiem(m) {
+        clockTempMeridiem = m;
+        document.getElementById('btn-am').style.background = m === 'AM' ? '#0284c7' : '#334155';
+        document.getElementById('btn-pm').style.background = m === 'PM' ? '#0284c7' : '#334155';
+        updateClockDisplay();
+    }
+
+    function updateClockDisplay() {
+        let hStr = String(clockTempHour).padStart(2, '0');
+        let mStr = String(clockTempMinute).padStart(2, '0');
+        document.getElementById('clock-preview').innerText = `${hStr}:${mStr} ${clockTempMeridiem}`;
+
+        document.getElementById('btn-am').style.background = clockTempMeridiem === 'AM' ? '#0284c7' : '#334155';
+        document.getElementById('btn-pm').style.background = clockTempMeridiem === 'PM' ? '#0284c7' : '#334155';
+
+        const face = document.getElementById('clock-face');
+        let numbersHtml = '';
+        for (let i = 1; i <= 12; i++) {
+            let angle = (i * 30) * (Math.PI / 180);
+            let x = 85 + 65 * Math.sin(angle);
+            let y = 85 - 65 * Math.cos(angle);
+            numbersHtml += `<div class="clock-number" style="left:${x}px; top:${y}px;">${i}</div>`;
+        }
+        
+        let hourDeg = (clockTempHour % 12) * 30 + (clockTempMinute * 0.5);
+        let minuteDeg = clockTempMinute * 6;
+        
+        face.innerHTML = numbersHtml + `
+            <div class="clock-hand" id="hour-hand" style="width: 4px; height: 45px; background: #0f172a; transform: translate(-50%, 0) rotate(${hourDeg}deg); bottom:50%; left:50%; position:absolute; transform-origin:bottom;"></div>
+            <div class="clock-hand" id="minute-hand" style="width: 2px; height: 65px; background: #0284c7; transform: translate(-50%, 0) rotate(${minuteDeg}deg); bottom:50%; left:50%; position:absolute; transform-origin:bottom;"></div>
+        `;
+    }
+
+    function handleClockClick(event) {
+        const face = document.getElementById('clock-face');
+        const rect = face.getBoundingClientRect();
+        let x = event.clientX - (rect.left + rect.width / 2);
+        let y = (rect.top + rect.height / 2) - event.clientY;
+        
+        let rad = Math.atan2(x, y);
+        let deg = rad * (180 / Math.PI);
+        if (deg < 0) deg += 360;
+
+        if (clockStep === 'hour') {
+            let hour = Math.round(deg / 30);
+            if (hour === 0) hour = 12;
+            clockTempHour = hour;
+            clockStep = 'minute';
+            updateClockDisplay();
+        } else {
+            let rawMinute = Math.round(deg / 6);
+            if (rawMinute >= 55 || rawMinute <= 5 || (rawMinute >= 330/6 && rawMinute <= 360/6)) {
+                clockTempMinute = 0;
+            } else if (rawMinute > 5 && rawMinute <= 20) {
+                clockTempMinute = 15;
+            } else if (rawMinute > 20 && rawMinute <= 37) {
+                clockTempMinute = 30;
+            } else {
+                clockTempMinute = 45;
+            }
+            clockStep = 'hour';
+            updateClockDisplay();
+        }
+    }
+
+    function confirmClockTime() {
+        let timeStr = `${String(clockTempHour).padStart(2, '0')}:${String(clockTempMinute).padStart(2, '0')} ${clockTempMeridiem}`;
+        if (activeClockType === 'in') {
+            manualClockIn = timeStr;
+            document.getElementById('manual-in').value = timeStr;
+            document.getElementById('clock-modal').style.display = 'none';
+            setTimeout(() => openClockModal('out'), 300);
+        } else if (activeClockType === 'out') {
+            manualClockOut = timeStr;
+            document.getElementById('manual-out').value = timeStr;
+            document.getElementById('clock-modal').style.display = 'none';
+        } else if (activeClockType === 'edit_in') {
+            editInVal = timeStr;
+            document.getElementById('edit-clock-in').value = timeStr;
+            document.getElementById('clock-modal').style.display = 'none';
+            setTimeout(() => openClockModal('edit_out'), 300);
+        } else if (activeClockType === 'edit_out') {
+            editOutVal = timeStr;
+            document.getElementById('edit-clock-out').value = timeStr;
+            document.getElementById('clock-modal').style.display = 'none';
+        }
+    }
+
+    function saveManualEntry() {
+        if (!manualSelectedStaff) return;
+        let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
+        let uniqueId = 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+        
+        let dObj = parseDateDMY(manualSelectedDate);
+        logs = logs.filter(l => l.id !== uniqueId);
+
+        logs.push({ id: uniqueId, employee: manualSelectedStaff, action: 'Clock In', time: manualClockIn, date: manualSelectedDate, timestamp: dObj.getTime() });
+        logs.push({ id: uniqueId, employee: manualSelectedStaff, action: 'Clock Out', time: manualClockOut, date: manualSelectedDate, timestamp: dObj.getTime() + 3600000 });
+        localStorage.setItem('time_logs', JSON.stringify(logs));
+
+        document.getElementById('add-entry-modal').style.display = 'none';
+        
+        currentWeekStart = getMondayOfCurrentWeek(dObj);
+        updateStats();
+    }
+
+    // --- Manage Staff ---
+    function openManageStaffModal() {
+        renderStaffManagementList();
+        document.getElementById('manage-staff-modal').style.display = 'flex';
+    }
+
+    function renderStaffManagementList() {
+        let employees = getStaffList();
+        const container = document.getElementById('staff-management-list');
+        container.innerHTML = employees.map((emp, idx) => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9;">
+                <div>
+                    <b>${emp.name}</b> <span style="color:var(--text-muted); font-size:12px;">($${emp.rate.toFixed(2)}/hr)</span>
+                </div>
+                <div style="display: flex; gap: 6px;">
+                    <button class="m-btn primary" style="padding: 4px 10px; font-size: 11px;" onclick="openEditStaffModal(${idx})">Edit</button>
+                    <button class="m-btn danger" style="padding: 4px 10px; font-size: 11px;" onclick="removeStaff(${idx})">Delete</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function openEditStaffModal(idx) {
+        let employees = getStaffList();
+        let emp = employees[idx];
+        document.getElementById('edit-staff-index').value = idx;
+        document.getElementById('edit-staff-name-input').value = emp.name;
+        document.getElementById('edit-staff-rate-input').value = emp.rate;
+        document.getElementById('edit-staff-modal').style.display = 'flex';
+    }
+
+    function saveEditedStaff() {
+        let employees = getStaffList();
+        let idx = parseInt(document.getElementById('edit-staff-index').value);
+        let newName = document.getElementById('edit-staff-name-input').value.trim();
+        let newRate = parseFloat(document.getElementById('edit-staff-rate-input').value) || 25.00;
+        
+        if (!newName) return;
+
+        let oldName = employees[idx].name;
+        employees[idx].name = newName;
+        employees[idx].rate = newRate;
+        localStorage.setItem('staff_list', JSON.stringify(employees));
+
+        if (oldName !== newName) {
+            let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
+            logs.forEach(l => {
+                if (l.employee === oldName) l.employee = newName;
             });
-            delete activeClockIns[emp.id];
-            saveToCloud();
+            localStorage.setItem('time_logs', JSON.stringify(logs));
         }
 
-        function renderActiveEmpList() {
-            const container = document.getElementById('activeEmpList');
-            const badge = document.getElementById('activeCountBadge');
-            const activeIds = Object.keys(activeClockIns);
-            if (badge) badge.innerText = `${activeIds.length} Staff`;
-            if (activeIds.length === 0) { container.innerHTML = `<p class="text-slate-400 text-xs col-span-full text-center py-2">No employees currently on shift.</p>`; return; }
-            container.innerHTML = activeIds.map(id => {
-                const emp = employees.find(e => e.id === id);
-                return `<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 flex items-center justify-between"><div><p class="font-bold text-emerald-950 text-xs">${emp ? emp.name : 'N/A'}</p><p class="text-[10px] text-emerald-700">Clocked in ${activeClockIns[id]}</p></div><span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span></div>`;
-            }).join('');
+        document.getElementById('edit-staff-modal').style.display = 'none';
+        renderStaffManagementList();
+        renderEmployeeList();
+        updateStats();
+    }
+
+    function addNewStaff() {
+        let employees = getStaffList();
+        let name = document.getElementById('new-staff-name').value.trim();
+        let rate = parseFloat(document.getElementById('new-staff-rate').value) || 25.00;
+        if (!name) return;
+        
+        if (!employees.some(e => e.name.toLowerCase() === name.toLowerCase())) {
+            employees.push({ id: Date.now().toString(), name, rate });
+            localStorage.setItem('staff_list', JSON.stringify(employees));
         }
 
-        function calculateHours(clockIn, clockOut, breakHrs = 0) {
-            if (!clockIn || !clockOut) return 0;
-            const [inH, inM] = clockIn.split(':').map(Number);
-            const [outH, outM] = clockOut.split(':').map(Number);
-            let startMinutes = inH * 60 + inM, endMinutes = outH * 60 + outM;
-            if (endMinutes < startMinutes) endMinutes += 24 * 60;
-            return Math.max(0, parseFloat(((endMinutes - startMinutes - (breakHrs * 60)) / 60).toFixed(2)));
+        document.getElementById('new-staff-name').value = '';
+        renderStaffManagementList();
+        renderEmployeeList();
+        updateStaffFilterDropdown();
+    }
+
+    function removeStaff(idx) {
+        let employees = getStaffList();
+        employees.splice(idx, 1);
+        localStorage.setItem('staff_list', JSON.stringify(employees));
+        renderStaffManagementList();
+        renderEmployeeList();
+        cleanOrphanLogs();
+        updateStats();
+    }
+
+    // --- Edit Shift & Delete Shift ---
+    function openEditShiftModal(shiftId) {
+        let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
+        let inLog = logs.find(l => l.id === shiftId && l.action === 'Clock In');
+        let outLog = logs.find(l => l.id === shiftId && l.action === 'Clock Out');
+
+        if (inLog || outLog) {
+            editShiftId = shiftId;
+            editDateVal = inLog ? inLog.date : new Date().toLocaleDateString('en-GB');
+            editInVal = inLog ? inLog.time : '09:00 AM';
+            editOutVal = outLog ? outLog.time : '05:00 PM';
+
+            document.getElementById('edit-date').value = editDateVal;
+            document.getElementById('edit-clock-in').value = editInVal;
+            document.getElementById('edit-clock-out').value = editOutVal;
+            document.getElementById('edit-shift-modal').style.display = 'flex';
         }
+    }
 
-        function renderPayrollTable() {
-            sortLogsByDate(timeLogs);
-            const summaryTbody = document.getElementById('weeklySummaryTableBody');
-            const logsTbody = document.getElementById('payrollTableBody');
-            let totalHoursSum = 0, totalPaySum = 0;
+    function saveEditedShift() {
+        let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
+        let dObj = parseDateDMY(editDateVal);
 
-            if (summaryTbody) {
-                summaryTbody.innerHTML = getSortedEmployees().map(emp => {
-                    const empLogs = timeLogs.filter(l => l.empId === emp.id || l.empName.toLowerCase() === emp.name.toLowerCase());
-                    let empHours = 0;
-                    empLogs.forEach(l => empHours += calculateHours(l.clockIn, l.clockOut, l.breakHours));
-                    const empPayout = empHours * emp.rate;
-                    totalHoursSum += empHours; totalPaySum += empPayout;
+        logs.forEach(l => {
+            if (l.id === editShiftId) {
+                l.timestamp = dObj.getTime();
+                if (l.action === 'Clock In') {
+                    l.time = editInVal;
+                    l.date = editDateVal;
+                }
+                if (l.action === 'Clock Out') {
+                    l.time = editOutVal;
+                    l.date = editDateVal;
+                }
+            }
+        });
 
-                    return `
-                        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                            <td class="px-4 py-3.5 font-bold text-slate-900 flex items-center gap-2">
-                                <span>${emp.name}</span>
-                                <button type="button" onclick="openShiftsModal('${emp.id}', '${emp.name}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-semibold hover:underline">(View Shifts)</button>
-                            </td>
-                            <td class="px-4 py-3.5 text-xs text-indigo-600 font-semibold">Nov 2 - Nov 8</td>
-                            <td class="px-4 py-3.5 text-slate-600">$${emp.rate.toFixed(2)}</td>
-                            <td class="px-4 py-3.5 font-semibold text-slate-700">${empLogs.length} shifts</td>
-                            <td class="px-4 py-3.5 font-bold text-indigo-600">${empHours.toFixed(2)} hrs</td>
-                            <td class="px-4 py-3.5 font-bold text-emerald-600">$${empPayout.toLocaleString('en-AU', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AUD</td>
-                            <td class="px-4 py-3.5 text-center">
-                                <button type="button" onclick="archiveEmployeeWeek('${emp.id}', '${emp.name}')" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold px-3.5 py-1.5 rounded-xl transition shadow-sm flex items-center gap-1 mx-auto"><i class="fa-solid fa-check text-[10px]"></i> Paid</button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
+        localStorage.setItem('time_logs', JSON.stringify(logs));
+        document.getElementById('edit-shift-modal').style.display = 'none';
+        updateStats();
+    }
+
+    function deleteShift(shiftId, empName) {
+        if (confirm("Are you sure you want to delete this shift?")) {
+            let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
+            let newLogs = logs.filter(l => l.id !== shiftId);
+
+            if (newLogs.length === logs.length && empName) {
+                let firstIndex = newLogs.findIndex(l => l.employee === empName);
+                if (firstIndex !== -1) newLogs.splice(firstIndex, 1);
             }
 
-            if (logsTbody) {
-                const searchQuery = (document.getElementById('filterSearch')?.value || '').toLowerCase();
-                const dateQuery = document.getElementById('filterDate')?.value || '';
-                logsTbody.innerHTML = timeLogs.filter(l => l.empName.toLowerCase().includes(searchQuery) && (!dateQuery || l.date === dateQuery)).map(log => {
-                    const hrs = calculateHours(log.clockIn, log.clockOut, log.breakHours);
-                    const pay = hrs * log.rate;
-                    return `
-                        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                            <td class="px-4 py-3 font-medium text-slate-700">${log.date}</td>
-                            <td class="px-4 py-3 font-semibold text-slate-900">${log.empName}</td>
-                            <td class="px-4 py-3 text-slate-600">${log.clockIn}</td>
-                            <td class="px-4 py-3 text-slate-600">${log.clockOut}</td>
-                            <td class="px-4 py-3 text-slate-600">${log.breakHours} hrs</td>
-                            <td class="px-4 py-3 font-bold text-indigo-600">${hrs.toFixed(2)}</td>
-                            <td class="px-4 py-3 text-slate-600">$${log.rate.toFixed(2)}</td>
-                            <td class="px-4 py-3 font-bold text-emerald-600">$${pay.toLocaleString('en-AU', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AUD</td>
-                            <td class="px-4 py-3 text-right no-print">
-                                <button type="button" onclick="openEditModal('${log.id}')" class="text-indigo-600 hover:text-indigo-900 text-xs font-semibold px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 transition mr-1"><i class="fa-solid fa-pen"></i> Edit</button>
-                                <button type="button" onclick="deleteLog('${log.id}')" class="text-rose-600 hover:text-rose-900 text-xs font-semibold px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 transition"><i class="fa-solid fa-trash"></i> Delete</button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-            }
-
-            document.getElementById('dashActiveNow').innerText = `${Object.keys(activeClockIns).length}`;
-            document.getElementById('dashTotalHours').innerText = `${totalHoursSum.toFixed(2)} hrs`;
-            document.getElementById('dashTotalPay').innerText = `$${totalPaySum.toLocaleString('en-AU', {minimumFractionDigits: 2, maximumFractionDigits: 2})} AUD`;
+            localStorage.setItem('time_logs', JSON.stringify(newLogs));
+            renderEmployeeList();
+            updateStats();
         }
+    }
 
-        function openShiftsModal(empId, empName) {
-            const emp = employees.find(e => e.id === empId || e.name === empName);
-            const rate = emp ? emp.rate : 25.00;
-            document.getElementById('shiftsModalTitle').innerText = `${empName} - Shift Breakdown`;
-            document.getElementById('shiftsModalSubtitle').innerText = `Current Week | Rate: $${rate.toFixed(2)}/hr`;
-            const empLogs = timeLogs.filter(l => l.empId === empId || l.empName.toLowerCase() === empName.toLowerCase());
-            sortLogsByDate(empLogs);
+    // Weekly Archives
+    function openArchivesModal() {
+        let employees = getStaffList();
+        let allShifts = calculateShiftHistory();
+        let container = document.getElementById('archive-content-container');
+        
+        let weekStart = new Date(currentWeekStart);
+        let weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        const optionsDate = { day: 'numeric', month: 'short' };
+        let weekRangeStr = `${weekStart.toLocaleDateString('en-GB', optionsDate)} - ${weekEnd.toLocaleDateString('en-GB', optionsDate)} ${weekEnd.getFullYear()}`;
+        
+        let weekShifts = allShifts.filter(s => {
+            let d = new Date(s.dateObj);
+            d.setHours(12, 0, 0, 0);
+            let wsTime = new Date(weekStart); wsTime.setHours(0, 0, 0, 0);
+            let weTime = new Date(weekEnd); weTime.setHours(23, 59, 59, 999);
+            return d >= wsTime && d <= weTime;
+        });
 
-            document.getElementById('shiftsModalList').innerHTML = empLogs.length === 0 ? `<div class="text-center py-8 text-slate-400 text-xs">No shifts logged.</div>` : empLogs.map(l => {
-                const hrs = calculateHours(l.clockIn, l.clockOut, l.breakHours);
+        let paidEmployees = employees.filter(emp => {
+            let mapKey = emp.name + '_' + weekRangeStr;
+            return paidStatusMap[mapKey] === true;
+        });
+
+        let totalPaidAmountWeek = 0;
+        paidEmployees.forEach(emp => {
+            let empShifts = weekShifts.filter(s => s.employee === emp.name);
+            let totalPay = empShifts.reduce((sum, s) => sum + s.totalPay, 0);
+            let empInc = incentiveMap[emp.name + '_' + weekRangeStr] || 0;
+            totalPaidAmountWeek += (totalPay + empInc);
+        });
+
+        document.getElementById('archive-header-range').innerHTML = `
+            <span>Weekly Pay Out: ${weekRangeStr}</span>
+            <span style="color: #166534; font-size: 15px;">Paid Total: $${totalPaidAmountWeek.toFixed(2)} AUD</span>
+        `;
+
+        if (paidEmployees.length === 0) {
+            container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px;">No paid records found for this week</div>`;
+        } else {
+            container.innerHTML = paidEmployees.map(emp => {
+                let empShifts = weekShifts.filter(s => s.employee === emp.name);
+                let totalPay = empShifts.reduce((sum, s) => sum + s.totalPay, 0);
+                let empInc = incentiveMap[emp.name + '_' + weekRangeStr] || 0;
+                let totalWithInc = totalPay + empInc;
+
+                let rowsHtml = empShifts.length > 0 ? empShifts.map(s => `
+                    <tr>
+                        <td style="padding: 6px; font-size: 13px;">${s.date}</td>
+                        <td style="padding: 6px; font-size: 13px;">${s.employee}</td>
+                        <td style="padding: 6px; font-size: 13px;">${s.clockIn} - ${s.clockOut}</td>
+                        <td style="padding: 6px; font-size: 13px;">${s.totalHrs.toFixed(2)} hrs</td>
+                        <td style="padding: 6px; font-size: 13px;">$${s.totalPay.toFixed(2)}</td>
+                    </tr>
+                `).join('') : `<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding:8px; font-size:12px;">No shift records</td></tr>`;
+
                 return `
-                    <div class="bg-indigo-50/50 border border-indigo-100 rounded-xl p-3.5 space-y-2">
-                        <div class="flex items-center justify-between"><span class="text-xs font-bold text-slate-700">${l.date}</span><div class="flex items-center gap-1"><button type="button" onclick="openEditModal('${l.id}')" class="text-xs text-indigo-600 hover:underline">Edit</button><button type="button" onclick="deleteLog('${l.id}')" class="text-xs text-rose-500 hover:underline">Delete</button></div></div>
-                        <div class="text-xs text-slate-600">Time: ${l.clockIn} - ${l.clockOut}</div>
-                        <div class="text-xs font-bold text-indigo-700 pt-1 border-t flex justify-between"><span>Worked: ${hrs.toFixed(2)} hrs</span><span class="text-emerald-600">$${(hrs * rate).toFixed(2)} AUD</span></div>
+                    <div style="margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; background: #fafafa;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-weight: bold; color: #0f172a;">
+                            <span>Employee name : ${emp.name}</span>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span>Total Pay: $${totalWithInc.toFixed(2)} AUD ${empInc > 0 ? `(Inc: +$${empInc.toFixed(2)})` : ''}</span>
+                                <button class="m-btn" style="padding: 4px 10px; font-size: 11px; background: #0284c7;" onclick="restorePaidStatus('${emp.name}', '${weekRangeStr}')">Restore</button>
+                            </div>
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 6px; overflow: hidden;">
+                            <thead>
+                                <tr style="background: #f1f5f9; color: var(--text-muted); font-size: 12px;">
+                                    <th style="padding: 6px; text-align: left;">Date</th>
+                                    <th style="padding: 6px; text-align: left;">Name</th>
+                                    <th style="padding: 6px; text-align: left;">In/Out</th>
+                                    <th style="padding: 6px; text-align: left;">Hours</th>
+                                    <th style="padding: 6px; text-align: left;">Total Pay</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rowsHtml}</tbody>
+                        </table>
                     </div>
                 `;
             }).join('');
-            document.getElementById('shiftsModal').classList.remove('hidden');
         }
+        document.getElementById('archives-modal').style.display = 'flex';
+    }
 
-        function closeShiftsModal() { document.getElementById('shiftsModal').classList.add('hidden'); }
+    function openChangePinModal() {
+        document.getElementById('new-pin-input').value = '';
+        document.getElementById('change-pin-modal').style.display = 'flex';
+    }
 
-        function archiveEmployeeWeek(empId, empName) {
-            const empLogsIndex = timeLogs.filter(l => l.empId === empId || l.empName.toLowerCase() === empName.toLowerCase());
-            if (empLogsIndex.length === 0) return alert(`No active shifts for ${empName}.`);
-            if (!confirm(`Mark payout as PAID for ${empName}?`)) return;
-
-            paidArchives.unshift({ archiveId: 'arc_' + Date.now(), empId, empName, weekPeriod: '2-8 November 2026', logs: [...empLogsIndex] });
-            timeLogs = timeLogs.filter(l => l.empId !== empId && l.empName.toLowerCase() !== empName.toLowerCase());
-            saveToCloud();
+    function saveNewPin() {
+        let newPin = document.getElementById('new-pin-input').value.trim();
+        if (newPin.length === 4) {
+            CORRECT_PIN = newPin;
+            localStorage.setItem('manager_pin', CORRECT_PIN);
+            document.getElementById('change-pin-modal').style.display = 'none';
         }
+    }
 
-        function archiveCurrentWeekAll() {
-            if (timeLogs.length === 0) return alert("No active shifts.");
-            if (!confirm("Close week and mark ALL as PAID?")) return;
-            employees.forEach(emp => {
-                const empLogsIndex = timeLogs.filter(l => l.empId === emp.id || l.empName.toLowerCase() === emp.name.toLowerCase());
-                if (empLogsIndex.length > 0) paidArchives.unshift({ archiveId: 'arc_' + Date.now() + '_' + emp.id, empId: emp.id, empName: emp.name, weekPeriod: '2-8 November 2026', logs: [...empLogsIndex] });
-            });
-            timeLogs = [];
-            saveToCloud();
+    function exportCSV() { console.log("Export CSV"); }
+
+    window.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            const pinModal = document.getElementById('pin-modal');
+            const addEntryModal = document.getElementById('add-entry-modal');
+            const editStaffModal = document.getElementById('edit-staff-modal');
+            const editShiftModal = document.getElementById('edit-shift-modal');
+            const manageStaffModal = document.getElementById('manage-staff-modal');
+            const changePinModal = document.getElementById('change-pin-modal');
+
+            if (pinModal && pinModal.style.display === 'flex') {
+                if (enteredPin.length === 4) verifyPinCode();
+                event.preventDefault();
+            } else if (addEntryModal && addEntryModal.style.display === 'flex') {
+                saveManualEntry();
+                event.preventDefault();
+            } else if (editStaffModal && editStaffModal.style.display === 'flex') {
+                saveEditedStaff();
+                event.preventDefault();
+            } else if (editShiftModal && editShiftModal.style.display === 'flex') {
+                saveEditedShift();
+                event.preventDefault();
+            } else if (manageStaffModal && manageStaffModal.style.display === 'flex') {
+                addNewStaff();
+                event.preventDefault();
+            } else if (changePinModal && changePinModal.style.display === 'flex') {
+                saveNewPin();
+                event.preventDefault();
+            }
         }
+    });
 
-        function openArchivesModal() {
-            document.getElementById('archivesContentList').innerHTML = paidArchives.length === 0 ? `<div class="text-center py-8 text-slate-400 text-xs">No archives found.</div>` : paidArchives.map(arc => `
-                <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm space-y-2">
-                    <div class="flex justify-between items-center"><span class="text-xs font-bold text-slate-800">${arc.empName} (${arc.weekPeriod})</span><button type="button" onclick="restoreArchiveRecord('${arc.archiveId}')" class="px-2.5 py-1 bg-indigo-600 text-white rounded-lg text-xs font-semibold">Restore</button></div>
-                </div>
-            `).join('');
-            document.getElementById('archivesModal').classList.remove('hidden');
-        }
+    window.onload = function() {
+        renderEmployeeList();
+        updatePinToggleButton();
+        updateStats();
+    };
+</script>
 
-        function closeArchivesModal() { document.getElementById('archivesModal').classList.add('hidden'); }
-
-        function restoreArchiveRecord(archiveId) {
-            const idx = paidArchives.findIndex(a => a.archiveId === archiveId);
-            if (idx === -1) return;
-            timeLogs.unshift(...paidArchives[idx].logs);
-            paidArchives.splice(idx, 1);
-            saveToCloud();
-            openArchivesModal();
-        }
-
-        function clearDateFilter() { document.getElementById('filterDate').value = ''; renderPayrollTable(); }
-
-        function openEditModal(logId) {
-            const log = timeLogs.find(l => l.id === logId);
-            if (!log) return;
-            document.getElementById('editLogId').value = log.id;
-            document.getElementById('editEmpName').value = log.empName;
-            document.getElementById('editLogDate').value = log.date;
-            document.getElementById('editClockIn').value = log.clockIn;
-            document.getElementById('editClockOut').value = log.clockOut;
-            document.getElementById('editBreakHours').value = log.breakHours;
-            document.getElementById('editEmpRate').value = log.rate;
-            document.getElementById('editModal').classList.remove('hidden');
-        }
-
-        function closeEditModal() { document.getElementById('editModal').classList.add('hidden'); }
-
-        function saveLogEdit(e) {
-            e.preventDefault();
-            const id = document.getElementById('editLogId').value;
-            const idx = timeLogs.findIndex(l => l.id === id);
-            if (idx === -1) return;
-            timeLogs[idx].empName = document.getElementById('editEmpName').value;
-            timeLogs[idx].date = document.getElementById('editLogDate').value;
-            timeLogs[idx].clockIn = document.getElementById('editClockIn').value;
-            timeLogs[idx].clockOut = document.getElementById('editClockOut').value;
-            timeLogs[idx].breakHours = parseFloat(document.getElementById('editBreakHours').value) || 0;
-            timeLogs[idx].rate = parseFloat(document.getElementById('editEmpRate').value) || 0;
-            saveToCloud();
-            closeEditModal();
-        }
-
-        function deleteLog(logId) {
-            if (!confirm("Delete shift entry?")) return;
-            timeLogs = timeLogs.filter(l => l.id !== logId);
-            saveToCloud();
-        }
-
-        function openManualLogModal() {
-            document.getElementById('manualEmpSelect').innerHTML = getSortedEmployees().map(e => `<option value="${e.id}">${e.name} ($${e.rate.toFixed(2)}/hr)</option>`).join('');
-            document.getElementById('manualLogDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('manualModal').classList.remove('hidden');
-        }
-
-        function closeManualLogModal() { document.getElementById('manualModal').classList.add('hidden'); }
-
-        function saveManualLog(e) {
-            e.preventDefault();
-            const empId = document.getElementById('manualEmpSelect').value;
-            const emp = employees.find(e => e.id === empId);
-            timeLogs.unshift({
-                id: 'log_' + Date.now(),
-                empId,
-                empName: emp ? emp.name : 'Unknown',
-                date: document.getElementById('manualLogDate').value,
-                clockIn: document.getElementById('manualClockIn').value,
-                clockOut: document.getElementById('manualClockOut').value,
-                breakHours: parseFloat(document.getElementById('manualBreakHours').value) || 0,
-                rate: emp ? emp.rate : 0
-            });
-            saveToCloud();
-            closeManualLogModal();
-        }
-
-        function openEmpManageModal() {
-            renderEmpManageList();
-            document.getElementById('empManageModal').classList.remove('hidden');
-        }
-
-        function closeEmpManageModal() { document.getElementById('empManageModal').classList.add('hidden'); }
-
-        function renderEmpManageList() {
-            document.getElementById('empManageList').innerHTML = getSortedEmployees().map(e => `
-                <div class="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm">
-                    <div><p class="font-bold text-slate-800">${e.name}</p><p class="text-xs text-slate-500">Rate: $${e.rate.toFixed(2)}/hr</p></div>
-                    <button type="button" onclick="removeEmployee('${e.id}')" class="text-rose-600 text-xs font-semibold px-2 py-1">Delete</button>
-                </div>
-            `).join('');
-        }
-
-        function addNewEmployee(e) {
-            e.preventDefault();
-            employees.push({ id: 'emp_' + Date.now(), name: document.getElementById('newEmpName').value.trim(), rate: parseFloat(document.getElementById('newEmpRate').value) || 0 });
-            saveToCloud();
-            document.getElementById('newEmpName').value = '';
-            document.getElementById('newEmpRate').value = '';
-            renderEmpManageList();
-        }
-
-        function removeEmployee(empId) {
-            if (!confirm("Delete employee?")) return;
-            employees = employees.filter(e => e.id !== empId);
-            saveToCloud();
-            renderEmpManageList();
-        }
-
-        function openChangePinModal() { document.getElementById('changePinModal').classList.remove('hidden'); }
-        function closeChangePinModal() { document.getElementById('changePinModal').classList.add('hidden'); }
-
-        function saveNewPin(e) {
-            e.preventDefault();
-            if (document.getElementById('currentPinInput').value !== managerPin) return alert("Incorrect current PIN!");
-            managerPin = document.getElementById('newPinInput').value;
-            saveToCloud();
-            alert("PIN updated successfully.");
-            closeChangePinModal();
-        }
-
-        function exportToCSV() {
-            let csv = "data:text/csv;charset=utf-8,\uFEFFDate,Name,In,Out,Break,Hours,Rate,Pay\n";
-            timeLogs.forEach(l => {
-                const h = calculateHours(l.clockIn, l.clockOut, l.breakHours);
-                csv += `"${l.date}","${l.empName}","${l.clockIn}","${l.clockOut}",${l.breakHours},${h},${l.rate},${h * l.rate}\n`;
-            });
-            const link = document.createElement("a");
-            link.setAttribute("href", encodeURI(csv));
-            link.setAttribute("download", `payroll_${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-    </script>
 </body>
 </html>

@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Time & Payroll</title>
+    
+    <!-- Firebase SDKs (Real-time Cloud Sync) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <style>
         :root {
             --header-bg: #0284c7;
@@ -63,6 +68,7 @@
             height: 8px;
             background-color: #4ade80;
             border-radius: 50%;
+            animation: pulse 1.5s infinite;
         }
 
         .header-actions {
@@ -890,14 +896,13 @@
     </div>
 </div>
 
-<!-- Modal: Analog Clock พร้อมปุ่มเลือกเวลาแบบสี่เหลี่ยมจัตุรัส Quick Time Buttons -->
+<!-- Modal: Analog Clock -->
 <div id="clock-modal" class="modal" onclick="checkOutsideClose(event, 'clock-modal')">
     <div class="modal-content" style="width: 320px;" onclick="event.stopPropagation()">
         <h3 id="clock-modal-title" style="margin-top: 0; color: #0f172a; font-size: 16px;">⏰ Select Time</h3>
         <div style="font-size: 18px; font-weight: bold; color: #0284c7; margin: 4px 0;" id="clock-preview">09:00 AM</div>
         <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px;" id="clock-instruction">Click clock or select quick preset below</div>
         
-        <!-- Quick Time Presets (สี่เหลี่ยมจัตุรัส) -->
         <div class="quick-time-grid" id="quick-time-container"></div>
 
         <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 8px;">
@@ -919,7 +924,7 @@
 <!-- Modal: Manage Staff -->
 <div id="manage-staff-modal" class="modal" onclick="checkOutsideClose(event, 'manage-staff-modal')">
     <div class="modal-content" style="width: 420px; text-align: left;" onclick="event.stopPropagation()">
-        <h3 style="margin-top: 0; color: #0f172a;">👥 Manage Staff (Unlimited)</h3>
+        <h3 style="margin-top: 0; color: #0f172a;">👥 Manage Staff (Cloud Sync)</h3>
         <div style="margin: 15px 0; display: flex; gap: 8px;">
             <input type="text" id="new-staff-name" placeholder="Staff Name" style="flex:1; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;">
             <input type="number" id="new-staff-rate" placeholder="Rate ($)" value="25.00" style="width: 80px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px;" onfocus="this.select()">
@@ -933,7 +938,7 @@
 <div id="edit-staff-modal" class="modal" onclick="checkOutsideClose(event, 'edit-staff-modal')">
     <div class="modal-content" style="width: 340px; text-align: left;" onclick="event.stopPropagation()">
         <h3 style="margin-top: 0; color: #0f172a;">✏️ Edit Staff Details</h3>
-        <input type="hidden" id="edit-staff-index">
+        <input type="hidden" id="edit-staff-id">
         <div style="margin-bottom: 12px;">
             <label style="font-size: 12px; font-weight: bold; color: var(--text-muted);">Staff Name:</label>
             <input type="text" id="edit-staff-name-input" style="width: 100%; padding: 8px; margin-top: 4px; border: 1px solid var(--border-color); border-radius: 6px;">
@@ -995,8 +1000,29 @@
 </div>
 
 <script>
-    let CORRECT_PIN = localStorage.getItem('manager_pin') || "1234";
-    let isPinRequired = localStorage.getItem('is_pin_required') !== 'false';
+    // --- FIREBASE CONFIGURATION ---
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+
+    let globalStaffList = [];
+    let globalTimeLogs = [];
+    let globalPaidStatus = {};
+    let globalIncentiveMap = {};
+
+    let CORRECT_PIN = "1234";
+    let isPinRequired = true;
     let enteredPin = "";
     let selectedEmployee = null;
     let isManagerLoggedIn = false;
@@ -1032,26 +1058,99 @@
     let editOutVal = "05:00 PM";
     let activeEmpDetailContext = null;
 
+    // ฟังก์ชันดึงข้อมูลจาก Local Storage เก่าเข้าสู่ Firebase (Auto Migration ครั้งแรก)
+    function migrateLocalDataToCloudIfNeeded() {
+        const localStaff = localStorage.getItem('staff_list');
+        const localLogs = localStorage.getItem('time_logs');
+        const localPin = localStorage.getItem('manager_pin');
+        const localPinReq = localStorage.getItem('is_pin_required');
+        const localPaid = localStorage.getItem('paid_status_map');
+        const localInc = localStorage.getItem('incentive_map');
+
+        db.ref('migrated_status').once('value', (snapshot) => {
+            if (!snapshot.exists()) {
+                let initialData = {};
+                
+                if (localStaff) {
+                    try { initialData.staff_list = JSON.parse(localStaff); } catch(e){}
+                }
+                if (localLogs) {
+                    try { initialData.time_logs = JSON.parse(localLogs); } catch(e){}
+                }
+                if (localPaid) {
+                    try { initialData.paid_status_map = JSON.parse(localPaid); } catch(e){}
+                }
+                if (localInc) {
+                    try { initialData.incentive_map = JSON.parse(localInc); } catch(e){}
+                }
+                
+                initialData.settings = {
+                    pin: localPin || "1234",
+                    isPinRequired: localPinReq !== 'false'
+                };
+
+                // บันทึกข้ามขึ้น Firebase ทันที เพื่อไม่ให้ข้อมูลหาย
+                db.ref().update(initialData, () => {
+                    db.ref('migrated_status').set(true);
+                });
+            }
+        });
+    }
+
+    function initFirebaseListeners() {
+        migrateLocalDataToCloudIfNeeded();
+
+        db.ref('staff_list').on('value', (snapshot) => {
+            const val = snapshot.val();
+            if (val) {
+                globalStaffList = Array.isArray(val) ? val : Object.values(val);
+            } else {
+                globalStaffList = [
+                    { id: '1', name: 'Alex', rate: 25.00 },
+                    { id: '2', name: 'Bee', rate: 25.00 },
+                    { id: '3', name: 'Kai', rate: 25.00 },
+                    { id: '4', name: 'Noi', rate: 25.00 },
+                    { id: '5', name: 'Imm', rate: 25.00 }
+                ];
+                db.ref('staff_list').set(globalStaffList);
+            }
+            renderEmployeeList();
+            updateStaffFilterDropdown();
+            updateStats();
+        });
+
+        db.ref('time_logs').on('value', (snapshot) => {
+            const val = snapshot.val();
+            globalTimeLogs = val ? (Array.isArray(val) ? val : Object.values(val)) : [];
+            renderEmployeeList();
+            updateStats();
+        });
+
+        db.ref('paid_status_map').on('value', (snapshot) => {
+            globalPaidStatus = snapshot.val() || {};
+            updateStats();
+        });
+
+        db.ref('incentive_map').on('value', (snapshot) => {
+            globalIncentiveMap = snapshot.val() || {};
+            updateStats();
+        });
+
+        db.ref('settings').on('value', (snapshot) => {
+            const val = snapshot.val();
+            if (val) {
+                CORRECT_PIN = val.pin || "1234";
+                isPinRequired = val.isPinRequired !== false;
+            } else {
+                db.ref('settings').set({ pin: "1234", isPinRequired: true });
+            }
+            updatePinToggleButton();
+        });
+    }
+
     function getStaffList() {
-        return JSON.parse(localStorage.getItem('staff_list') || JSON.stringify([
-            { id: '1', name: 'Alex', rate: 25.00 },
-            { id: '2', name: 'Bee', rate: 25.00 },
-            { id: '3', name: 'Kai', rate: 25.00 },
-            { id: '4', name: 'Noi', rate: 25.00 },
-            { id: '5', name: 'Imm', rate: 25.00 }
-        ]));
+        return globalStaffList;
     }
-
-    let paidStatusMap = JSON.parse(localStorage.getItem('paid_status_map') || '{}');
-    let incentiveMap = JSON.parse(localStorage.getItem('incentive_map') || '{}');
-
-    function cleanOrphanLogs() {
-        let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
-        let validNames = getStaffList().map(e => e.name);
-        let cleanedLogs = logs.filter(log => validNames.includes(log.employee));
-        localStorage.setItem('time_logs', JSON.stringify(cleanedLogs));
-    }
-    cleanOrphanLogs();
 
     function checkOutsideClose(event, modalId) {
         if (event.target.id === modalId) {
@@ -1076,8 +1175,7 @@
 
     function getEmployeeStatuses() {
         let employees = getStaffList();
-        let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
-        let sortedLogs = [...logs].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        let sortedLogs = [...globalTimeLogs].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
         
         let activeStatusMap = {};
         employees.forEach(emp => { activeStatusMap[emp.name] = 'Clocked Out'; });
@@ -1101,6 +1199,8 @@
         let employees = getStaffList();
         const statusMap = getEmployeeStatuses();
         const container = document.getElementById('employee-list-ui');
+        if (!container) return;
+
         container.innerHTML = employees.map(emp => {
             let empStatus = statusMap[emp.name] || 'Clocked Out';
             let isSelected = selectedEmployee === emp.name;
@@ -1127,6 +1227,7 @@
         const btnIn = document.getElementById('btn-clock-in');
         const btnOut = document.getElementById('btn-clock-out');
         const pill = document.getElementById('selected-status-pill');
+        if (!btnIn || !btnOut || !pill) return;
 
         if (!selectedEmployee) {
             btnIn.classList.add('disabled-in');
@@ -1189,10 +1290,10 @@
 
         const timeNow = `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${meridiem}`;
         const dateNow = now.toLocaleDateString('en-GB');
-        let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
 
-        logs.push({
-            id: 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+        const newLogRef = db.ref('time_logs').push();
+        newLogRef.set({
+            id: newLogRef.key,
             employee: selectedEmployee,
             action: type,
             time: timeNow,
@@ -1200,8 +1301,6 @@
             timestamp: now.getTime()
         });
 
-        localStorage.setItem('time_logs', JSON.stringify(logs));
-        updateStats();
         clearSelectedEmployee();
     }
 
@@ -1225,8 +1324,7 @@
 
     function calculateShiftHistory() {
         let employees = getStaffList();
-        let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
-        let sortedLogs = [...logs].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        let sortedLogs = [...globalTimeLogs].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
         let shifts = [];
         let activeIns = {};
 
@@ -1296,12 +1394,11 @@
 
     function modifyIncentive(empName, weekKey, amount) {
         let mapKey = empName + '_' + weekKey;
-        let currentInc = incentiveMap[mapKey] || 0;
+        let currentInc = globalIncentiveMap[mapKey] || 0;
         let newInc = currentInc + amount;
         if (newInc < 0) newInc = 0;
-        incentiveMap[mapKey] = newInc;
-        localStorage.setItem('incentive_map', JSON.stringify(incentiveMap));
-        updateStats();
+        globalIncentiveMap[mapKey] = newInc;
+        db.ref('incentive_map').set(globalIncentiveMap);
     }
 
     function updateStaffFilterDropdown() {
@@ -1319,15 +1416,13 @@
     }
 
     function updateStats() {
-        cleanOrphanLogs();
         updateStaffFilterDropdown();
         let employees = getStaffList();
-        let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
         
         let statusMap = getEmployeeStatuses();
         let activeStaffTimes = {};
-        for (let i = logs.length - 1; i >= 0; i--) {
-            let log = logs[i];
+        for (let i = globalTimeLogs.length - 1; i >= 0; i--) {
+            let log = globalTimeLogs[i];
             if (log.action === 'Clock In' && statusMap[log.employee] === 'On Shift' && !activeStaffTimes[log.employee]) {
                 activeStaffTimes[log.employee] = log.time;
             }
@@ -1374,10 +1469,10 @@
 
         let unpaidActiveEmployees = employees.filter(emp => {
             let mapKey = emp.name + '_' + weekRangeStr;
-            if (paidStatusMap[mapKey] === true) return false;
+            if (globalPaidStatus[mapKey] === true) return false;
             let empShifts = weekShifts.filter(s => s.employee === emp.name);
             let empHours = empShifts.reduce((sum, s) => sum + s.totalHrs, 0);
-            let empInc = incentiveMap[emp.name + '_' + weekRangeStr] || 0;
+            let empInc = globalIncentiveMap[emp.name + '_' + weekRangeStr] || 0;
             return empHours > 0 || empInc > 0;
         });
 
@@ -1388,7 +1483,7 @@
             let empShifts = weekShifts.filter(s => s.employee === emp.name);
             let empHours = empShifts.reduce((sum, s) => sum + s.totalHrs, 0);
             let empPay = empShifts.reduce((sum, s) => sum + s.totalPay, 0);
-            let empInc = incentiveMap[emp.name + '_' + weekRangeStr] || 0;
+            let empInc = globalIncentiveMap[emp.name + '_' + weekRangeStr] || 0;
             displayHoursTotal += empHours;
             displayPayTotal += (empPay + empInc);
         });
@@ -1404,7 +1499,7 @@
                 let empShifts = weekShifts.filter(s => s.employee === emp.name);
                 let empHours = empShifts.reduce((sum, s) => sum + s.totalHrs, 0);
                 let empPay = empShifts.reduce((sum, s) => sum + s.totalPay, 0);
-                let empInc = incentiveMap[emp.name + '_' + weekRangeStr] || 0;
+                let empInc = globalIncentiveMap[emp.name + '_' + weekRangeStr] || 0;
                 let totalWithInc = empPay + empInc;
 
                 return `
@@ -1456,7 +1551,7 @@
                     <td><b>$${s.totalPay.toFixed(2)} AUD</b></td>
                     <td>
                         <span class="link-action" style="color:#0284c7; margin-right:8px;" onclick="openEditShiftModal('${s.id}')">✏️ Edit</span>
-                        <span class="link-action" style="color:#dc2626;" onclick="deleteShift('${s.id}', '${s.employee}')">🗑️ Delete</span>
+                        <span class="link-action" style="color:#dc2626;" onclick="deleteShift('${s.id}')">🗑️ Delete</span>
                     </td>
                 </tr>
             `).join('');
@@ -1485,7 +1580,7 @@
 
         let totalHrs = empShifts.reduce((sum, s) => sum + s.totalHrs, 0);
         let rate = employees.find(e => e.name === empName)?.rate || 25.00;
-        let empInc = incentiveMap[empName + '_' + weekRangeStr] || 0;
+        let empInc = globalIncentiveMap[empName + '_' + weekRangeStr] || 0;
         let totalPay = (totalHrs * rate) + empInc;
 
         document.getElementById('staff-detail-title').innerText = `📋 Shift Details: ${empName} (${weekRangeStr})`;
@@ -1517,7 +1612,7 @@
                                 <td style="padding: 8px;">$${s.totalPay.toFixed(2)}</td>
                                 <td style="padding: 8px; text-align: center;">
                                     <span class="link-action" style="color:#0284c7; margin-right:8px;" onclick="openEditShiftModal('${s.id}')">✏️ Edit</span>
-                                    <span class="link-action" style="color:#dc2626;" onclick="deleteShift('${s.id}', '${s.employee}')">🗑️ Delete</span>
+                                    <span class="link-action" style="color:#dc2626;" onclick="deleteShift('${s.id}')">🗑️ Delete</span>
                                 </td>
                             </tr>
                         `).join('')}
@@ -1530,16 +1625,14 @@
 
     function togglePaidStatus(empName, weekKey) {
         let mapKey = empName + '_' + weekKey;
-        paidStatusMap[mapKey] = true;
-        localStorage.setItem('paid_status_map', JSON.stringify(paidStatusMap));
-        updateStats();
+        globalPaidStatus[mapKey] = true;
+        db.ref('paid_status_map').set(globalPaidStatus);
     }
 
     function restorePaidStatus(empName, weekKey) {
         let mapKey = empName + '_' + weekKey;
-        delete paidStatusMap[mapKey];
-        localStorage.setItem('paid_status_map', JSON.stringify(paidStatusMap));
-        updateStats();
+        delete globalPaidStatus[mapKey];
+        db.ref('paid_status_map').set(globalPaidStatus);
         openArchivesModal();
     }
 
@@ -1567,8 +1660,7 @@
 
     function togglePinRequirement() {
         isPinRequired = !isPinRequired;
-        localStorage.setItem('is_pin_required', isPinRequired);
-        updatePinToggleButton();
+        db.ref('settings').set({ pin: CORRECT_PIN, isPinRequired: isPinRequired });
     }
 
     function updatePinToggleButton() {
@@ -1661,7 +1753,6 @@
         document.getElementById('kiosk-section').classList.add('active');
     }
 
-    // --- Add Manual Entry ---
     function openAddEntryModal() {
         let employees = getStaffList();
         if (!employees.some(e => e.name === manualSelectedStaff)) {
@@ -1697,7 +1788,6 @@
         }, 150);
     }
 
-    // --- Calendar ---
     function openCalendarModal(mode) {
         calendarMode = mode;
         const now = new Date();
@@ -1780,7 +1870,6 @@
         }
     }
 
-    // --- Analog Clock & Quick Presets ---
     function openClockModal(type) {
         activeClockType = type;
         let titleText = '⏰ Select Time';
@@ -1929,23 +2018,32 @@
 
     function saveManualEntry() {
         if (!manualSelectedStaff) return;
-        let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
-        let uniqueId = 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-        
         let dObj = parseDateDMY(manualSelectedDate);
-        logs = logs.filter(l => l.id !== uniqueId);
 
-        logs.push({ id: uniqueId, employee: manualSelectedStaff, action: 'Clock In', time: manualClockIn, date: manualSelectedDate, timestamp: dObj.getTime() });
-        logs.push({ id: uniqueId, employee: manualSelectedStaff, action: 'Clock Out', time: manualClockOut, date: manualSelectedDate, timestamp: dObj.getTime() + 3600000 });
-        localStorage.setItem('time_logs', JSON.stringify(logs));
+        const newLogRef = db.ref('time_logs').push();
+        newLogRef.set({
+            id: newLogRef.key,
+            employee: manualSelectedStaff,
+            action: 'Clock In',
+            time: manualClockIn,
+            date: manualSelectedDate,
+            timestamp: dObj.getTime()
+        });
+
+        const newLogRef2 = db.ref('time_logs').push();
+        newLogRef2.set({
+            id: newLogRef2.key,
+            employee: manualSelectedStaff,
+            action: 'Clock Out',
+            time: manualClockOut,
+            date: manualSelectedDate,
+            timestamp: dObj.getTime() + 3600000
+        });
 
         document.getElementById('add-entry-modal').style.display = 'none';
-        
         currentWeekStart = getMondayOfCurrentWeek(dObj);
-        updateStats();
     }
 
-    // --- Manage Staff ---
     function openManageStaffModal() {
         renderStaffManagementList();
         document.getElementById('manage-staff-modal').style.display = 'flex';
@@ -1954,87 +2052,73 @@
     function renderStaffManagementList() {
         let employees = getStaffList();
         const container = document.getElementById('staff-management-list');
-        container.innerHTML = employees.map((emp, idx) => `
+        container.innerHTML = employees.map((emp) => `
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9;">
                 <div>
                     <b>${emp.name}</b> <span style="color:var(--text-muted); font-size:12px;">($${emp.rate.toFixed(2)}/hr)</span>
                 </div>
                 <div style="display: flex; gap: 6px;">
-                    <button class="m-btn primary" style="padding: 4px 10px; font-size: 11px;" onclick="openEditStaffModal(${idx})">Edit</button>
-                    <button class="m-btn danger" style="padding: 4px 10px; font-size: 11px;" onclick="removeStaff(${idx})">Delete</button>
+                    <button class="m-btn primary" style="padding: 4px 10px; font-size: 11px;" onclick="openEditStaffModal('${emp.id}')">Edit</button>
+                    <button class="m-btn danger" style="padding: 4px 10px; font-size: 11px;" onclick="removeStaff('${emp.id}')">Delete</button>
                 </div>
             </div>
         `).join('');
     }
 
-    function openEditStaffModal(idx) {
+    function openEditStaffModal(id) {
         let employees = getStaffList();
-        let emp = employees[idx];
-        document.getElementById('edit-staff-index').value = idx;
+        let emp = employees.find(e => e.id === id);
+        if (!emp) return;
+        document.getElementById('edit-staff-id').value = emp.id;
         document.getElementById('edit-staff-name-input').value = emp.name;
         document.getElementById('edit-staff-rate-input').value = emp.rate;
         document.getElementById('edit-staff-modal').style.display = 'flex';
     }
 
     function saveEditedStaff() {
-        let employees = getStaffList();
-        let idx = parseInt(document.getElementById('edit-staff-index').value);
+        let id = document.getElementById('edit-staff-id').value;
         let newName = document.getElementById('edit-staff-name-input').value.trim();
         let newRate = parseFloat(document.getElementById('edit-staff-rate-input').value) || 25.00;
         
         if (!newName) return;
 
-        let oldName = employees[idx].name;
-        employees[idx].name = newName;
-        employees[idx].rate = newRate;
-        localStorage.setItem('staff_list', JSON.stringify(employees));
-
-        if (oldName !== newName) {
-            let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
-            logs.forEach(l => {
-                if (l.employee === oldName) l.employee = newName;
-            });
-            localStorage.setItem('time_logs', JSON.stringify(logs));
+        let index = globalStaffList.findIndex(e => e.id === id);
+        if (index !== -1) {
+            globalStaffList[index].name = newName;
+            globalStaffList[index].rate = newRate;
+            db.ref('staff_list').set(globalStaffList);
         }
 
         document.getElementById('edit-staff-modal').style.display = 'none';
         renderStaffManagementList();
-        renderEmployeeList();
-        updateStats();
     }
 
     function addNewStaff() {
-        let employees = getStaffList();
         let name = document.getElementById('new-staff-name').value.trim();
         let rate = parseFloat(document.getElementById('new-staff-rate').value) || 25.00;
         if (!name) return;
         
-        if (!employees.some(e => e.name.toLowerCase() === name.toLowerCase())) {
-            employees.push({ id: Date.now().toString(), name, rate });
-            localStorage.setItem('staff_list', JSON.stringify(employees));
+        if (!globalStaffList.some(e => e.name.toLowerCase() === name.toLowerCase())) {
+            const newRef = db.ref('staff_list').push();
+            globalStaffList.push({ id: newRef.key, name, rate });
+            db.ref('staff_list').set(globalStaffList);
         }
 
         document.getElementById('new-staff-name').value = '';
         renderStaffManagementList();
-        renderEmployeeList();
-        updateStaffFilterDropdown();
     }
 
-    function removeStaff(idx) {
-        let employees = getStaffList();
-        employees.splice(idx, 1);
-        localStorage.setItem('staff_list', JSON.stringify(employees));
-        renderStaffManagementList();
-        renderEmployeeList();
-        cleanOrphanLogs();
-        updateStats();
+    function removeStaff(id) {
+        if (confirm("Are you sure you want to delete this staff member?")) {
+            globalStaffList = globalStaffList.filter(e => e.id !== id);
+            db.ref('staff_list').set(globalStaffList);
+            renderStaffManagementList();
+        }
     }
 
-    // --- Edit Shift & Delete Shift ---
     function openEditShiftModal(shiftId) {
-        let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
-        let inLog = logs.find(l => l.id === shiftId && l.action === 'Clock In');
-        let outLog = logs.find(l => l.id === shiftId && l.action === 'Clock Out');
+        let inLog = globalTimeLogs.find(l => l.id === shiftId && l.action === 'Clock In');
+        let outLog = globalTimeLogs.find(l => l.id === shiftId && l.action === 'Clock Out');
 
         if (inLog || outLog) {
             editShiftId = shiftId;
@@ -2050,10 +2134,9 @@
     }
 
     function saveEditedShift() {
-        let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
         let dObj = parseDateDMY(editDateVal);
 
-        logs.forEach(l => {
+        globalTimeLogs.forEach(l => {
             if (l.id === editShiftId) {
                 l.timestamp = dObj.getTime();
                 if (l.action === 'Clock In') {
@@ -2067,28 +2150,17 @@
             }
         });
 
-        localStorage.setItem('time_logs', JSON.stringify(logs));
+        db.ref('time_logs').set(globalTimeLogs);
         document.getElementById('edit-shift-modal').style.display = 'none';
-        updateStats();
     }
 
-    function deleteShift(shiftId, empName) {
+    function deleteShift(shiftId) {
         if (confirm("Are you sure you want to delete this shift?")) {
-            let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
-            let newLogs = logs.filter(l => l.id !== shiftId);
-
-            if (newLogs.length === logs.length && empName) {
-                let firstIndex = newLogs.findIndex(l => l.employee === empName);
-                if (firstIndex !== -1) newLogs.splice(firstIndex, 1);
-            }
-
-            localStorage.setItem('time_logs', JSON.stringify(newLogs));
-            renderEmployeeList();
-            updateStats();
+            globalTimeLogs = globalTimeLogs.filter(l => l.id !== shiftId);
+            db.ref('time_logs').set(globalTimeLogs);
         }
     }
 
-    // Weekly Archives
     function openArchivesModal() {
         let employees = getStaffList();
         let allShifts = calculateShiftHistory();
@@ -2110,14 +2182,14 @@
 
         let paidEmployees = employees.filter(emp => {
             let mapKey = emp.name + '_' + weekRangeStr;
-            return paidStatusMap[mapKey] === true;
+            return globalPaidStatus[mapKey] === true;
         });
 
         let totalPaidAmountWeek = 0;
         paidEmployees.forEach(emp => {
             let empShifts = weekShifts.filter(s => s.employee === emp.name);
             let totalPay = empShifts.reduce((sum, s) => sum + s.totalPay, 0);
-            let empInc = incentiveMap[emp.name + '_' + weekRangeStr] || 0;
+            let empInc = globalIncentiveMap[emp.name + '_' + weekRangeStr] || 0;
             totalPaidAmountWeek += (totalPay + empInc);
         });
 
@@ -2132,7 +2204,7 @@
             container.innerHTML = paidEmployees.map(emp => {
                 let empShifts = weekShifts.filter(s => s.employee === emp.name);
                 let totalPay = empShifts.reduce((sum, s) => sum + s.totalPay, 0);
-                let empInc = incentiveMap[emp.name + '_' + weekRangeStr] || 0;
+                let empInc = globalIncentiveMap[emp.name + '_' + weekRangeStr] || 0;
                 let totalWithInc = totalPay + empInc;
 
                 let rowsHtml = empShifts.length > 0 ? empShifts.map(s => `
@@ -2182,7 +2254,7 @@
         let newPin = document.getElementById('new-pin-input').value.trim();
         if (newPin.length === 4) {
             CORRECT_PIN = newPin;
-            localStorage.setItem('manager_pin', CORRECT_PIN);
+            db.ref('settings').set({ pin: CORRECT_PIN, isPinRequired: isPinRequired });
             document.getElementById('change-pin-modal').style.display = 'none';
         }
     }
@@ -2221,9 +2293,7 @@
     });
 
     window.onload = function() {
-        renderEmployeeList();
-        updatePinToggleButton();
-        updateStats();
+        initFirebaseListeners();
     };
 </script>
 

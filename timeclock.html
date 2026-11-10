@@ -1000,15 +1000,12 @@
 </div>
 
 <script>
-    // Firebase Configuration ที่แก้ไขให้ถูกต้องสมบูรณ์
+    // Firebase Configuration ที่เชื่อมต่อ URL asia-southeast1 ของคุณ Alex โดยตรง
     const firebaseConfig = {
-        projectId: "kitchen-timeclock",
-        databaseURL: "https://kitchen-timeclock-default-rtdb.firebaseio.com/"
+        databaseURL: "https://kitchen-timeclock-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
-    } else {
-        firebase.app();
     }
     const db = firebase.database();
 
@@ -1041,7 +1038,6 @@
                 updatePinToggleButton();
                 updateStats();
             } else {
-                // ถ้าบน Cloud ยังไม่มีข้อมูล ให้ดึงข้อมูลท้องถิ่น (Local) ดันขึ้น Cloud เป็นครั้งแรก
                 migrateLocalDataToCloud();
             }
         });

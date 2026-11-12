@@ -1019,7 +1019,6 @@
     let selectedEmployee = null;
     let isManagerLoggedIn = false;
 
-    // ระบบซิงต์ข้อมูลกับ Firebase Real-time Database (ตัดระบบ autoSanitize ออกเด็ดขาด)
     function initCloudSync() {
         db.ref().on('value', (snapshot) => {
             const cloudData = snapshot.val();
@@ -1084,18 +1083,13 @@
     }
 
     function cleanStaleActiveShifts() {
-        if (confirm("⚠️ ต้องการลบรายการ Clock In ที่ค้างเติ่งหรือข้อมูลขยะออกทั้งหมดใช่หรือไม่?")) {
-            let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
-            let validNames = getStaffList().map(e => e.name);
-            
-            // กรองเฉพาะประวัติที่เป็นของพนักงานที่มีรายชื่ออยู่จริง และเอาตัวที่ซ้ำซ้อนหรือค้างนานเกินเหตุออก
-            let cleaned = logs.filter(log => validNames.includes(log.employee));
-            localStorage.setItem('time_logs', JSON.stringify(cleaned));
-            syncLocalToCloud();
-            updateStats();
-            renderEmployeeList();
-            alert("🧹 ทำความสะอาดข้อมูลขยะเรียบร้อยแล้วครับ!");
-        }
+        let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
+        let validNames = getStaffList().map(e => e.name);
+        let cleaned = logs.filter(log => validNames.includes(log.employee));
+        localStorage.setItem('time_logs', JSON.stringify(cleaned));
+        syncLocalToCloud();
+        updateStats();
+        renderEmployeeList();
     }
 
     function getMondayOfCurrentWeek(d) {
@@ -1317,7 +1311,6 @@
         let validNames = employees.map(e => e.name);
         let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
         
-        // กรองเอาเฉพาะข้อมูลของพนักงานที่มีรายชื่ออยู่จริงเท่านั้น
         let sortedLogs = logs.filter(l => validNames.includes(l.employee)).sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
         let shifts = [];
         let activeIns = {};
@@ -1548,7 +1541,7 @@
                     <td><b>$${s.totalPay.toFixed(2)} AUD</b></td>
                     <td>
                         <span class="link-action" style="color:#0284c7; margin-right:8px;" onclick="openEditShiftModal('${s.id}')">✏️ Edit</span>
-                        <span class="link-action" style="color:#dc2626;" onclick="deleteShift('${s.id}', '${s.employee}')">🗑️ Delete</span>
+                        <span class="link-action" style="color:#dc2626;" onclick="deleteShift('${s.id}')">🗑️ Delete</span>
                     </td>
                 </tr>
             `).join('');
@@ -1604,7 +1597,7 @@
                                 <td style="padding: 8px;">$${s.totalPay.toFixed(2)}</td>
                                 <td style="padding: 8px; text-align: center;">
                                     <span class="link-action" style="color:#0284c7; margin-right:8px;" onclick="openEditShiftModal('${s.id}')">✏️ Edit</span>
-                                    <span class="link-action" style="color:#dc2626;" onclick="deleteShift('${s.id}', '${s.employee}')">🗑️ Delete</span>
+                                    <span class="link-action" style="color:#dc2626;" onclick="deleteShift('${s.id}')">🗑️ Delete</span>
                                 </td>
                             </tr>
                         `).join('')}
@@ -2164,19 +2157,15 @@
         syncLocalToCloud();
         document.getElementById('edit-shift-modal').style.display = 'none';
         updateStats();
-        alert("✨ แก้ไขกะเรียบร้อย!");
     }
 
     function deleteShift(shiftId) {
-        if (confirm("Are you sure you want to delete this shift?")) {
-            let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
-            let newLogs = logs.filter(l => l.id !== shiftId);
-            localStorage.setItem('time_logs', JSON.stringify(newLogs));
-            syncLocalToCloud();
-            renderEmployeeList();
-            updateStats();
-            alert("🗑️ ลบข้อมูลเรียบร้อย!");
-        }
+        let logs = JSON.parse(localStorage.getItem('time_logs') || '[]');
+        let newLogs = logs.filter(l => l.id !== shiftId);
+        localStorage.setItem('time_logs', JSON.stringify(newLogs));
+        syncLocalToCloud();
+        renderEmployeeList();
+        updateStats();
     }
 
     function openArchivesModal() {
@@ -2223,7 +2212,7 @@
             container.innerHTML = paidEmployees.map(emp => {
                 let empShifts = weekShifts.filter(s => s.employee === emp.name);
                 let totalPay = empShifts.reduce((sum, s) => sum + s.totalPay, 0);
-                let empInc = incentiveMap[emp.name + '_' + weekRangeStr] / 0 || 0;
+                let empInc = incentiveMap[emp.name + '_' + weekRangeStr] || 0;
                 let totalWithInc = totalPay + empInc;
 
                 let rowsHtml = empShifts.length > 0 ? empShifts.map(s => `

@@ -2267,6 +2267,10 @@
                 <head>
                     <title>Print Order</title>
                     <style>
+                        @page {
+                            margin: 0;
+                            size: 80mm auto;
+                        }
                         body {
                             font-family: 'Calibri', Arial, monospace;
                             font-weight: bold;
@@ -2274,7 +2278,7 @@
                             color: #000;
                             background: #fff;
                             margin: 0;
-                            padding: 0;
+                            padding: 5mm;
                             line-height: 1.2;
                         }
                     </style>
@@ -2660,6 +2664,7 @@
                 <head>
                     <title>Sales Report Summary</title>
                     <style>
+                        @page { margin: 0; size: 80mm auto; }
                         body {
                             font-family: 'Calibri', Arial, sans-serif;
                             font-size: 11px;

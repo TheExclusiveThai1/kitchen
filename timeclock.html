@@ -884,7 +884,7 @@
     </div>
 </div>
 
-<!-- Modal: Calendar (พร้อมระบบ Swipe เลื่อนทีละ 1 เดือนเป๊ะๆ) -->
+<!-- Modal: Calendar (พร้อมระบบ Swipe สลับเดือนซ้ายขวา) -->
 <div id="calendar-modal" class="modal" onclick="checkOutsideClose(event, 'calendar-modal')">
     <div class="modal-content" style="width: 320px;" onclick="event.stopPropagation()">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -892,7 +892,7 @@
             <h3 id="calendar-month-year" style="margin: 0; color: #0f172a; font-size: 15px;">November 2026</h3>
             <button class="m-btn" style="padding: 4px 8px; font-size: 12px;" onclick="changeMonth(1)">▶</button>
         </div>
-        <div id="calendar-swipe-container" style="touch-action: pan-y; user-select: none;">
+        <div id="calendar-swipe-container" style="touch-action: pan-y; user-select: none; min-height: 240px;">
             <div id="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;"></div>
         </div>
         <div style="font-size: 11px; color: var(--text-muted); margin-top: 10px;">💡 Swipe left/right to change month</div>
@@ -1799,34 +1799,44 @@
         const swipeContainer = document.getElementById('calendar-swipe-container');
         if (!swipeContainer) return;
 
-        swipeContainer.ontouchstart = (e) => {
-            touchStartX = e.changedTouches[0].screenX;
-        };
+        // ล้าง Event เก่าออกก่อนเพื่อป้องกันการทำงานซ้อนทับ
+        let newContainer = swipeContainer.cloneNode(true);
+        swipeContainer.parentNode.replaceChild(newContainer, swipeContainer);
 
-        swipeContainer.ontouchend = (e) => {
-            touchEndX = e.changedTouches[0].screenX;
-            handleSwipeGesture();
-        };
+        newContainer.addEventListener('touchstart', (e) => {
+            if (e.touches && e.touches.length > 0) {
+                touchStartX = e.touches[0].clientX;
+            }
+        }, { passive: true });
 
-        swipeContainer.onmousedown = (e) => {
+        newContainer.addEventListener('touchend', (e) => {
+            if (e.changedTouches && e.changedTouches.length > 0) {
+                touchEndX = e.changedTouches[0].clientX;
+                let diff = touchEndX - touchStartX;
+                if (Math.abs(diff) > 40) {
+                    if (diff > 0) changeMonth(-1); // ปัดขวา -> เดือนก่อนหน้า
+                    else changeMonth(1);           // ปัดซ้าย -> เดือนถัดไป
+                }
+                touchStartX = 0;
+                touchEndX = 0;
+            }
+        }, { passive: true });
+
+        newContainer.addEventListener('mousedown', (e) => {
             touchStartX = e.clientX;
             let onMouseUp = (eUp) => {
                 touchEndX = eUp.clientX;
-                handleSwipeGesture();
+                let diff = touchEndX - touchStartX;
+                if (Math.abs(diff) > 40) {
+                    if (diff > 0) changeMonth(-1);
+                    else changeMonth(1);
+                }
+                touchStartX = 0;
+                touchEndX = 0;
                 window.removeEventListener('mouseup', onMouseUp);
             };
-            window.addEventListener('mouseup', onMouseUp, { once: true });
-        };
-    }
-
-    function handleSwipeGesture() {
-        let diff = touchEndX - touchStartX;
-        if (Math.abs(diff) > 40) {
-            if (diff > 0) changeMonth(-1);
-            else changeMonth(1);
-            touchStartX = 0;
-            touchEndX = 0;
-        }
+            window.addEventListener('mouseup', onMouseUp);
+        });
     }
 
     function renderCalendar() {

@@ -884,7 +884,7 @@
     </div>
 </div>
 
-<!-- Modal: Calendar (พร้อมระบบ Swipe เลื่อนซ้ายขวา) -->
+<!-- Modal: Calendar (พร้อมระบบ Swipe เลื่อนทีละ 1 เดือนเป๊ะๆ) -->
 <div id="calendar-modal" class="modal" onclick="checkOutsideClose(event, 'calendar-modal')">
     <div class="modal-content" style="width: 320px;" onclick="event.stopPropagation()">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -1799,29 +1799,24 @@
         const swipeContainer = document.getElementById('calendar-swipe-container');
         if (!swipeContainer) return;
 
-        swipeContainer.ontouchstart = null;
-        swipeContainer.ontouchend = null;
-        swipeContainer.onmousedown = null;
-        swipeContainer.onmouseup = null;
-
-        swipeContainer.addEventListener('touchstart', (e) => {
+        swipeContainer.ontouchstart = (e) => {
             touchStartX = e.changedTouches[0].screenX;
-        }, {passive: true});
+        };
 
-        swipeContainer.addEventListener('touchend', (e) => {
+        swipeContainer.ontouchend = (e) => {
             touchEndX = e.changedTouches[0].screenX;
             handleSwipeGesture();
-        }, {passive: true});
+        };
 
-        swipeContainer.addEventListener('mousedown', (e) => {
+        swipeContainer.onmousedown = (e) => {
             touchStartX = e.clientX;
             let onMouseUp = (eUp) => {
                 touchEndX = eUp.clientX;
                 handleSwipeGesture();
                 window.removeEventListener('mouseup', onMouseUp);
             };
-            window.addEventListener('mouseup', onMouseUp);
-        });
+            window.addEventListener('mouseup', onMouseUp, { once: true });
+        };
     }
 
     function handleSwipeGesture() {
@@ -1829,6 +1824,8 @@
         if (Math.abs(diff) > 40) {
             if (diff > 0) changeMonth(-1);
             else changeMonth(1);
+            touchStartX = 0;
+            touchEndX = 0;
         }
     }
 

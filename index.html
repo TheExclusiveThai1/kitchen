@@ -741,8 +741,9 @@
 
             <div class="report-details-box" id="report-details-content"></div>
 
-            <div class="modal-actions" style="display: flex; gap: 8px;">
-                <button class="btn-modal-close" style="font-size: 13px; padding: 10px 8px;" onclick="closeReportModal()">Close</button>
+            <div class="modal-actions" style="display: flex; gap: 8px; flex-direction: column;">
+                <button class="btn-modal-action" style="background: #e74c3c; font-size: 14px; padding: 10px;" onclick="resetTodaySalesDirectly()">🔄 เคลียร์ยอดขายวันนี้เป็น 0 (Reset Sales)</button>
+                <button class="btn-modal-close" style="font-size: 13px; padding: 10px 8px; width: 100%;" onclick="closeReportModal()">Close</button>
             </div>
         </div>
     </div>
@@ -2267,10 +2268,6 @@
                 <head>
                     <title>Print Order</title>
                     <style>
-                        @page {
-                            margin: 0;
-                            size: 80mm auto;
-                        }
                         body {
                             font-family: 'Calibri', Arial, monospace;
                             font-weight: bold;
@@ -2278,7 +2275,7 @@
                             color: #000;
                             background: #fff;
                             margin: 0;
-                            padding: 5mm;
+                            padding: 2mm;
                             line-height: 1.2;
                         }
                     </style>
@@ -2664,7 +2661,6 @@
                 <head>
                     <title>Sales Report Summary</title>
                     <style>
-                        @page { margin: 0; size: 80mm auto; }
                         body {
                             font-family: 'Calibri', Arial, sans-serif;
                             font-size: 11px;
@@ -2700,6 +2696,73 @@
                     printWin.close();
                 }, 250);
             }
+        }
+
+        function printOnlySundayRumpCount() {
+            let currentKey = getTodayDateKey();
+            let currentCount = sundayRumpCounts[currentKey] || 0;
+            let rangeVal = document.getElementById('report-date-range').value;
+            let dateLabel = rangeVal ? rangeVal : currentKey;
+
+            let printHtml = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Sunday Rump Steak Count</title>
+                    <style>
+                        body {
+                            font-family: 'Calibri', Arial, sans-serif;
+                            font-weight: bold;
+                            font-size: 16px;
+                            color: #000;
+                            background: #fff;
+                            margin: 0;
+                            padding: 2mm;
+                            text-align: center;
+                            line-height: 1.2;
+                        }
+                        .title { font-size: 15px; margin-bottom: 4px; border-bottom: 1.5px solid #000; padding-bottom: 3px; }
+                        .count-num { font-size: 36px; margin: 10px 0; font-weight: bold; }
+                        .date-sub { font-size: 13px; font-weight: normal; margin-top: 4px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="title">SUNDAY RUMP STEAK</div>
+                    <div class="date-sub">Date: ${dateLabel}</div>
+                    <div class="count-num">${currentCount}</div>
+                    <div style="font-size: 14px;">Portions Sold</div>
+                    <div style="border-top: 1.5px solid #000; margin-top: 6px;"></div>
+                </body>
+                </html>
+            `;
+
+            let printWin = window.open('', '_blank', 'width=300,height=300,left=-1000,top=-1000');
+            if (printWin) {
+                printWin.document.open();
+                printWin.document.write(printHtml);
+                printWin.document.close();
+                setTimeout(() => {
+                    printWin.focus();
+                    printWin.print();
+                    printWin.close();
+                }, 250);
+            }
+        }
+
+        async function resetTodaySalesDirectly() {
+            if (!confirm("คุณต้องการรีเซ็ตยอดขายและจำนวน Rump Steak ของวันนี้ให้กลับเป็น 0 ใช่หรือไม่?")) return;
+            let currentKey = getTodayDateKey();
+            dailyStats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
+            sundayRumpCounts[currentKey] = 0;
+            
+            if (window.fbDB) {
+                await window.fbSet(window.fbRef(window.fbDB, 'dailySales/' + currentKey), dailyStats);
+                await window.fbSet(window.fbRef(window.fbDB, 'sundayRumpCounts/' + currentKey), 0);
+            }
+            updateDailyReportUI();
+            updateSundayRumpBadgeUI();
+            closeReportModal();
+            alert("รีเซ็ตยอดขายวันนี้เป็น 0 เรียบร้อยแล้วครับ!");
         }
 
         async function loadReportData() {
@@ -2806,6 +2869,7 @@
             };
 
             let printBtnHtml = `<button onclick="printReportSummary()" style="background: #e67e22; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: bold; font-family: 'Calibri', Arial, sans-serif;">🖨️ Print Report</button>`;
+            let printOnlyRumpBtnHtml = `<button onclick="printOnlySundayRumpCount()" style="background: #27ae60; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: bold; font-family: 'Calibri', Arial, sans-serif;">🖨️ ปริ้นเฉพาะจำนวน Rump Steak</button>`;
 
             let headerTitleHtml = fromDate === toDate ? `Date: ${fromDate}` : `Date Range: ${fromDate} ถึง ${toDate}`;
 
@@ -2854,8 +2918,8 @@
 
                 contentBox.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #bdc3c7; padding-bottom: 6px; margin-bottom: 6px;">
-                        <span style="font-weight: bold; color: #1e8449;">Sunday Rump Steak ($7) Report (${headerTitle})</span>
-                        ${printBtnHtml}
+                        <span style="font-weight: bold; color: #1e8449;">Sunday Rump Steak ($7) Report</span>
+                        ${printOnlyRumpBtnHtml}
                     </div>
                     <div>จำนวนเสิร์ฟทั้งหมด: <b style="color: #27ae60; font-size: 16px;">${totalSteakCount} เสิร์ฟ</b></div>
                     <div>ยอดขายรวมเฉพาะเสิร์ฟนี้ (รวม Side/Sauce ที่เพิ่ม): <b style="color: #c0392b; font-size: 16px;">$${totalSteakSalesAmount}</b></div>

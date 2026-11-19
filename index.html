@@ -667,7 +667,7 @@
         </div>
     </div>
 
-    <!-- Sauce Popup Modal (Grid 2 columns, clicking again increments count) -->
+    <!-- Sauce Popup Modal -->
     <div class="modal-overlay" id="sauce-modal">
         <div class="modal-content" style="width: 540px;">
             <div class="modal-header">
@@ -718,7 +718,7 @@
 
     <!-- Sales & Orders Report Modal -->
     <div class="modal-overlay" id="report-modal">
-        <div class="modal-content" style="width: 580px;">
+        <div class="modal-content" style="width: 600px;">
             <div class="modal-header">
                 <span>📅 Sales & Orders Report</span>
                 <button class="close-modal" onclick="closeReportModal()">✕</button>
@@ -734,9 +734,16 @@
                 </div>
             </div>
 
-            <div style="display: flex; gap: 8px; margin-top: 6px;">
-                <button class="cat-btn active" id="btn-rep-all" onclick="setReportViewMode('all')" style="padding: 10px; font-size: 14px;">📜 ภาพรวมทั้งหมด</button>
-                <button class="cat-btn" id="btn-rep-steak" onclick="setReportViewMode('steak')" style="background: #27ae60; padding: 10px; font-size: 14px;">🥩 เฉพาะ Sunday Rump Steak ($7)</button>
+            <div style="display: flex; gap: 6px; margin-top: 6px;">
+                <button class="cat-btn active" id="btn-rep-all" onclick="setReportViewMode('all')" style="padding: 10px 6px; font-size: 14px;">📜 ภาพรวมทั้งหมด</button>
+                <button class="cat-btn" id="btn-rep-steak" onclick="setReportViewMode('steak')" style="background: #27ae60; padding: 10px 6px; font-size: 14px;">🥩 Rump Steak ($7)</button>
+                <button class="cat-btn" id="btn-rep-search" onclick="setReportViewMode('search')" style="background: #2980b9; padding: 10px 6px; font-size: 14px;">🔍 Search เมนูที่ขาย</button>
+            </div>
+
+            <!-- Search Input Area (Visible only in Search mode) -->
+            <div id="report-search-bar" style="display: none; gap: 8px; margin-top: 4px;">
+                <input type="text" id="report-search-input" oninput="loadReportData()" placeholder="พิมพ์ชื่อเมนูที่ต้องการค้นหา (เช่น Pad Thai, Rump, Burger, Curry)..." style="flex: 1; padding: 10px 12px; border: 2px solid #2980b9; border-radius: 5px; font-size: 15px; font-weight: bold; font-family: 'Calibri', Arial, sans-serif;">
+                <button onclick="document.getElementById('report-search-input').value=''; loadReportData();" style="background: #95a5a6; color: white; border: none; padding: 0 14px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 14px;">ล้าง</button>
             </div>
 
             <div class="report-details-box" id="report-details-content"></div>
@@ -1245,7 +1252,7 @@
             }
         }
 
-        let activeSauceMode = 'main'; // 'main' or 'temp_sunday'
+        let activeSauceMode = 'main';
         let tempSelectedSauces = [];
 
         function openSauceModal(mode) {
@@ -2598,8 +2605,18 @@
             reportViewMode = mode;
             document.getElementById('btn-rep-all').classList.remove('active');
             document.getElementById('btn-rep-steak').classList.remove('active');
-            if (mode === 'all') document.getElementById('btn-rep-all').classList.add('active');
-            else document.getElementById('btn-rep-steak').classList.add('active');
+            document.getElementById('btn-rep-search').classList.remove('active');
+            
+            const searchBar = document.getElementById('report-search-bar');
+            if (mode === 'search') {
+                document.getElementById('btn-rep-search').classList.add('active');
+                searchBar.style.display = 'flex';
+                document.getElementById('report-search-input').focus();
+            } else {
+                searchBar.style.display = 'none';
+                if (mode === 'all') document.getElementById('btn-rep-all').classList.add('active');
+                else document.getElementById('btn-rep-steak').classList.add('active');
+            }
             loadReportData();
         }
 
@@ -2609,6 +2626,8 @@
             reportViewMode = 'all';
             document.getElementById('btn-rep-all').classList.add('active');
             document.getElementById('btn-rep-steak').classList.remove('active');
+            document.getElementById('btn-rep-search').classList.remove('active');
+            document.getElementById('report-search-bar').style.display = 'none';
             
             if (!fpInstance) {
                 fpInstance = flatpickr("#report-date-range", {
@@ -2873,7 +2892,80 @@
 
             let headerTitleHtml = fromDate === toDate ? `Date: ${fromDate}` : `Date Range: ${fromDate} ถึง ${toDate}`;
 
-            if (reportViewMode === 'steak') {
+            if (reportViewMode === 'search') {
+                let query = (document.getElementById('report-search-input').value || '').trim().toLowerCase();
+                if (!query) {
+                    contentBox.innerHTML = `<div style="text-align: center; color: #7f8c8d; padding: 20px;">🔍 พิมพ์ชื่อเมนูในช่องค้นหาด้านบน เพื่อดูว่าขายไปวันไหนและจำนวนเท่าไหร่</div>`;
+                    return;
+                }
+
+                let totalMatchedCount = 0;
+                let totalMatchedRevenue = 0;
+                let dailyBreakdown = {}; // dateStr -> { count, revenue, items: [] }
+
+                combinedLogs.forEach(log => {
+                    if (!log.items) return;
+                    log.items.forEach(it => {
+                        let titleMatch = (it.title || '').toLowerCase().includes(query);
+                        let detailMatch = (it.details || []).some(d => (d.text || '').toLowerCase().includes(query));
+                        if (titleMatch || detailMatch) {
+                            totalMatchedCount++;
+                            totalMatchedRevenue += (it.price || 0);
+
+                            let dKey = log._dateTag;
+                            if (!dailyBreakdown[dKey]) {
+                                dailyBreakdown[dKey] = { count: 0, revenue: 0, entries: [] };
+                            }
+                            dailyBreakdown[dKey].count++;
+                            dailyBreakdown[dKey].revenue += (it.price || 0);
+                            dailyBreakdown[dKey].entries.push({
+                                orderNo: log.orderNo || '-',
+                                tableNo: log.tableNo || '-',
+                                time: log.time || '-',
+                                item: it
+                            });
+                        }
+                    });
+                });
+
+                if (totalMatchedCount === 0) {
+                    contentBox.innerHTML = `<div style="text-align: center; color: #c0392b; padding: 20px;">❌ ไม่พบรายการขายที่ตรงกับคำว่า "<b>${query}</b>" ในช่วงวันที่เลือก</div>`;
+                    return;
+                }
+
+                let dailyListHtml = '';
+                Object.keys(dailyBreakdown).sort().forEach(dStr => {
+                    let info = dailyBreakdown[dStr];
+                    let entriesHtml = info.entries.map(ent => {
+                        let groupedDetails = groupAndFormatDetails(ent.item.details);
+                        let detStr = groupedDetails.length > 0 ? ' (' + groupedDetails.map(d => d.text).join(', ') + ')' : '';
+                        return `<div style="font-size: 13px; color: #444; padding-left: 10px; margin-top: 3px;">• Order #${ent.orderNo} [Table ${ent.tableNo}] (${ent.time}): <b>${ent.item.title}</b>${detStr} - <b>$${ent.item.price}</b></div>`;
+                    }).join('');
+
+                    dailyListHtml += `
+                        <div style="background: #fff; border: 1px solid #2980b9; padding: 8px 10px; border-radius: 5px; margin-top: 6px;">
+                            <div style="display: flex; justify-content: space-between; font-weight: bold; color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 4px;">
+                                <span>📅 วันที่ ${dStr}</span>
+                                <span style="color: #2980b9;">ขายได้ ${info.count} รายการ ($${info.revenue})</span>
+                            </div>
+                            ${entriesHtml}
+                        </div>
+                    `;
+                });
+
+                contentBox.innerHTML = `
+                    <div style="background: #eaf2f8; border: 1px solid #2980b9; padding: 10px; border-radius: 5px;">
+                        <div style="font-weight: bold; color: #2c3e50; font-size: 15px;">ผลการค้นหา: "<span style="color: #2980b9;">${query}</span>" (${headerTitle})</div>
+                        <div style="margin-top: 4px; font-size: 15px;">
+                            รวมทั้งหมด: <b style="color: #27ae60; font-size: 17px;">${totalMatchedCount} รายการ</b> | ยอดเงินรวม: <b style="color: #c0392b; font-size: 17px;">$${totalMatchedRevenue}</b>
+                        </div>
+                    </div>
+                    <div style="font-weight: bold; margin-top: 6px;">📊 สรุปแยกตามวันที่ขาย:</div>
+                    <div style="max-height: 240px; overflow-y: auto;">
+                        ${dailyListHtml}
+                    </div>
+                `;
+            } else if (reportViewMode === 'steak') {
                 let steakLogs = [];
                 let totalSteakCount = 0;
                 let totalSteakSalesAmount = 0;

@@ -62,13 +62,45 @@
         .header-left { display: flex; align-items: center; }
         .menu-toggle-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 15px; display: flex; align-items: center; }
         .restaurant-title { font-size: 18px; font-weight: bold; letter-spacing: 0.5px; }
-        .header-right-area { display: flex; align-items: center; gap: 10px; }
+        .header-right-area { display: flex; align-items: center; gap: 8px; }
         .header-time { font-size: 15px; font-weight: bold; color: #f1c40f; }
         .fullscreen-btn { background: #e67e22; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; font-family: 'Calibri', Arial, sans-serif; }
         .fullscreen-btn:hover { background: #d35400; }
         .pass-toggle-btn { background: #34495e; color: #f1c40f; border: 1px solid #f1c40f; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; font-family: 'Calibri', Arial, sans-serif; }
         .printer-toggle-btn { background: #27ae60; color: white; border: 1px solid #2ecc71; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; font-family: 'Calibri', Arial, sans-serif; }
         .printer-toggle-btn.off { background: #c0392b; border-color: #e74c3c; color: #fff; }
+        .service-group { display: inline-flex; align-items: center; gap: 3px; }
+        .service-toggle-btn { background: #7f8c8d; color: white; border: 1px solid #95a5a6; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; font-family: 'Calibri', Arial, sans-serif; white-space: nowrap; }
+        .service-toggle-btn.on { background: #8e44ad; border-color: #bb8fce; color: #fff; }
+        .service-set-btn { background: #34495e; color: #f1c40f; border: 1px solid #f1c40f; padding: 6px 8px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; font-family: 'Calibri', Arial, sans-serif; }
+        .service-set-btn:hover { background: #4a6572; }
+
+        .backdate-banner {
+            display: none;
+            background: #6c3483;
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: bold;
+            flex-shrink: 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+        .backdate-cancel-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Calibri', Arial, sans-serif;
+        }
+        .backdate-cancel-btn:hover { background: #c0392b; }
 
         .kitchen-bar-container {
             background: #d5dbdb;
@@ -169,13 +201,14 @@
             display: flex;
             gap: 10px;
             z-index: 10;
+            flex-wrap: wrap;
         }
         .btn-corner {
             color: white;
             border: none;
             font-size: 15px;
             font-weight: bold;
-            padding: 12px 18px;
+            padding: 12px 16px;
             border-radius: 5px;
             cursor: pointer;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -185,6 +218,9 @@
         .btn-add-new-order:hover { background: #219653; }
         .btn-add-note-corner { background: #8e44ad; }
         .btn-add-note-corner:hover { background: #732d91; }
+        .btn-retro-corner { background: #16a085; }
+        .btn-retro-corner:hover { background: #117a65; }
+        .btn-retro-corner.active-mode { background: #d35400; box-shadow: 0 0 0 2px #f1c40f; }
 
         .sunday-rump-card {
             background: #e8f8f5;
@@ -264,6 +300,7 @@
         .btn-delete-item { background: #e74c3c; color: white; border: none; border-radius: 3px; width: 26px; height: 26px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; font-weight: bold; }
         .btn-delete-item:hover { background: #c0392b; }
 
+        .cart-service-info { font-size: 14px; font-weight: bold; text-align: right; color: #8e44ad; margin-bottom: 2px; display: none; }
         .cart-total { font-size: 20px; font-weight: bold; text-align: right; margin-bottom: 6px; color: #c0392b; }
         .cart-actions { display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px; }
         .cart-actions-row { display: flex; gap: 6px; }
@@ -291,6 +328,7 @@
         }
         .daily-report-header { font-weight: bold; font-size: 15px; display: flex; justify-content: space-between; border-bottom: 1px solid #bdc3c7; padding-bottom: 4px; margin-bottom: 4px; }
         .daily-report-row { display: flex; justify-content: space-between; font-weight: bold; }
+        .daily-service-row { display: none; justify-content: space-between; font-weight: bold; color: #8e44ad; }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 22px; border-radius: 8px; width: 520px; max-width: 95%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 12px; max-height: 90vh; overflow-y: auto; font-family: 'Calibri', Arial, sans-serif; font-size: 15px; }
@@ -367,10 +405,19 @@
         </div>
         <div class="header-right-area">
             <button class="printer-toggle-btn" id="printer-toggle-btn" onclick="togglePrinterMode()">🖨️ Printer: ON</button>
+            <div class="service-group">
+                <button class="service-toggle-btn" id="service-toggle-btn" onclick="toggleServiceCharge()" title="เปิด/ปิดคิดเงิน Service Charge">🛎️ Service: OFF (10%)</button>
+                <button class="service-set-btn" onclick="openServiceChargeModal()" title="ตั้งค่าเปอร์เซ็นต์ Service Charge">⚙️ %</button>
+            </div>
             <button class="pass-toggle-btn" id="pass-toggle-btn" onclick="togglePasswordProtection()">⚙️ Pass Protect: ON</button>
             <button class="fullscreen-btn" onclick="toggleFullScreen()" title="Toggle Fullscreen">⛶ Full Screen</button>
             <div class="header-time" id="clock-display">--:--:--</div>
         </div>
+    </div>
+
+    <div class="backdate-banner" id="backdate-banner">
+        <span id="backdate-banner-text">⏪ BACKDATE MODE: Recording order for --</span>
+        <button class="backdate-cancel-btn" onclick="clearBackdateMode()">✖ Cancel Backdate (Return to Today)</button>
     </div>
 
     <div class="kitchen-bar-container">
@@ -399,6 +446,7 @@
                 <div class="corner-buttons-area">
                     <button class="btn-corner btn-add-new-order" onclick="openKeyboardForNewOrder()">➕ Add New Order</button>
                     <button class="btn-corner btn-add-note-corner" onclick="openKeyboardForNote()">📝 Add Note</button>
+                    <button class="btn-corner btn-retro-corner" id="btn-retro-mode" onclick="openBackdateModal()">⏪ Retro / Backdate Order</button>
                 </div>
             </div>
 
@@ -410,6 +458,7 @@
                 <div class="cart-list-box" id="cart-list">No items ordered yet</div>
                 
                 <div class="cart-footer-fixed">
+                    <div class="cart-service-info" id="cart-service-info"></div>
                     <div class="cart-total">Total: $<span id="total-amount">0</span></div>
                     
                     <button class="btn-past-orders" onclick="openPastOrdersModal()">📋 View & Edit Past Orders</button>
@@ -439,11 +488,59 @@
                             <span>💵 Bulk Cash (<span id="daily-bulk-count">0</span>):</span>
                             <b style="color: #8e44ad; font-size: 15px;">$<span id="daily-bulk-amount">0</span></b>
                         </div>
+                        <div class="daily-service-row" id="daily-service-row">
+                            <span>🛎️ Service Charge:</span>
+                            <b>$<span id="daily-service-amount">0</span></b>
+                        </div>
                         <div class="daily-report-row" style="border-top: 1px dashed #bdc3c7; padding-top: 4px; font-weight: bold; font-size: 15px;">
                             <span>Total (<span id="daily-orders-count">0</span>):</span>
                             <span style="color: #c0392b; font-size: 16px;">$<span id="daily-total-amount">0</span></span>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Charge Percentage Modal -->
+    <div class="modal-overlay" id="service-charge-modal">
+        <div class="modal-content" style="width: 360px;">
+            <div class="modal-header">
+                <span>🛎️ Service Charge (%)</span>
+                <button class="close-modal" onclick="closeServiceChargeModal()">✕</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <label style="font-size: 14px; font-weight: bold; color: #2c3e50;">กำหนดเปอร์เซ็นต์ Service Charge (Public Holiday):</label>
+                <input type="number" step="0.1" min="0" max="100" id="service-rate-input" placeholder="เช่น 10 หรือ 15" style="width: 100%; padding: 10px; border: 2px solid #8e44ad; border-radius: 5px; font-size: 20px; font-weight: bold; text-align: right; font-family: 'Calibri', Arial, sans-serif;">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                    <button class="numpad-btn preset" onclick="setServiceRatePreset(5)">5%</button>
+                    <button class="numpad-btn preset" onclick="setServiceRatePreset(10)">10%</button>
+                    <button class="numpad-btn preset" onclick="setServiceRatePreset(15)">15%</button>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-modal-action" style="background: #8e44ad;" onclick="saveServiceChargeRate()">บันทึกเปอร์เซ็นต์</button>
+                    <button class="btn-modal-close" onclick="closeServiceChargeModal()">ยกเลิก</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backdate Date Picker Modal -->
+    <div class="modal-overlay" id="backdate-modal">
+        <div class="modal-content" style="width: 400px;">
+            <div class="modal-header">
+                <span>⏪ ลงบิลย้อนหลัง (Backdate Order)</span>
+                <button class="close-modal" onclick="closeBackdateModal()">✕</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <label style="font-size: 14px; font-weight: bold; color: #2c3e50;">เลือกวันที่ต้องการลงบิลย้อนหลัง (ได้ทุกวันและทุกเมนู):</label>
+                <input type="date" id="backdate-date-input" style="width: 100%; padding: 10px; border: 2px solid #16a085; border-radius: 5px; font-size: 16px; font-weight: bold; font-family: 'Calibri', Arial, sans-serif;">
+                <div style="font-size: 13px; color: #555; background: #f8f9fa; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                    หลังเลือกวันที่แล้ว คุณสามารถเลือกเมนู/ท็อปปิ้ง/Bulk Option ในตะกร้าและกดจ่ายเงินได้ตามปกติ ยอดขายและบิลจะบันทึกลงวันที่ที่เลือกทันที
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-modal-action" style="background: #16a085;" onclick="confirmBackdateSelection()">เริ่มลงบิลย้อนหลัง</button>
+                    <button class="btn-modal-close" onclick="closeBackdateModal()">ยกเลิก</button>
                 </div>
             </div>
         </div>
@@ -675,9 +772,7 @@
                 <button class="close-modal" onclick="closeSauceModal()">✕</button>
             </div>
             <div style="font-size: 14px; color: #555;" id="sauce-modal-subtitle">Select sauce(s) - คลิกซ้ำเพื่อเพิ่มจำนวน:</div>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;" id="sauce-options-grid">
-                <!-- Populated dynamically -->
-            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;" id="sauce-options-grid"></div>
             <div class="modal-actions">
                 <button class="btn-modal-action" onclick="applySauceSelection()">Apply Sauce</button>
             </div>
@@ -740,7 +835,6 @@
                 <button class="cat-btn" id="btn-rep-search" onclick="setReportViewMode('search')" style="background: #2980b9; padding: 10px 6px; font-size: 14px;">🔍 Search เมนูที่ขาย</button>
             </div>
 
-            <!-- Search Input Area (Visible only in Search mode) -->
             <div id="report-search-bar" style="display: none; gap: 8px; margin-top: 4px;">
                 <input type="text" id="report-search-input" oninput="loadReportData()" placeholder="พิมพ์ชื่อเมนูที่ต้องการค้นหา (เช่น Pad Thai, Rump, Burger, Curry)..." style="flex: 1; padding: 10px 12px; border: 2px solid #2980b9; border-radius: 5px; font-size: 15px; font-weight: bold; font-family: 'Calibri', Arial, sans-serif;">
                 <button onclick="document.getElementById('report-search-input').value=''; loadReportData();" style="background: #95a5a6; color: white; border: none; padding: 0 14px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 14px;">ล้าง</button>
@@ -953,14 +1047,20 @@
         let customNoteText = '';
         let keyboardActionMode = 'note';
         let reportViewMode = 'all';
+        let currentReportSteakCount = 0;
+        let currentReportDateLabel = '';
+        let currentReportSteakLogs = [];
 
         let isBulkOptionSelected = false;
         let pendingPaymentType = 'Cash';
         let pendingCashPaid = 0;
         let pendingCardPaid = 0;
         let editingOrderNo = null;
+        let backdateTargetKey = null;
 
         let cart = [];
+        let subtotal = 0;
+        let serviceChargeAmount = 0;
         let total = 0;
         let activeCartIndex = null;
         let isRemoteUpdate = false; 
@@ -972,6 +1072,9 @@
         let systemPassword = localStorage.getItem('pos_system_password') || '8989';
         let isPassProtectionEnabled = JSON.parse(localStorage.getItem('pos_pass_protect_enabled') ?? 'true');
         let isPrinterEnabled = JSON.parse(localStorage.getItem('pos_printer_enabled') ?? 'true');
+        let isServiceChargeEnabled = JSON.parse(localStorage.getItem('pos_service_charge_enabled') ?? 'false');
+        let serviceChargeRate = parseFloat(localStorage.getItem('pos_service_charge_rate') ?? '10');
+        if (isNaN(serviceChargeRate) || serviceChargeRate < 0) serviceChargeRate = 10;
 
         let sundayRumpCounts = JSON.parse(localStorage.getItem('pos_sunday_rump_counts')) || {};
         let fpInstance = null;
@@ -987,6 +1090,110 @@
             "Sweet Chili Sauce & Sour Cream",
             "Chilli Mayo"
         ];
+
+        function roundMoney(val) {
+            return Number((Number(val) || 0).toFixed(2));
+        }
+
+        function computeOrderAmounts(itemsArr, ratePct, isEnabled) {
+            let sub = 0;
+            (itemsArr || []).forEach(it => {
+                sub += (Number(it.price) || 0);
+            });
+            sub = roundMoney(sub);
+            let pct = isEnabled ? (Number(ratePct) || 0) : 0;
+            let svc = isEnabled ? roundMoney(sub * (pct / 100)) : 0;
+            let grand = roundMoney(sub + svc);
+            return { subtotal: sub, serviceCharge: svc, totalAmount: grand, serviceChargeRate: pct };
+        }
+
+        function updateServiceChargeBtnUI() {
+            let btn = document.getElementById('service-toggle-btn');
+            if (!btn) return;
+            let rateLabel = Number.isInteger(serviceChargeRate) ? serviceChargeRate : serviceChargeRate.toFixed(1);
+            if (isServiceChargeEnabled) {
+                btn.innerText = `🛎️ Service: ON (${rateLabel}%)`;
+                btn.className = 'service-toggle-btn on';
+            } else {
+                btn.innerText = `🛎️ Service: OFF (${rateLabel}%)`;
+                btn.className = 'service-toggle-btn';
+            }
+            updateDailyReportUI();
+        }
+
+        function toggleServiceCharge() {
+            isServiceChargeEnabled = !isServiceChargeEnabled;
+            localStorage.setItem('pos_service_charge_enabled', JSON.stringify(isServiceChargeEnabled));
+            updateServiceChargeBtnUI();
+            recalculateCartTotalsUI();
+        }
+
+        function openServiceChargeModal() {
+            document.getElementById('service-rate-input').value = serviceChargeRate;
+            document.getElementById('service-charge-modal').style.display = 'flex';
+        }
+
+        function closeServiceChargeModal() {
+            document.getElementById('service-charge-modal').style.display = 'none';
+        }
+
+        function setServiceRatePreset(pct) {
+            document.getElementById('service-rate-input').value = pct;
+        }
+
+        function saveServiceChargeRate() {
+            let val = parseFloat(document.getElementById('service-rate-input').value);
+            if (isNaN(val) || val < 0 || val > 100) {
+                alert("กรุณาระบุเปอร์เซ็นต์ระหว่าง 0 ถึง 100 ครับ");
+                return;
+            }
+            serviceChargeRate = roundMoney(val);
+            localStorage.setItem('pos_service_charge_rate', String(serviceChargeRate));
+            closeServiceChargeModal();
+            updateServiceChargeBtnUI();
+            recalculateCartTotalsUI();
+        }
+
+        function recalculateCartTotalsUI() {
+            let sub = 0;
+            cart.forEach(item => {
+                sub += (Number(item.price) || 0);
+            });
+            subtotal = roundMoney(sub);
+            let calc = computeOrderAmounts(cart, serviceChargeRate, isServiceChargeEnabled);
+            serviceChargeAmount = calc.serviceCharge;
+            total = calc.totalAmount;
+
+            let svcEl = document.getElementById('cart-service-info');
+            if (svcEl) {
+                if (isServiceChargeEnabled && subtotal > 0) {
+                    let rateLabel = Number.isInteger(serviceChargeRate) ? serviceChargeRate : serviceChargeRate.toFixed(1);
+                    svcEl.style.display = 'block';
+                    svcEl.innerText = `Subtotal: $${subtotal} + Service (${rateLabel}%): $${serviceChargeAmount}`;
+                } else {
+                    svcEl.style.display = 'none';
+                    svcEl.innerText = '';
+                }
+            }
+            document.getElementById('total-amount').innerText = total;
+        }
+
+        function formatSplitDetails(log) {
+            let totalAmt = Number(log.totalAmount) || 0;
+            let cashVal = (log.cashAmount !== undefined && log.cashAmount !== null && !isNaN(Number(log.cashAmount))) ? Number(log.cashAmount) : null;
+            let cardVal = (log.cardAmount !== undefined && log.cardAmount !== null && !isNaN(Number(log.cardAmount))) ? Number(log.cardAmount) : null;
+
+            if (cashVal === null && cardVal !== null) {
+                cashVal = Math.max(0, roundMoney(totalAmt - cardVal));
+            } else if (cardVal === null && cashVal !== null) {
+                cardVal = Math.max(0, roundMoney(totalAmt - cashVal));
+            }
+
+            if (cashVal !== null && cardVal !== null) {
+                return `Split ($${cashVal} Cash / $${cardVal} Card)`;
+            }
+            return `Split (Cash + Card)`;
+        }
 
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
@@ -1013,8 +1220,60 @@
             return `${year}-${month}-${day}`;
         }
 
+        function getActiveTargetDateKey() {
+            return backdateTargetKey || getTodayDateKey();
+        }
+
+        function openBackdateModal() {
+            let defaultDate = backdateTargetKey;
+            if (!defaultDate) {
+                let d = new Date();
+                d.setDate(d.getDate() - 1);
+                let y = d.getFullYear();
+                let m = String(d.getMonth() + 1).padStart(2, '0');
+                let day = String(d.getDate()).padStart(2, '0');
+                defaultDate = `${y}-${m}-${day}`;
+            }
+            document.getElementById('backdate-date-input').value = defaultDate;
+            document.getElementById('backdate-modal').style.display = 'flex';
+        }
+
+        function closeBackdateModal() {
+            document.getElementById('backdate-modal').style.display = 'none';
+        }
+
+        function confirmBackdateSelection() {
+            let chosenDate = document.getElementById('backdate-date-input').value;
+            if (!chosenDate) {
+                alert("กรุณาเลือกวันที่ต้องการลงบิลย้อนหลังครับ");
+                return;
+            }
+            backdateTargetKey = chosenDate;
+            closeBackdateModal();
+            updateBackdateBannerUI();
+        }
+
+        function clearBackdateMode() {
+            backdateTargetKey = null;
+            updateBackdateBannerUI();
+        }
+
+        function updateBackdateBannerUI() {
+            let banner = document.getElementById('backdate-banner');
+            let bannerText = document.getElementById('backdate-banner-text');
+            let retroBtn = document.getElementById('btn-retro-mode');
+            if (backdateTargetKey) {
+                banner.style.display = 'flex';
+                bannerText.innerText = `⏪ BACKDATE MODE: กำลังลงบิลย้อนหลังวันที่ ${backdateTargetKey} (ทุกเมนู / ทุกการชำระเงิน)`;
+                if (retroBtn) retroBtn.classList.add('active-mode');
+            } else {
+                banner.style.display = 'none';
+                if (retroBtn) retroBtn.classList.remove('active-mode');
+            }
+        }
+
         let todayKey = getTodayDateKey();
-        let dailyStats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
+        let dailyStats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0, serviceTotal: 0 };
         let allOrderLogs = JSON.parse(localStorage.getItem('pos_all_order_logs')) || {};
 
         if (!allOrderLogs[todayKey]) {
@@ -1029,8 +1288,9 @@
         function updateSundayRumpBadgeUI() {
             let badge = document.getElementById('sunday-rump-badge');
             if (badge) {
-                let count = sundayRumpCounts[todayKey] || 0;
-                badge.innerText = `Total: ${count}`;
+                let targetKey = getActiveTargetDateKey();
+                let count = sundayRumpCounts[targetKey] || 0;
+                badge.innerText = backdateTargetKey ? `Total (${targetKey}): ${count}` : `Total: ${count}`;
             }
         }
 
@@ -1896,7 +2156,6 @@
 
         function updateCartUI() {
             let cartListHtml = '';
-            total = 0;
             
             cart.forEach((item, index) => {
                 let groupedDetails = groupAndFormatDetails(item.details);
@@ -1920,11 +2179,10 @@
                             <button class="btn-delete-item" onclick="removeCartItem(${index}, event)" title="Delete Item">✕</button>
                         </div>
                     </div>`;
-                total += item.price;
             });
 
             document.getElementById('cart-list').innerHTML = cartListHtml || 'No items ordered yet';
-            document.getElementById('total-amount').innerText = total;
+            recalculateCartTotalsUI();
 
             if (!isRemoteUpdate && window.fbDB) {
                 const cartRef = window.fbRef(window.fbDB, 'liveCart');
@@ -1934,7 +2192,10 @@
 
         function initiateCashCheckout(paymentType) {
             if (cart.length === 0) return;
+            recalculateCartTotalsUI();
             pendingPaymentType = paymentType;
+            pendingCashPaid = 0;
+            pendingCardPaid = 0;
             document.getElementById('cash-modal-total').innerText = total;
             document.getElementById('cash-received-input').value = '';
             document.getElementById('cash-change-amount').innerText = '0.00';
@@ -1958,7 +2219,7 @@
                 input.value = total;
             } else {
                 let currentVal = parseFloat(input.value) || 0;
-                input.value = currentVal + amount;
+                input.value = roundMoney(currentVal + amount);
             }
             calculateChange();
         }
@@ -1981,12 +2242,16 @@
 
         function initiateCardCheckout() {
             if (cart.length === 0) return;
+            recalculateCartTotalsUI();
             pendingPaymentType = 'Card';
+            pendingCashPaid = 0;
+            pendingCardPaid = 0;
             openTableSelectionModal();
         }
 
         function initiateSplitCheckout() {
             if (cart.length === 0) return;
+            recalculateCartTotalsUI();
             document.getElementById('split-modal-total').innerText = total;
             document.getElementById('split-cash-input').value = '';
             document.getElementById('split-card-amount').innerText = total.toFixed(2);
@@ -2006,7 +2271,7 @@
 
         function calculateSplit() {
             let cashPaid = parseFloat(document.getElementById('split-cash-input').value) || 0;
-            let cardBal = total - cashPaid;
+            let cardBal = roundMoney(total - cashPaid);
             document.getElementById('split-card-amount').innerText = cardBal > 0 ? cardBal.toFixed(2) : '0.00';
         }
 
@@ -2016,8 +2281,8 @@
                 alert("Please enter a valid Cash amount that is less than Total Due!");
                 return;
             }
-            pendingCashPaid = cashPaid;
-            pendingCardPaid = total - cashPaid;
+            pendingCashPaid = roundMoney(cashPaid);
+            pendingCardPaid = roundMoney(total - cashPaid);
             pendingPaymentType = 'Split';
             closeSplitModal();
             openTableSelectionModal();
@@ -2034,124 +2299,124 @@
 
         function closeTableModal() { document.getElementById('table-modal').style.display = 'none'; }
 
+        async function syncStatsForDate(targetDateKey, logsArray) {
+            let recalculatedStats = computeStatsFromRemainingOrders(logsArray);
+            if (targetDateKey === getTodayDateKey()) {
+                dailyStats = recalculatedStats;
+                updateDailyReportUI();
+            }
+            if (window.fbDB) {
+                const salesRef = window.fbRef(window.fbDB, 'dailySales/' + targetDateKey);
+                await window.fbSet(salesRef, recalculatedStats);
+            }
+        }
+
         async function confirmOrderWithTable(tableNum) {
             closeTableModal();
+            recalculateCartTotalsUI();
             
-            let currentKey = getTodayDateKey();
+            let targetDateKey = getActiveTargetDateKey();
+            let isBackdate = Boolean(backdateTargetKey && backdateTargetKey !== getTodayDateKey());
             let targetOrderNo = editingOrderNo;
 
-            if (targetOrderNo !== null) {
+            if (targetOrderNo !== null && !isBackdate) {
                 await executeDeletePastOrderSilently(targetOrderNo);
             }
             
             let maxOrderNo = 0;
-            if (allOrderLogs[currentKey]) {
-                allOrderLogs[currentKey].forEach(o => {
-                    if (o.orderNo && o.orderNo > maxOrderNo) maxOrderNo = o.orderNo;
-                });
-            }
+            let existingLogs = Array.isArray(allOrderLogs[targetDateKey]) ? [...allOrderLogs[targetDateKey]] : [];
 
             if (window.fbDB) {
                 try {
-                    const logsRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
+                    const logsRef = window.fbRef(window.fbDB, 'orderLogs/' + targetDateKey);
                     const snapshot = await window.fbGet(logsRef);
                     if (snapshot.exists()) {
                         const valObj = snapshot.val();
-                        Object.values(valObj).forEach(o => {
-                            if (o.orderNo && o.orderNo > maxOrderNo) maxOrderNo = o.orderNo;
-                        });
+                        existingLogs = Object.values(valObj);
                     }
                 } catch(e) {
                     console.error("Error checking max orderNo:", e);
                 }
             }
 
-            let finalOrderNo = targetOrderNo !== null ? targetOrderNo : (maxOrderNo + 1);
+            existingLogs.forEach(o => {
+                if (o.orderNo && Number(o.orderNo) > maxOrderNo) maxOrderNo = Number(o.orderNo);
+            });
+
+            let finalOrderNo = (targetOrderNo !== null && !isBackdate) ? targetOrderNo : (maxOrderNo + 1);
 
             let rumpCountInCart = cart.filter(it => it.title === 'Rump steak').length;
+            let currentRumpForDate = sundayRumpCounts[targetDateKey] || 0;
+            if (window.fbDB && isBackdate) {
+                try {
+                    const rumpSnap = await window.fbGet(window.fbRef(window.fbDB, 'sundayRumpCounts/' + targetDateKey));
+                    if (rumpSnap.exists()) currentRumpForDate = rumpSnap.val() || 0;
+                } catch(e) {}
+            }
+
+            let updatedRumpTotal = currentRumpForDate;
             if (rumpCountInCart > 0) {
-                sundayRumpCounts[currentKey] = (sundayRumpCounts[currentKey] || 0) + rumpCountInCart;
+                updatedRumpTotal += rumpCountInCart;
+                sundayRumpCounts[targetDateKey] = updatedRumpTotal;
+                localStorage.setItem('pos_sunday_rump_counts', JSON.stringify(sundayRumpCounts));
                 if (window.fbDB) {
-                    const rumpRef = window.fbRef(window.fbDB, 'sundayRumpCounts/' + currentKey);
-                    window.fbSet(rumpRef, sundayRumpCounts[currentKey]);
+                    const rumpRef = window.fbRef(window.fbDB, 'sundayRumpCounts/' + targetDateKey);
+                    await window.fbSet(rumpRef, updatedRumpTotal);
                 }
                 updateSundayRumpBadgeUI();
             }
 
+            let amtCalc = computeOrderAmounts(cart, serviceChargeRate, isServiceChargeEnabled);
+
             let newOrderLog = {
                 orderNo: finalOrderNo,
                 tableNo: tableNum,
-                time: new Date().toLocaleTimeString('en-AU', { hour12: false }),
+                time: isBackdate ? `BACKDATE (${targetDateKey})` : new Date().toLocaleTimeString('en-AU', { hour12: false }),
                 paymentType: pendingPaymentType,
                 items: JSON.parse(JSON.stringify(cart)),
-                totalAmount: total
+                subtotal: amtCalc.subtotal,
+                serviceChargeEnabled: Boolean(isServiceChargeEnabled),
+                serviceChargeRate: amtCalc.serviceChargeRate,
+                serviceChargeAmount: amtCalc.serviceCharge,
+                totalAmount: amtCalc.totalAmount
             };
 
-            if (isPrinterEnabled) {
-                printReceipt(newOrderLog);
+            if (pendingPaymentType === 'Split') {
+                let cPaid = roundMoney(pendingCashPaid);
+                let kPaid = roundMoney(pendingCardPaid);
+                if (isNaN(kPaid)) kPaid = Math.max(0, roundMoney(amtCalc.totalAmount - cPaid));
+                newOrderLog.cashAmount = cPaid;
+                newOrderLog.cardAmount = kPaid;
             }
 
-            if (pendingPaymentType === 'Split') checkoutSplitOrder(pendingCashPaid, pendingCardPaid, tableNum, finalOrderNo, targetOrderNo, newOrderLog);
-            else checkoutOrder(pendingPaymentType, tableNum, finalOrderNo, targetOrderNo, newOrderLog);
+            if (isPrinterEnabled && !isBackdate) {
+                let printOpts = rumpCountInCart > 0 ? { runningCount: updatedRumpTotal } : {};
+                printReceipt(newOrderLog, printOpts);
+            }
 
+            existingLogs.push(newOrderLog);
+            allOrderLogs[targetDateKey] = existingLogs;
+            localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
+
+            if (window.fbDB) {
+                const logsRef = window.fbRef(window.fbDB, `orderLogs/${targetDateKey}`);
+                await window.fbPush(logsRef, newOrderLog);
+            }
+
+            await syncStatsForDate(targetDateKey, existingLogs);
+
+            if (!isBackdate) {
+                await updateKitchenActiveOrderInFirebase(targetOrderNo, newOrderLog);
+            }
+
+            if (isBackdate) {
+                alert(`บันทึกบิลย้อนหลังวันที่ ${targetDateKey} (Order #${finalOrderNo}, $${amtCalc.totalAmount}) เรียบร้อยแล้วครับ`);
+                clearBackdateMode();
+            }
+
+            pendingCashPaid = 0;
+            pendingCardPaid = 0;
             editingOrderNo = null;
-        }
-
-        async function checkoutSplitOrder(cashAmount, cardAmount, tableNum, orderNum, editTargetNo, newOrderLog) {
-            let currentKey = getTodayDateKey();
-
-            if (!allOrderLogs[currentKey]) allOrderLogs[currentKey] = [];
-            allOrderLogs[currentKey].push(newOrderLog);
-            localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
-
-            if (window.fbDB) {
-                const logsRef = window.fbRef(window.fbDB, `orderLogs/${currentKey}`);
-                window.fbPush(logsRef, newOrderLog);
-            }
-
-            dailyStats.cashCount = (dailyStats.cashCount || 0) + 1;
-            dailyStats.cashTotal = (dailyStats.cashTotal || 0) + cashAmount;
-            dailyStats.cardCount = (dailyStats.cardCount || 0) + 1;
-            dailyStats.cardTotal = (dailyStats.cardTotal || 0) + cardAmount;
-
-            const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
-            window.fbSet(salesRef, dailyStats);
-
-            await updateKitchenActiveOrderInFirebase(editTargetNo, newOrderLog);
-
-            clearCart();
-        }
-
-        async function checkoutOrder(paymentType, tableNum, orderNum, editTargetNo, newOrderLog) {
-            if (cart.length === 0) return;
-
-            let currentKey = getTodayDateKey();
-
-            if (!allOrderLogs[currentKey]) allOrderLogs[currentKey] = [];
-            allOrderLogs[currentKey].push(newOrderLog);
-            localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
-
-            if (window.fbDB) {
-                const logsRef = window.fbRef(window.fbDB, `orderLogs/${currentKey}`);
-                window.fbPush(logsRef, newOrderLog);
-            }
-
-            if (paymentType === 'Cash') {
-                dailyStats.cashCount = (dailyStats.cashCount || 0) + 1;
-                dailyStats.cashTotal = (dailyStats.cashTotal || 0) + total;
-            } else if (paymentType === 'Card') {
-                dailyStats.cardCount = (dailyStats.cardCount || 0) + 1;
-                dailyStats.cardTotal = (dailyStats.cardTotal || 0) + total;
-            } else if (paymentType === 'Bulk Cash') {
-                dailyStats.bulkCount = (dailyStats.bulkCount || 0) + 1;
-                dailyStats.bulkTotal = (dailyStats.bulkTotal || 0) + total;
-            }
-
-            const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
-            window.fbSet(salesRef, dailyStats);
-
-            await updateKitchenActiveOrderInFirebase(editTargetNo, newOrderLog);
-
             clearCart();
         }
 
@@ -2232,8 +2497,9 @@
                 return `<div style="padding: 8px 0; border-bottom: 1px solid #eee;"><b>${it.title}</b> ($${it.price})${detailsStr}</div>`;
             }).join('');
 
+            let svcText = (ord.serviceChargeAmount && Number(ord.serviceChargeAmount) > 0) ? ` (incl. Service $${ord.serviceChargeAmount})` : '';
             let bodyHtml = `
-                <div style="font-size: 15px; font-weight: bold; color: #2c3e50;">Time: ${ord.time} | Total: $${ord.totalAmount}</div>
+                <div style="font-size: 15px; font-weight: bold; color: #2c3e50;">Time: ${ord.time} | Total: $${ord.totalAmount}${svcText}</div>
                 <hr style="margin: 8px 0;">
                 <div style="font-size: 15px; line-height: 1.3;">${itemsList}</div>
             `;
@@ -2251,29 +2517,28 @@
             }
         }
 
-        function printReceipt(ord) {
-            let itemsHtml = ord.items.map(it => {
+        function printReceipt(ord, options = {}) {
+            let itemsToRender = options.onlySteak ? (ord.items || []).filter(it => it.title === 'Rump steak') : (ord.items || []);
+            let itemsHtml = itemsToRender.map(it => {
                 let groupedDetails = groupAndFormatDetails(it.details);
                 let detailsStr = '';
                 if (groupedDetails.length > 0) {
                     detailsStr = groupedDetails.map(d => `<br>&nbsp;&nbsp;- <span style="font-weight: normal;">${d.text}</span>`).join('');
                 }
                 return `
-                    <div style="font-size: 16px; font-weight: bold; margin-bottom: 3px;">
+                    <div style="font-size: 17px; font-weight: bold; margin-bottom: 4px;">
                         • ${it.title}${detailsStr}
                     </div>
                 `;
             }).join('');
 
-            let paymentLabel = ord.paymentType || 'Cash';
-            if (paymentLabel === 'Bulk Cash') paymentLabel = 'Cash';
-            if (paymentLabel === 'Split') paymentLabel = 'Split (Cash/Card)';
+            let runningCountText = (options.runningCount !== undefined && options.runningCount !== null) ? ` | #${options.runningCount}` : '';
 
             let receiptHtml = `
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>Print Order</title>
+                    <title>Kitchen Order</title>
                     <style>
                         body {
                             font-family: 'Calibri', Arial, monospace;
@@ -2283,20 +2548,19 @@
                             background: #fff;
                             margin: 0;
                             padding: 2mm;
-                            line-height: 1.2;
+                            line-height: 1.25;
                         }
                     </style>
                 </head>
                 <body>
-                    <div style="font-size: 16px; font-weight: bold; margin-bottom: 2px;">
+                    <div style="font-size: 17px; font-weight: bold; margin-bottom: 2px;">
                       ORDER #${ord.orderNo} | TABLE: ${ord.tableNo}
                     </div>
-                    <div style="font-size: 14px; font-weight: bold; margin-bottom: 3px; display: flex; justify-content: space-between;">
-                      <span>TIME: ${ord.time}</span>
-                      <span>[${paymentLabel}]</span>
+                    <div style="font-size: 14px; font-weight: bold; margin-bottom: 4px;">
+                      TIME: ${ord.time}${runningCountText}
                     </div>
                     <div style="border-top: 1.5px solid #000; margin: 2px 0;"></div>
-                    <div style="margin-top: 3px; margin-bottom: 3px;">
+                    <div style="margin-top: 4px; margin-bottom: 4px;">
                         ${itemsHtml}
                     </div>
                     <div style="border-top: 1.5px solid #000; margin: 2px 0;"></div>
@@ -2304,8 +2568,14 @@
                 </html>
             `;
 
-            let printWin = window.open('', '_blank', 'width=300,height=300,left=-1000,top=-1000');
+            let halfWidth = Math.max(480, Math.floor((window.screen && window.screen.availWidth ? window.screen.availWidth : 1280) * 0.5));
+            let fullHeight = (window.screen && window.screen.availHeight) ? window.screen.availHeight : 800;
+            let printWin = window.open('', '_blank', `width=${halfWidth},height=${fullHeight},left=0,top=0`);
             if (printWin) {
+                try {
+                    printWin.moveTo(0, 0);
+                    printWin.resizeTo(halfWidth, fullHeight);
+                } catch (e) {}
                 printWin.document.open();
                 printWin.document.write(receiptHtml);
                 printWin.document.close();
@@ -2315,6 +2585,18 @@
                     printWin.close();
                 }, 250);
             }
+        }
+
+        function printSteakOrderSlip(idx) {
+            let sl = currentReportSteakLogs[idx];
+            if (!sl) return;
+            let ordObj = {
+                orderNo: sl.orderNo,
+                tableNo: sl.tableNo,
+                time: sl.time,
+                items: sl.steakItems
+            };
+            printReceipt(ordObj, { onlySteak: true, runningCount: sl.runningCount });
         }
 
         function loadCurrentKitchenOrderForEdit() {
@@ -2355,14 +2637,25 @@
 
         function updateDailyReportUI() {
             document.getElementById('daily-cash-count').innerText = dailyStats.cashCount || 0;
-            document.getElementById('daily-cash-amount').innerText = dailyStats.cashTotal || 0;
+            document.getElementById('daily-cash-amount').innerText = Number(dailyStats.cashTotal || 0);
             document.getElementById('daily-card-count').innerText = dailyStats.cardCount || 0;
-            document.getElementById('daily-card-amount').innerText = dailyStats.cardTotal || 0;
+            document.getElementById('daily-card-amount').innerText = Number(dailyStats.cardTotal || 0);
             document.getElementById('daily-bulk-count').innerText = dailyStats.bulkCount || 0;
-            document.getElementById('daily-bulk-amount').innerText = dailyStats.bulkTotal || 0;
+            document.getElementById('daily-bulk-amount').innerText = Number(dailyStats.bulkTotal || 0);
 
-            let grandTotalCount = (dailyStats.cashCount || 0) + (dailyStats.cardCount || 0) + (dailyStats.bulkCount || 0);
-            let grandTotalSales = (dailyStats.cashTotal || 0) + (dailyStats.cardTotal || 0) + (dailyStats.bulkTotal || 0);
+            let svcRow = document.getElementById('daily-service-row');
+            let svcAmtEl = document.getElementById('daily-service-amount');
+            if (svcRow && svcAmtEl) {
+                if (isServiceChargeEnabled) {
+                    svcRow.style.display = 'flex';
+                    svcAmtEl.innerText = Number(dailyStats.serviceTotal || 0);
+                } else {
+                    svcRow.style.display = 'none';
+                }
+            }
+
+            let grandTotalCount = (Number(dailyStats.cashCount) || 0) + (Number(dailyStats.cardCount) || 0) + (Number(dailyStats.bulkCount) || 0);
+            let grandTotalSales = roundMoney((Number(dailyStats.cashTotal) || 0) + (Number(dailyStats.cardTotal) || 0) + (Number(dailyStats.bulkTotal) || 0));
 
             document.getElementById('daily-orders-count').innerText = grandTotalCount;
             document.getElementById('daily-total-amount').innerText = grandTotalSales;
@@ -2370,12 +2663,20 @@
 
         function clearCart() {
             cart = [];
+            subtotal = 0;
+            serviceChargeAmount = 0;
+            total = 0;
             isBulkOptionSelected = false;
             editingOrderNo = null;
             updatePaymentButtonsDisplay();
             resetSelection();
             
             document.getElementById('cart-list').innerHTML = 'No items ordered yet';
+            let svcEl = document.getElementById('cart-service-info');
+            if (svcEl) {
+                svcEl.style.display = 'none';
+                svcEl.innerText = '';
+            }
             document.getElementById('total-amount').innerText = '0';
 
             if (window.fbDB) {
@@ -2385,7 +2686,7 @@
         }
 
         async function openPastOrdersModal() {
-            let currentKey = getTodayDateKey();
+            let currentKey = getActiveTargetDateKey();
             document.getElementById('past-orders-list-content').innerHTML = "Loading...";
             document.getElementById('past-orders-modal').style.display = 'flex';
 
@@ -2398,6 +2699,8 @@
                     if (snapshot.exists()) {
                         const valObj = snapshot.val();
                         logs = Object.values(valObj);
+                        allOrderLogs[currentKey] = logs;
+                        localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
                     }
                 } catch(e) {
                     console.error("Error fetching past orders:", e);
@@ -2408,15 +2711,19 @@
 
             let contentHtml = '';
             logs.forEach((log) => {
-                let itemsList = log.items.map(it => {
+                let itemsList = (log.items || []).map(it => {
                     let groupedDetails = groupAndFormatDetails(it.details);
                     let detailsStr = '';
                     if (groupedDetails.length > 0) detailsStr = ' (' + groupedDetails.map(d => d.text).join(', ') + ')';
                     return `• ${it.title}${detailsStr} - $${it.price}`;
                 }).join('<br>');
 
+                let svcNote = (log.serviceChargeAmount && Number(log.serviceChargeAmount) > 0)
+                    ? `<div style="font-size: 12px; color: #8e44ad; margin-top: 4px;">Service Charge (${log.serviceChargeRate || 0}%): +$${log.serviceChargeAmount}</div>`
+                    : '';
+
                 let paymentText = log.paymentType || 'Cash';
-                if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
+                if (paymentText === 'Split') paymentText = formatSplitDetails(log);
 
                 let targetOrderNo = log.orderNo || 1;
 
@@ -2426,10 +2733,11 @@
                             <span>Order #${targetOrderNo} [Table ${log.tableNo || '-'}] (${log.time || '-'})</span>
                             <span style="color: #c0392b;">$${log.totalAmount} (${paymentText})</span>
                         </div>
-                        <div style="font-size: 13px; color: #444; margin-top: 6px; margin-bottom: 8px;">
+                        <div style="font-size: 13px; color: #444; margin-top: 6px; margin-bottom: 4px;">
                             ${itemsList}
                         </div>
-                        <div style="display: flex; gap: 8px;">
+                        ${svcNote}
+                        <div style="display: flex; gap: 8px; margin-top: 8px;">
                             <button style="background: #2980b9; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: bold; flex: 1; font-family: 'Calibri', Arial, sans-serif;" onclick="loadOrderForEditByOrderNo(${targetOrderNo})">📥 Load to Cart (Edit)</button>
                             <button style="background: #e74c3c; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: bold; flex: 1; font-family: 'Calibri', Arial, sans-serif;" onclick="deletePastOrder(${targetOrderNo})">🗑️ Delete Order</button>
                         </div>
@@ -2443,7 +2751,7 @@
         function closePastOrdersModal() { document.getElementById('past-orders-modal').style.display = 'none'; }
 
         async function loadOrderForEditByOrderNo(targetOrderNo) {
-            let currentKey = getTodayDateKey();
+            let currentKey = getActiveTargetDateKey();
             let logs = allOrderLogs[currentKey] || [];
             let targetOrder = null;
 
@@ -2480,9 +2788,38 @@
             }
         }
 
+        function computeStatsFromRemainingOrders(remainingLogs) {
+            let stats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0, serviceTotal: 0 };
+            remainingLogs.forEach(ord => {
+                let pType = ord.paymentType || 'Cash';
+                let pAmt = Number(ord.totalAmount) || 0;
+                let sAmt = Number(ord.serviceChargeAmount) || 0;
+                stats.serviceTotal = roundMoney(stats.serviceTotal + sAmt);
+
+                if (pType === 'Cash') {
+                    stats.cashCount += 1;
+                    stats.cashTotal = roundMoney(stats.cashTotal + pAmt);
+                } else if (pType === 'Card') {
+                    stats.cardCount += 1;
+                    stats.cardTotal = roundMoney(stats.cardTotal + pAmt);
+                } else if (pType === 'Bulk Cash') {
+                    stats.bulkCount += 1;
+                    stats.bulkTotal = roundMoney(stats.bulkTotal + pAmt);
+                } else if (pType === 'Split') {
+                    let cAmt = (ord.cashAmount !== undefined && ord.cashAmount !== null && !isNaN(Number(ord.cashAmount))) ? Number(ord.cashAmount) : 0;
+                    let kAmt = (ord.cardAmount !== undefined && ord.cardAmount !== null && !isNaN(Number(ord.cardAmount))) ? Number(ord.cardAmount) : Math.max(0, roundMoney(pAmt - cAmt));
+                    stats.cashCount += 1;
+                    stats.cashTotal = roundMoney(stats.cashTotal + cAmt);
+                    stats.cardCount += 1;
+                    stats.cardTotal = roundMoney(stats.cardTotal + kAmt);
+                }
+            });
+            return stats;
+        }
+
         async function executeDeletePastOrderSilently(targetOrderNo) {
-            let currentKey = getTodayDateKey();
-            let logs = allOrderLogs[currentKey] || [];
+            let currentKey = getActiveTargetDateKey();
+            let logs = Array.isArray(allOrderLogs[currentKey]) ? [...allOrderLogs[currentKey]] : [];
             let fbLogsObj = null;
 
             if (window.fbDB) {
@@ -2498,52 +2835,37 @@
                 }
             }
 
-            let targetIndex = logs.findIndex(l => l.orderNo === targetOrderNo);
+            let targetIndex = logs.findIndex(l => Number(l.orderNo) === Number(targetOrderNo));
             if (targetIndex === -1) return;
 
             let targetOrder = logs[targetIndex];
+            let remainingLogs = logs.filter((_, idx) => idx !== targetIndex);
 
-            let rumpCount = targetOrder.items.filter(it => it.title === 'Rump steak').length;
+            let rumpCount = (targetOrder.items || []).filter(it => it.title === 'Rump steak').length;
             if (rumpCount > 0) {
-                sundayRumpCounts[currentKey] = Math.max(0, (sundayRumpCounts[currentKey] || 0) - rumpCount);
+                let currentRump = Number(sundayRumpCounts[currentKey]) || 0;
                 if (window.fbDB) {
-                    const rumpRef = window.fbRef(window.fbDB, 'sundayRumpCounts/' + currentKey);
-                    window.fbSet(rumpRef, sundayRumpCounts[currentKey]);
+                    try {
+                        const rSnap = await window.fbGet(window.fbRef(window.fbDB, 'sundayRumpCounts/' + currentKey));
+                        if (rSnap.exists()) currentRump = Number(rSnap.val()) || 0;
+                    } catch(e) {}
+                }
+                let nextRump = Math.max(0, currentRump - rumpCount);
+                sundayRumpCounts[currentKey] = nextRump;
+                localStorage.setItem('pos_sunday_rump_counts', JSON.stringify(sundayRumpCounts));
+                if (window.fbDB) {
+                    await window.fbSet(window.fbRef(window.fbDB, 'sundayRumpCounts/' + currentKey), nextRump);
                 }
                 updateSundayRumpBadgeUI();
             }
 
-            let pType = targetOrder.paymentType || 'Cash';
-            let pAmount = targetOrder.totalAmount || 0;
-
-            if (pType === 'Cash') {
-                dailyStats.cashCount = Math.max(0, (dailyStats.cashCount || 0) - 1);
-                dailyStats.cashTotal = Math.max(0, (dailyStats.cashTotal || 0) - pAmount);
-            } else if (pType === 'Card') {
-                dailyStats.cardCount = Math.max(0, (dailyStats.cardCount || 0) - 1);
-                dailyStats.cardTotal = Math.max(0, (dailyStats.cardTotal || 0) - pAmount);
-            } else if (pType === 'Bulk Cash') {
-                dailyStats.bulkCount = Math.max(0, (dailyStats.bulkCount || 0) - 1);
-                dailyStats.bulkTotal = Math.max(0, (dailyStats.bulkTotal || 0) - pAmount);
-            } else if (pType === 'Split') {
-                let cashPart = targetOrder.cashAmount || 0;
-                let cardPart = targetOrder.cardAmount || 0;
-                dailyStats.cashCount = Math.max(0, (dailyStats.cashCount || 0) - 1);
-                dailyStats.cashTotal = Math.max(0, (dailyStats.cashTotal || 0) - cashPart);
-                dailyStats.cardCount = Math.max(0, (dailyStats.cardCount || 0) - 1);
-                dailyStats.cardTotal = Math.max(0, (dailyStats.cardTotal || 0) - cardPart);
-            }
-
-            if (window.fbDB) {
-                const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
-                window.fbSet(salesRef, dailyStats);
-            }
-            updateDailyReportUI();
+            allOrderLogs[currentKey] = remainingLogs;
+            localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
 
             if (window.fbDB && fbLogsObj) {
                 let fbKeyToDelete = null;
                 Object.keys(fbLogsObj).forEach(k => {
-                    if (fbLogsObj[k].orderNo === targetOrderNo) {
+                    if (Number(fbLogsObj[k].orderNo) === Number(targetOrderNo)) {
                         fbKeyToDelete = k;
                     }
                 });
@@ -2553,8 +2875,7 @@
                 }
             }
 
-            allOrderLogs[currentKey].splice(targetIndex, 1);
-            localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
+            await syncStatsForDate(currentKey, remainingLogs);
         }
 
         async function deletePastOrder(targetOrderNo) {
@@ -2562,7 +2883,10 @@
                 return;
             }
             await executeDeletePastOrderSilently(targetOrderNo);
-            openPastOrdersModal();
+            await openPastOrdersModal();
+            if (document.getElementById('report-modal').style.display === 'flex') {
+                await loadReportData();
+            }
         }
 
         function openNoOptModal() { document.getElementById('no-opt-modal').style.display = 'flex'; }
@@ -2704,8 +3028,14 @@
                 </html>
             `;
 
-            let printWin = window.open('', '_blank', 'width=300,height=300,left=-1000,top=-1000');
+            let halfWidth = Math.max(480, Math.floor((window.screen && window.screen.availWidth ? window.screen.availWidth : 1280) * 0.5));
+            let fullHeight = (window.screen && window.screen.availHeight) ? window.screen.availHeight : 800;
+            let printWin = window.open('', '_blank', `width=${halfWidth},height=${fullHeight},left=0,top=0`);
             if (printWin) {
+                try {
+                    printWin.moveTo(0, 0);
+                    printWin.resizeTo(halfWidth, fullHeight);
+                } catch (e) {}
                 printWin.document.open();
                 printWin.document.write(printHtml);
                 printWin.document.close();
@@ -2718,10 +3048,9 @@
         }
 
         function printOnlySundayRumpCount() {
-            let currentKey = getTodayDateKey();
-            let currentCount = sundayRumpCounts[currentKey] || 0;
             let rangeVal = document.getElementById('report-date-range').value;
-            let dateLabel = rangeVal ? rangeVal : currentKey;
+            let dateLabel = currentReportDateLabel || (rangeVal ? rangeVal : getTodayDateKey());
+            let countToPrint = currentReportSteakCount;
 
             let printHtml = `
                 <!DOCTYPE html>
@@ -2748,15 +3077,21 @@
                 <body>
                     <div class="title">SUNDAY RUMP STEAK</div>
                     <div class="date-sub">Date: ${dateLabel}</div>
-                    <div class="count-num">${currentCount}</div>
+                    <div class="count-num">${countToPrint}</div>
                     <div style="font-size: 14px;">Portions Sold</div>
                     <div style="border-top: 1.5px solid #000; margin-top: 6px;"></div>
                 </body>
                 </html>
             `;
 
-            let printWin = window.open('', '_blank', 'width=300,height=300,left=-1000,top=-1000');
+            let halfWidth = Math.max(480, Math.floor((window.screen && window.screen.availWidth ? window.screen.availWidth : 1280) * 0.5));
+            let fullHeight = (window.screen && window.screen.availHeight) ? window.screen.availHeight : 800;
+            let printWin = window.open('', '_blank', `width=${halfWidth},height=${fullHeight},left=0,top=0`);
             if (printWin) {
+                try {
+                    printWin.moveTo(0, 0);
+                    printWin.resizeTo(halfWidth, fullHeight);
+                } catch (e) {}
                 printWin.document.open();
                 printWin.document.write(printHtml);
                 printWin.document.close();
@@ -2771,10 +3106,13 @@
         async function resetTodaySalesDirectly() {
             if (!confirm("คุณต้องการรีเซ็ตยอดขายและจำนวน Rump Steak ของวันนี้ให้กลับเป็น 0 ใช่หรือไม่?")) return;
             let currentKey = getTodayDateKey();
-            dailyStats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
+            dailyStats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0, serviceTotal: 0 };
             sundayRumpCounts[currentKey] = 0;
+            allOrderLogs[currentKey] = [];
+            localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
             
             if (window.fbDB) {
+                await window.fbSet(window.fbRef(window.fbDB, 'orderLogs/' + currentKey), null);
                 await window.fbSet(window.fbRef(window.fbDB, 'dailySales/' + currentKey), dailyStats);
                 await window.fbSet(window.fbRef(window.fbDB, 'sundayRumpCounts/' + currentKey), 0);
             }
@@ -2824,8 +3162,8 @@
             }
 
             let filteredDates = [];
-            let curr = new Date(fromDate);
-            let end = new Date(toDate);
+            let curr = new Date(fromDate + 'T00:00:00');
+            let end = new Date(toDate + 'T00:00:00');
             while (curr <= end) {
                 let y = curr.getFullYear();
                 let m = String(curr.getMonth() + 1).padStart(2, '0');
@@ -2837,6 +3175,7 @@
             let aggCashCount = 0, aggCashTotal = 0;
             let aggCardCount = 0, aggCardTotal = 0;
             let aggBulkCount = 0, aggBulkTotal = 0;
+            let aggServiceTotal = 0;
             let aggRumpTotal = 0;
             let combinedLogs = [];
 
@@ -2844,27 +3183,36 @@
                 let rCount = allRumpData[dateStr] !== undefined ? allRumpData[dateStr] : (sundayRumpCounts[dateStr] || 0);
                 aggRumpTotal += rCount;
 
-                let st = allSalesData[dateStr];
-                if (dateStr === getTodayDateKey()) {
-                    st = dailyStats;
-                }
-
-                if (st) {
-                    aggCashCount += (st.cashCount || 0);
-                    aggCashTotal += (st.cashTotal || 0);
-                    aggCardCount += (st.cardCount || 0);
-                    aggCardTotal += (st.cardTotal || 0);
-                    aggBulkCount += (st.bulkCount || 0);
-                    aggBulkTotal += (st.bulkTotal || 0);
-                }
-
                 let logsObj = allLogsData[dateStr];
+                let dayLogs = [];
                 if (logsObj) {
-                    let dayLogs = Array.isArray(logsObj) ? logsObj : Object.values(logsObj);
+                    dayLogs = Array.isArray(logsObj) ? logsObj : Object.values(logsObj);
                     dayLogs.forEach(lg => {
                         lg._dateTag = dateStr;
                         combinedLogs.push(lg);
                     });
+                }
+
+                if (logsObj) {
+                    let fromLogs = computeStatsFromRemainingOrders(dayLogs);
+                    aggCashCount += fromLogs.cashCount;
+                    aggCashTotal = roundMoney(aggCashTotal + fromLogs.cashTotal);
+                    aggCardCount += fromLogs.cardCount;
+                    aggCardTotal = roundMoney(aggCardTotal + fromLogs.cardTotal);
+                    aggBulkCount += fromLogs.bulkCount;
+                    aggBulkTotal = roundMoney(aggBulkTotal + fromLogs.bulkTotal);
+                    aggServiceTotal = roundMoney(aggServiceTotal + fromLogs.serviceTotal);
+                } else {
+                    let st = (dateStr === getTodayDateKey()) ? dailyStats : allSalesData[dateStr];
+                    if (st) {
+                        aggCashCount += (Number(st.cashCount) || 0);
+                        aggCashTotal = roundMoney(aggCashTotal + (Number(st.cashTotal) || 0));
+                        aggCardCount += (Number(st.cardCount) || 0);
+                        aggCardTotal = roundMoney(aggCardTotal + (Number(st.cardTotal) || 0));
+                        aggBulkCount += (Number(st.bulkCount) || 0);
+                        aggBulkTotal = roundMoney(aggBulkTotal + (Number(st.bulkTotal) || 0));
+                        aggServiceTotal = roundMoney(aggServiceTotal + (Number(st.serviceTotal) || 0));
+                    }
                 }
             });
 
@@ -2874,9 +3222,19 @@
             });
 
             let headerTitle = fromDate === toDate ? `${fromDate}` : `${fromDate} ถึง ${toDate}`;
+            currentReportDateLabel = headerTitle;
+
+            let actualSteakCountInLogs = 0;
+            combinedLogs.forEach(log => {
+                if (log.items) {
+                    actualSteakCountInLogs += log.items.filter(it => it.title === 'Rump steak').length;
+                }
+            });
+            currentReportSteakCount = actualSteakCountInLogs > 0 ? actualSteakCountInLogs : aggRumpTotal;
+
             lastReportPrintData = {
                 dateText: headerTitle,
-                rumpTotal: aggRumpTotal,
+                rumpTotal: currentReportSteakCount,
                 cashCount: aggCashCount,
                 cashTotal: aggCashTotal,
                 cardCount: aggCardCount,
@@ -2884,7 +3242,7 @@
                 bulkCount: aggBulkCount,
                 bulkTotal: aggBulkTotal,
                 grandTotalCnt: aggCashCount + aggCardCount + aggBulkCount,
-                grandTotalAmt: aggCashTotal + aggCardTotal + aggBulkTotal
+                grandTotalAmt: roundMoney(aggCashTotal + aggCardTotal + aggBulkTotal)
             };
 
             let printBtnHtml = `<button onclick="printReportSummary()" style="background: #e67e22; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: bold; font-family: 'Calibri', Arial, sans-serif;">🖨️ Print Report</button>`;
@@ -2901,7 +3259,7 @@
 
                 let totalMatchedCount = 0;
                 let totalMatchedRevenue = 0;
-                let dailyBreakdown = {}; // dateStr -> { count, revenue, items: [] }
+                let dailyBreakdown = {};
 
                 combinedLogs.forEach(log => {
                     if (!log.items) return;
@@ -2910,14 +3268,14 @@
                         let detailMatch = (it.details || []).some(d => (d.text || '').toLowerCase().includes(query));
                         if (titleMatch || detailMatch) {
                             totalMatchedCount++;
-                            totalMatchedRevenue += (it.price || 0);
+                            totalMatchedRevenue = roundMoney(totalMatchedRevenue + (it.price || 0));
 
                             let dKey = log._dateTag;
                             if (!dailyBreakdown[dKey]) {
                                 dailyBreakdown[dKey] = { count: 0, revenue: 0, entries: [] };
                             }
                             dailyBreakdown[dKey].count++;
-                            dailyBreakdown[dKey].revenue += (it.price || 0);
+                            dailyBreakdown[dKey].revenue = roundMoney(dailyBreakdown[dKey].revenue + (it.price || 0));
                             dailyBreakdown[dKey].entries.push({
                                 orderNo: log.orderNo || '-',
                                 tableNo: log.tableNo || '-',
@@ -2971,24 +3329,29 @@
                 let totalSteakSalesAmount = 0;
 
                 combinedLogs.forEach(log => {
-                    let steakItemsInOrder = log.items.filter(it => it.title === 'Rump steak');
+                    let steakItemsInOrder = (log.items || []).filter(it => it.title === 'Rump steak');
                     if (steakItemsInOrder.length > 0) {
                         totalSteakCount += steakItemsInOrder.length;
                         steakItemsInOrder.forEach(stItem => {
-                            totalSteakSalesAmount += stItem.price;
+                            totalSteakSalesAmount = roundMoney(totalSteakSalesAmount + stItem.price);
                         });
                         steakLogs.push({
                             dateTag: log._dateTag,
                             orderNo: log.orderNo || '-',
                             tableNo: log.tableNo || '-',
                             time: log.time || '-',
-                            steakItems: steakItemsInOrder
+                            paymentType: log.paymentType || 'Card',
+                            steakItems: steakItemsInOrder,
+                            runningCount: totalSteakCount
                         });
                     }
                 });
 
+                currentReportSteakCount = totalSteakCount;
+                currentReportSteakLogs = steakLogs;
+
                 let steakLogsHtml = '';
-                steakLogs.forEach(sl => {
+                steakLogs.forEach((sl, idx) => {
                     let itemsDetail = sl.steakItems.map(it => {
                         let groupedDetails = groupAndFormatDetails(it.details);
                         let detailsStr = '';
@@ -3000,8 +3363,9 @@
 
                     steakLogsHtml += `
                         <div style="background: #fff; border: 1px solid #27ae60; padding: 8px; border-radius: 4px; margin-top: 6px;">
-                            <div style="display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 4px; color: #1e8449;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 4px; color: #1e8449;">
                                 <span>[${sl.dateTag}] Order #${sl.orderNo} [Table ${sl.tableNo}] (${sl.time})</span>
+                                <button onclick="printSteakOrderSlip(${idx})" style="background: #e67e22; color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: bold; font-family: 'Calibri', Arial, sans-serif;">🖨️ Print</button>
                             </div>
                             <div style="font-size: 14px; color: #2c3e50; margin-top: 6px;">${itemsDetail}</div>
                         </div>
@@ -3023,19 +3387,23 @@
                 `;
             } else {
                 let totalCnt = aggCashCount + aggCardCount + aggBulkCount;
-                let totalAmt = aggCashTotal + aggCardTotal + aggBulkTotal;
+                let totalAmt = roundMoney(aggCashTotal + aggCardTotal + aggBulkTotal);
 
                 let logsHtml = '';
                 combinedLogs.forEach(log => {
-                    let itemsList = log.items.map(it => {
+                    let itemsList = (log.items || []).map(it => {
                         let groupedDetails = groupAndFormatDetails(it.details);
                         let detailsStr = '';
                         if (groupedDetails.length > 0) detailsStr = ' (' + groupedDetails.map(d => d.text).join(', ') + ')';
                         return `• ${it.title}${detailsStr} - $${it.price}`;
                     }).join('<br>');
 
+                    let svcInfo = (log.serviceChargeAmount && Number(log.serviceChargeAmount) > 0)
+                        ? `<div style="font-size: 12px; color: #8e44ad; margin-top: 4px;">Service Charge (${log.serviceChargeRate || 0}%): +$${log.serviceChargeAmount}</div>`
+                        : '';
+
                     let paymentText = log.paymentType || 'Cash';
-                    if (paymentText === 'Split') paymentText = `Split ($${log.cashAmount} Cash / $${log.cardAmount} Card)`;
+                    if (paymentText === 'Split') paymentText = formatSplitDetails(log);
 
                     logsHtml += `
                         <div style="background: #fff; border: 1px solid #ccc; padding: 8px; border-radius: 4px; margin-top: 6px;">
@@ -3044,6 +3412,7 @@
                                 <span>${paymentText}: $${log.totalAmount}</span>
                             </div>
                             <div style="font-size: 13px; color: #444; margin-top: 6px;">${itemsList}</div>
+                            ${svcInfo}
                         </div>
                     `;
                 });
@@ -3100,7 +3469,6 @@
                 }
                 
                 let cartListHtml = '';
-                let cartTotalAmount = 0;
                 
                 cart.forEach((item, index) => {
                     let groupedDetails = groupAndFormatDetails(item.details);
@@ -3124,12 +3492,10 @@
                                 <button class="btn-delete-item" onclick="removeCartItem(${index}, event)" title="Delete Item">✕</button>
                             </div>
                         </div>`;
-                    cartTotalAmount += item.price;
                 });
 
                 document.getElementById('cart-list').innerHTML = cartListHtml || 'No items ordered yet';
-                document.getElementById('total-amount').innerText = cartTotalAmount;
-                total = cartTotalAmount;
+                recalculateCartTotalsUI();
 
                 if (cart.length === 0) {
                     isBulkOptionSelected = false;
@@ -3140,15 +3506,18 @@
             });
 
             const currentKey = getTodayDateKey();
-            const salesRef = window.fbRef(window.fbDB, 'dailySales/' + currentKey);
-            window.fbOnValue(salesRef, (snapshot) => {
-                const salesData = snapshot.val();
-                if (salesData) {
-                    dailyStats = salesData;
-                } else {
-                    dailyStats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0 };
-                }
+            const logsRef = window.fbRef(window.fbDB, 'orderLogs/' + currentKey);
+            window.fbOnValue(logsRef, (snapshot) => {
+                const logsVal = snapshot.val();
+                let dayLogs = logsVal ? Object.values(logsVal) : [];
+                allOrderLogs[currentKey] = dayLogs;
+                localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
+
+                dailyStats = computeStatsFromRemainingOrders(dayLogs);
                 updateDailyReportUI();
+                if (window.fbDB) {
+                    window.fbSet(window.fbRef(window.fbDB, 'dailySales/' + currentKey), dailyStats);
+                }
             });
 
             const rumpRef = window.fbRef(window.fbDB, 'sundayRumpCounts/' + currentKey);
@@ -3165,10 +3534,12 @@
 
         window.onload = function() {
             updateClock();
-            updateDailyReportUI();
             updatePassProtectBtnUI();
             updatePrinterBtnUI();
+            updateServiceChargeBtnUI();
+            updateDailyReportUI();
             updateSundayRumpBadgeUI();
+            updateBackdateBannerUI();
             initRealtimeSync();
             switchCategory('lunch');
 

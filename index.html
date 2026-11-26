@@ -58,22 +58,83 @@
             margin-bottom: 8px;
             height: 50px;
             flex-shrink: 0;
+            position: relative;
+            z-index: 50;
         }
-        .header-left { display: flex; align-items: center; }
-        .menu-toggle-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 15px; display: flex; align-items: center; }
+        .header-left { display: flex; align-items: center; position: relative; }
+        .menu-toggle-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 15px; display: flex; align-items: center; padding: 2px 6px; border-radius: 4px; }
+        .menu-toggle-btn:hover { background: rgba(255,255,255,0.12); }
         .restaurant-title { font-size: 18px; font-weight: bold; letter-spacing: 0.5px; }
         .header-right-area { display: flex; align-items: center; gap: 8px; }
         .header-time { font-size: 15px; font-weight: bold; color: #f1c40f; }
         .fullscreen-btn { background: #e67e22; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; font-family: 'Calibri', Arial, sans-serif; }
         .fullscreen-btn:hover { background: #d35400; }
-        .pass-toggle-btn { background: #34495e; color: #f1c40f; border: 1px solid #f1c40f; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; font-family: 'Calibri', Arial, sans-serif; }
-        .printer-toggle-btn { background: #27ae60; color: white; border: 1px solid #2ecc71; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; font-family: 'Calibri', Arial, sans-serif; }
+
+        /* Hamburger Dropdown Menu */
+        .hamburger-dropdown {
+            display: none;
+            position: absolute;
+            top: 44px;
+            left: 0;
+            min-width: 240px;
+            background: #ffffff;
+            border: 2px solid #2c3e50;
+            border-radius: 8px;
+            padding: 8px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            z-index: 900;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .hamburger-dropdown.open {
+            display: flex;
+        }
+        .drawer-option-btn {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            font-family: 'Calibri', Arial, sans-serif;
+            text-align: left;
+            white-space: nowrap;
+            transition: filter 0.12s;
+        }
+        .drawer-option-btn:hover {
+            filter: brightness(0.95);
+        }
+        .drawer-divider {
+            border: 0;
+            border-top: 2px solid #bdc3c7;
+            margin: 4px 0;
+            width: 100%;
+        }
+        .drawer-report-btn {
+            width: 100%;
+            padding: 11px 12px;
+            border: none;
+            border-radius: 5px;
+            background: #2c3e50;
+            color: #f1c40f;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            font-family: 'Calibri', Arial, sans-serif;
+            text-align: left;
+            white-space: nowrap;
+        }
+        .drawer-report-btn:hover {
+            background: #1a252f;
+        }
+
+        .pass-toggle-btn { background: #34495e; color: #f1c40f; border: 1px solid #f1c40f; }
+        .printer-toggle-btn { background: #27ae60; color: white; border: 1px solid #2ecc71; }
         .printer-toggle-btn.off { background: #c0392b; border-color: #e74c3c; color: #fff; }
-        .service-group { display: inline-flex; align-items: center; gap: 3px; }
-        .service-toggle-btn { background: #7f8c8d; color: white; border: 1px solid #95a5a6; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; font-family: 'Calibri', Arial, sans-serif; white-space: nowrap; }
+        .service-toggle-btn { background: #7f8c8d; color: white; border: 1px solid #95a5a6; }
         .service-toggle-btn.on { background: #8e44ad; border-color: #bb8fce; color: #fff; }
-        .service-set-btn { background: #34495e; color: #f1c40f; border: 1px solid #f1c40f; padding: 6px 8px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; font-family: 'Calibri', Arial, sans-serif; }
-        .service-set-btn:hover { background: #4a6572; }
+        .discount-toggle-btn { background: #7f8c8d; color: white; border: 1px solid #95a5a6; }
+        .discount-toggle-btn.on { background: #e67e22; border-color: #f5b041; color: #fff; }
 
         .backdate-banner {
             display: none;
@@ -301,6 +362,7 @@
         .btn-delete-item:hover { background: #c0392b; }
 
         .cart-service-info { font-size: 14px; font-weight: bold; text-align: right; color: #8e44ad; margin-bottom: 2px; display: none; }
+        .cart-discount-info { font-size: 14px; font-weight: bold; text-align: right; color: #d35400; margin-bottom: 2px; display: none; }
         .cart-total { font-size: 20px; font-weight: bold; text-align: right; margin-bottom: 6px; color: #c0392b; }
         .cart-actions { display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px; }
         .cart-actions-row { display: flex; gap: 6px; }
@@ -329,6 +391,7 @@
         .daily-report-header { font-weight: bold; font-size: 15px; display: flex; justify-content: space-between; border-bottom: 1px solid #bdc3c7; padding-bottom: 4px; margin-bottom: 4px; }
         .daily-report-row { display: flex; justify-content: space-between; font-weight: bold; }
         .daily-service-row { display: none; justify-content: space-between; font-weight: bold; color: #8e44ad; }
+        .daily-discount-row { display: none; justify-content: space-between; font-weight: bold; color: #d35400; }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 22px; border-radius: 8px; width: 520px; max-width: 95%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 12px; max-height: 90vh; overflow-y: auto; font-family: 'Calibri', Arial, sans-serif; font-size: 15px; }
@@ -350,6 +413,8 @@
         .numpad-btn:active { background: #d6dbe0; }
         .numpad-btn.preset { background: #f3e5f5; color: #732d91; border-color: #8e44ad; }
         .numpad-btn.preset:hover { background: #e8daef; }
+        .numpad-btn.discount-preset { background: #fef5e7; color: #d35400; border-color: #e67e22; }
+        .numpad-btn.discount-preset:hover { background: #fdebd0; }
 
         .table-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 12px; }
         .table-btn { background: #3498db; color: white; border: none; border-radius: 6px; aspect-ratio: 1 / 1; font-size: 28px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); transition: transform 0.1s, background-color 0.1s; font-family: 'Calibri', Arial, sans-serif; }
@@ -399,17 +464,19 @@
 <body>
 
     <div class="top-header">
-        <div class="header-left">
-            <button class="menu-toggle-btn" onclick="openReportModal()" title="Daily Sales & Report">☰</button>
+        <div class="header-left" id="hamburger-menu-wrapper">
+            <button class="menu-toggle-btn" id="hamburger-btn" onclick="toggleHamburgerMenu(event)" title="Menu & Settings">☰</button>
+            <div class="hamburger-dropdown" id="hamburger-dropdown" onclick="event.stopPropagation()">
+                <button class="drawer-option-btn pass-toggle-btn" id="pass-toggle-btn" onclick="handleDrawerPassProtect()">⚙️ Pass Protect: ON</button>
+                <button class="drawer-option-btn service-toggle-btn" id="service-toggle-btn" onclick="handleDrawerServiceCharge()" title="เปิด/ปิด และตั้งค่า Service Charge">🛎️ Service: OFF</button>
+                <button class="drawer-option-btn discount-toggle-btn" id="discount-toggle-btn" onclick="handleDrawerDiscount()" title="เปิด/ปิด และตั้งค่า Discount">🏷️ Discount: OFF</button>
+                <button class="drawer-option-btn printer-toggle-btn" id="printer-toggle-btn" onclick="handleDrawerPrinterMode()">🖨️ Printer: ON</button>
+                <hr class="drawer-divider">
+                <button class="drawer-report-btn" id="drawer-report-btn" onclick="openReportFromMenu()">📊 Sale &amp; Order Report</button>
+            </div>
             <div class="restaurant-title">🍽️ The Exclusive Thai Kitchen</div>
         </div>
         <div class="header-right-area">
-            <button class="printer-toggle-btn" id="printer-toggle-btn" onclick="togglePrinterMode()">🖨️ Printer: ON</button>
-            <div class="service-group">
-                <button class="service-toggle-btn" id="service-toggle-btn" onclick="toggleServiceCharge()" title="เปิด/ปิดคิดเงิน Service Charge">🛎️ Service: OFF (10%)</button>
-                <button class="service-set-btn" onclick="openServiceChargeModal()" title="ตั้งค่าเปอร์เซ็นต์ Service Charge">⚙️ %</button>
-            </div>
-            <button class="pass-toggle-btn" id="pass-toggle-btn" onclick="togglePasswordProtection()">⚙️ Pass Protect: ON</button>
             <button class="fullscreen-btn" onclick="toggleFullScreen()" title="Toggle Fullscreen">⛶ Full Screen</button>
             <div class="header-time" id="clock-display">--:--:--</div>
         </div>
@@ -459,9 +526,10 @@
                 
                 <div class="cart-footer-fixed">
                     <div class="cart-service-info" id="cart-service-info"></div>
+                    <div class="cart-discount-info" id="cart-discount-info"></div>
                     <div class="cart-total">Total: $<span id="total-amount">0</span></div>
                     
-                    <button class="btn-past-orders" onclick="openPastOrdersModal()">📋 View & Edit Past Orders</button>
+                    <button class="btn-past-orders" onclick="openPastOrdersModal()">📋 View &amp; Edit Past Orders</button>
 
                     <div class="cart-actions" id="cart-actions-box">
                         <div class="cart-actions-row">
@@ -492,6 +560,10 @@
                             <span>🛎️ Service Charge:</span>
                             <b>$<span id="daily-service-amount">0</span></b>
                         </div>
+                        <div class="daily-discount-row" id="daily-discount-row">
+                            <span>🏷️ Discount:</span>
+                            <b>-$<span id="daily-discount-amount">0</span></b>
+                        </div>
                         <div class="daily-report-row" style="border-top: 1px dashed #bdc3c7; padding-top: 4px; font-weight: bold; font-size: 15px;">
                             <span>Total (<span id="daily-orders-count">0</span>):</span>
                             <span style="color: #c0392b; font-size: 16px;">$<span id="daily-total-amount">0</span></span>
@@ -510,16 +582,39 @@
                 <button class="close-modal" onclick="closeServiceChargeModal()">✕</button>
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px;">
-                <label style="font-size: 14px; font-weight: bold; color: #2c3e50;">กำหนดเปอร์เซ็นต์ Service Charge (Public Holiday):</label>
-                <input type="number" step="0.1" min="0" max="100" id="service-rate-input" placeholder="เช่น 10 หรือ 15" style="width: 100%; padding: 10px; border: 2px solid #8e44ad; border-radius: 5px; font-size: 20px; font-weight: bold; text-align: right; font-family: 'Calibri', Arial, sans-serif;">
+                <label style="font-size: 14px; font-weight: bold; color: #2c3e50;">ระบุจำนวนเปอร์เซ็นต์ Service Charge:</label>
+                <input type="number" step="0.1" min="0" max="100" id="service-rate-input" placeholder="เช่น 10 หรือ 15" onkeydown="if(event.key==='Enter') saveServiceChargeRate();" style="width: 100%; padding: 10px; border: 2px solid #8e44ad; border-radius: 5px; font-size: 20px; font-weight: bold; text-align: right; font-family: 'Calibri', Arial, sans-serif;">
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
                     <button class="numpad-btn preset" onclick="setServiceRatePreset(5)">5%</button>
                     <button class="numpad-btn preset" onclick="setServiceRatePreset(10)">10%</button>
                     <button class="numpad-btn preset" onclick="setServiceRatePreset(15)">15%</button>
                 </div>
                 <div class="modal-actions">
-                    <button class="btn-modal-action" style="background: #8e44ad;" onclick="saveServiceChargeRate()">บันทึกเปอร์เซ็นต์</button>
+                    <button class="btn-modal-action" style="background: #8e44ad;" onclick="saveServiceChargeRate()">เปิดใช้งาน</button>
                     <button class="btn-modal-close" onclick="closeServiceChargeModal()">ยกเลิก</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Discount Percentage Modal -->
+    <div class="modal-overlay" id="discount-modal">
+        <div class="modal-content" style="width: 360px;">
+            <div class="modal-header">
+                <span>🏷️ Discount (%)</span>
+                <button class="close-modal" onclick="closeDiscountModal()">✕</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <label style="font-size: 14px; font-weight: bold; color: #2c3e50;">ระบุจำนวนเปอร์เซ็นต์ส่วนลด (Discount):</label>
+                <input type="number" step="0.1" min="0" max="100" id="discount-rate-input" placeholder="เช่น 10 หรือ 15" onkeydown="if(event.key==='Enter') saveDiscountRate();" style="width: 100%; padding: 10px; border: 2px solid #e67e22; border-radius: 5px; font-size: 20px; font-weight: bold; text-align: right; font-family: 'Calibri', Arial, sans-serif;">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                    <button class="numpad-btn discount-preset" onclick="setDiscountRatePreset(5)">5%</button>
+                    <button class="numpad-btn discount-preset" onclick="setDiscountRatePreset(10)">10%</button>
+                    <button class="numpad-btn discount-preset" onclick="setDiscountRatePreset(15)">15%</button>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-modal-action" style="background: #e67e22;" onclick="saveDiscountRate()">เปิดใช้งาน</button>
+                    <button class="btn-modal-close" onclick="closeDiscountModal()">ยกเลิก</button>
                 </div>
             </div>
         </div>
@@ -664,7 +759,7 @@
     <div class="modal-overlay" id="cash-modal">
         <div class="modal-content" style="width: 380px;">
             <div class="modal-header">
-                <span>💵 Cash Payment & Change</span>
+                <span>💵 Cash Payment &amp; Change</span>
                 <button class="close-modal" onclick="closeCashModal()">✕</button>
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -815,7 +910,7 @@
     <div class="modal-overlay" id="report-modal">
         <div class="modal-content" style="width: 600px;">
             <div class="modal-header">
-                <span>📅 Sales & Orders Report</span>
+                <span>📅 Sale &amp; Order Report</span>
                 <button class="close-modal" onclick="closeReportModal()">✕</button>
             </div>
             
@@ -895,9 +990,9 @@
                     <div class="item-card" onclick="selectMenu('Chilli Basil', 15, 'standard', this)"><div class="item-title">Chilli Basil</div></div>
                     <div class="item-card" onclick="selectMenu('Cashewnut', 15, 'standard', this)"><div class="item-title">Cashewnut</div></div>
                     <div class="item-card" onclick="selectMenu('Oyster Sauce', 15, 'standard', this)"><div class="item-title">Oyster Sauce</div></div>
-                    <div class="item-card" onclick="selectMenu('Garlic & Pepper', 15, 'standard', this)"><div class="item-title">Garlic & Pepper</div></div>
+                    <div class="item-card" onclick="selectMenu('Garlic & Pepper', 15, 'standard', this)"><div class="item-title">Garlic &amp; Pepper</div></div>
                     <div class="item-card" onclick="selectMenu('Peanut Sauce', 15, 'standard', this)"><div class="item-title">Peanut Sauce</div></div>
-                    <div class="item-card" onclick="selectMenu('Sweet & Sour', 15, 'standard', this)"><div class="item-title">Sweet & Sour</div></div>
+                    <div class="item-card" onclick="selectMenu('Sweet & Sour', 15, 'standard', this)"><div class="item-title">Sweet &amp; Sour</div></div>
                     <div class="item-card" onclick="selectMenu('Thai Fried Rice', 15, 'standard', this)"><div class="item-title">Thai Fried Rice</div></div>
                     <div class="item-card" onclick="selectMenu('Tom Yum Fried Rice', 15, 'standard', this)"><div class="item-title">Tom Yum Fried Rice</div></div>
                     <div class="item-card" onclick="selectMenu('Chilli Basil Fried Rice', 15, 'standard', this)"><div class="item-title">Basil Fried Rice</div></div>
@@ -922,9 +1017,9 @@
                     <div class="item-card" onclick="selectMenu('Chilli Basil', 21, 'standard', this)"><div class="item-title">Chilli Basil</div></div>
                     <div class="item-card" onclick="selectMenu('Cashewnut', 21, 'standard', this)"><div class="item-title">Cashewnut</div></div>
                     <div class="item-card" onclick="selectMenu('Oyster Sauce', 21, 'standard', this)"><div class="item-title">Oyster Sauce</div></div>
-                    <div class="item-card" onclick="selectMenu('Garlic & Pepper', 21, 'standard', this)"><div class="item-title">Garlic & Pepper</div></div>
+                    <div class="item-card" onclick="selectMenu('Garlic & Pepper', 21, 'standard', this)"><div class="item-title">Garlic &amp; Pepper</div></div>
                     <div class="item-card" onclick="selectMenu('Peanut Sauce', 21, 'standard', this)"><div class="item-title">Peanut Sauce</div></div>
-                    <div class="item-card" onclick="selectMenu('Sweet & Sour', 21, 'standard', this)"><div class="item-title">Sweet & Sour</div></div>
+                    <div class="item-card" onclick="selectMenu('Sweet & Sour', 21, 'standard', this)"><div class="item-title">Sweet &amp; Sour</div></div>
                     <div class="item-card" onclick="selectMenu('Thai Fried Rice', 21, 'standard', this)"><div class="item-title">Thai Fried Rice</div></div>
                     <div class="item-card" onclick="selectMenu('Tom Yum Fried Rice', 21, 'standard', this)"><div class="item-title">Tom Yum Fried Rice</div></div>
                     <div class="item-card" onclick="selectMenu('Chilli Basil Fried Rice', 21, 'standard', this)"><div class="item-title">Basil Fried Rice</div></div>
@@ -975,7 +1070,7 @@
             chef: `
                 <div class="sub-header">⭐ CHEF RECOMMENDED</div>
                 <div class="item-grid">
-                    <div class="item-card" onclick="selectMenu('Crispy Salt & Pepper Tofu', 15, 'standard', this)"><div class="item-title">Salt & Pepper Tofu</div></div>
+                    <div class="item-card" onclick="selectMenu('Crispy Salt & Pepper Tofu', 15, 'standard', this)"><div class="item-title">Salt &amp; Pepper Tofu</div></div>
                     <div class="item-card" onclick="selectMenu('Fried Chicken Salad', 23, 'standard', this)"><div class="item-title">Fried Chicken Salad</div></div>
                     <div class="item-card" onclick="selectMenu('Teriyaki Chicken', 23, 'standard', this)"><div class="item-title">Teriyaki Chicken</div></div>
                     <div class="item-card" onclick="selectMenu('Broccoli King Prawns', 25, 'standard', this)"><div class="item-title">Broccoli King Prawns</div></div>
@@ -1024,9 +1119,9 @@
                 <div class="sub-header" style="background: #d35400; margin-top: 10px;">🏆 MELBOURNE CUP SPECIAL</div>
                 <div class="item-grid" style="grid-template-columns: repeat(2, 1fr); gap: 10px;">
                     <div class="item-card melbourne-rect-card" onclick="selectMenu('Melbourne Basket', 22, 'direct', this)"><div class="item-title">🪣 Melbourne Basket</div></div>
-                    <div class="item-card melbourne-rect-card" onclick="selectMenu('Fish & Chips', 15, 'direct', this)"><div class="item-title">🐟 Fish & Chips</div></div>
+                    <div class="item-card melbourne-rect-card" onclick="selectMenu('Fish & Chips', 15, 'direct', this)"><div class="item-title">🐟 Fish &amp; Chips</div></div>
                     <div class="item-card melbourne-rect-card" onclick="selectMenu('Prawns Skewer', 10, 'direct', this)"><div class="item-title">🦐 Prawns Skewer</div></div>
-                    <div class="item-card melbourne-rect-card" onclick="selectMenu('Nugget & Chips', 10, 'direct', this)"><div class="item-title">🍗 Nugget & Chips</div></div>
+                    <div class="item-card melbourne-rect-card" onclick="selectMenu('Nugget & Chips', 10, 'direct', this)"><div class="item-title">🍗 Nugget &amp; Chips</div></div>
                 </div>
             `
         };
@@ -1061,6 +1156,7 @@
         let cart = [];
         let subtotal = 0;
         let serviceChargeAmount = 0;
+        let discountAmount = 0;
         let total = 0;
         let activeCartIndex = null;
         let isRemoteUpdate = false; 
@@ -1075,6 +1171,10 @@
         let isServiceChargeEnabled = JSON.parse(localStorage.getItem('pos_service_charge_enabled') ?? 'false');
         let serviceChargeRate = parseFloat(localStorage.getItem('pos_service_charge_rate') ?? '10');
         if (isNaN(serviceChargeRate) || serviceChargeRate < 0) serviceChargeRate = 10;
+
+        let isDiscountEnabled = JSON.parse(localStorage.getItem('pos_discount_enabled') ?? 'false');
+        let discountRate = parseFloat(localStorage.getItem('pos_discount_rate') ?? '10');
+        if (isNaN(discountRate) || discountRate < 0) discountRate = 10;
 
         let sundayRumpCounts = JSON.parse(localStorage.getItem('pos_sunday_rump_counts')) || {};
         let fpInstance = null;
@@ -1091,20 +1191,75 @@
             "Chilli Mayo"
         ];
 
+        function closeHamburgerMenu() {
+            const dd = document.getElementById('hamburger-dropdown');
+            if (dd) dd.classList.remove('open');
+        }
+
+        function toggleHamburgerMenu(event) {
+            if (event) event.stopPropagation();
+            const dd = document.getElementById('hamburger-dropdown');
+            if (!dd) return;
+            dd.classList.toggle('open');
+        }
+
+        function handleDrawerPassProtect() {
+            togglePasswordProtection();
+        }
+
+        function handleDrawerServiceCharge() {
+            if (isServiceChargeEnabled) {
+                toggleServiceCharge();
+            } else {
+                closeHamburgerMenu();
+                openServiceChargeModal();
+            }
+        }
+
+        function handleDrawerDiscount() {
+            if (isDiscountEnabled) {
+                toggleDiscount();
+            } else {
+                closeHamburgerMenu();
+                openDiscountModal();
+            }
+        }
+
+        function handleDrawerPrinterMode() {
+            togglePrinterMode();
+        }
+
+        function openReportFromMenu() {
+            closeHamburgerMenu();
+            openReportModal();
+        }
+
         function roundMoney(val) {
             return Number((Number(val) || 0).toFixed(2));
         }
 
-        function computeOrderAmounts(itemsArr, ratePct, isEnabled) {
+        function computeOrderAmounts(itemsArr, svcRatePct, svcEnabled, discRatePct, discEnabled) {
             let sub = 0;
             (itemsArr || []).forEach(it => {
                 sub += (Number(it.price) || 0);
             });
             sub = roundMoney(sub);
-            let pct = isEnabled ? (Number(ratePct) || 0) : 0;
-            let svc = isEnabled ? roundMoney(sub * (pct / 100)) : 0;
-            let grand = roundMoney(sub + svc);
-            return { subtotal: sub, serviceCharge: svc, totalAmount: grand, serviceChargeRate: pct };
+
+            let sPct = svcEnabled ? (Number(svcRatePct) || 0) : 0;
+            let svc = svcEnabled ? roundMoney(sub * (sPct / 100)) : 0;
+
+            let dPct = discEnabled ? (Number(discRatePct) || 0) : 0;
+            let disc = discEnabled ? roundMoney(sub * (dPct / 100)) : 0;
+
+            let grand = Math.max(0, roundMoney(sub + svc - disc));
+            return {
+                subtotal: sub,
+                serviceCharge: svc,
+                serviceChargeRate: sPct,
+                discountAmount: disc,
+                discountRate: dPct,
+                totalAmount: grand
+            };
         }
 
         function updateServiceChargeBtnUI() {
@@ -1113,24 +1268,33 @@
             let rateLabel = Number.isInteger(serviceChargeRate) ? serviceChargeRate : serviceChargeRate.toFixed(1);
             if (isServiceChargeEnabled) {
                 btn.innerText = `🛎️ Service: ON (${rateLabel}%)`;
-                btn.className = 'service-toggle-btn on';
+                btn.className = 'drawer-option-btn service-toggle-btn on';
             } else {
-                btn.innerText = `🛎️ Service: OFF (${rateLabel}%)`;
-                btn.className = 'service-toggle-btn';
+                btn.innerText = `🛎️ Service: OFF`;
+                btn.className = 'drawer-option-btn service-toggle-btn';
             }
             updateDailyReportUI();
         }
 
         function toggleServiceCharge() {
-            isServiceChargeEnabled = !isServiceChargeEnabled;
-            localStorage.setItem('pos_service_charge_enabled', JSON.stringify(isServiceChargeEnabled));
-            updateServiceChargeBtnUI();
-            recalculateCartTotalsUI();
+            if (isServiceChargeEnabled) {
+                isServiceChargeEnabled = false;
+                localStorage.setItem('pos_service_charge_enabled', JSON.stringify(isServiceChargeEnabled));
+                updateServiceChargeBtnUI();
+                recalculateCartTotalsUI();
+            } else {
+                openServiceChargeModal();
+            }
         }
 
         function openServiceChargeModal() {
-            document.getElementById('service-rate-input').value = serviceChargeRate;
+            let input = document.getElementById('service-rate-input');
+            input.value = serviceChargeRate;
             document.getElementById('service-charge-modal').style.display = 'flex';
+            setTimeout(() => {
+                input.focus();
+                input.select();
+            }, 50);
         }
 
         function closeServiceChargeModal() {
@@ -1149,19 +1313,76 @@
             }
             serviceChargeRate = roundMoney(val);
             localStorage.setItem('pos_service_charge_rate', String(serviceChargeRate));
+            isServiceChargeEnabled = true;
+            localStorage.setItem('pos_service_charge_enabled', JSON.stringify(isServiceChargeEnabled));
             closeServiceChargeModal();
             updateServiceChargeBtnUI();
             recalculateCartTotalsUI();
         }
 
+        function updateDiscountBtnUI() {
+            let btn = document.getElementById('discount-toggle-btn');
+            if (!btn) return;
+            let rateLabel = Number.isInteger(discountRate) ? discountRate : discountRate.toFixed(1);
+            if (isDiscountEnabled) {
+                btn.innerText = `🏷️ Discount: ON (${rateLabel}%)`;
+                btn.className = 'drawer-option-btn discount-toggle-btn on';
+            } else {
+                btn.innerText = `🏷️ Discount: OFF`;
+                btn.className = 'drawer-option-btn discount-toggle-btn';
+            }
+            updateDailyReportUI();
+        }
+
+        function toggleDiscount() {
+            if (isDiscountEnabled) {
+                isDiscountEnabled = false;
+                localStorage.setItem('pos_discount_enabled', JSON.stringify(isDiscountEnabled));
+                updateDiscountBtnUI();
+                recalculateCartTotalsUI();
+            } else {
+                openDiscountModal();
+            }
+        }
+
+        function openDiscountModal() {
+            let input = document.getElementById('discount-rate-input');
+            input.value = discountRate;
+            document.getElementById('discount-modal').style.display = 'flex';
+            setTimeout(() => {
+                input.focus();
+                input.select();
+            }, 50);
+        }
+
+        function closeDiscountModal() {
+            document.getElementById('discount-modal').style.display = 'none';
+        }
+
+        function setDiscountRatePreset(pct) {
+            document.getElementById('discount-rate-input').value = pct;
+        }
+
+        function saveDiscountRate() {
+            let val = parseFloat(document.getElementById('discount-rate-input').value);
+            if (isNaN(val) || val < 0 || val > 100) {
+                alert("กรุณาระบุเปอร์เซ็นต์ระหว่าง 0 ถึง 100 ครับ");
+                return;
+            }
+            discountRate = roundMoney(val);
+            localStorage.setItem('pos_discount_rate', String(discountRate));
+            isDiscountEnabled = true;
+            localStorage.setItem('pos_discount_enabled', JSON.stringify(isDiscountEnabled));
+            closeDiscountModal();
+            updateDiscountBtnUI();
+            recalculateCartTotalsUI();
+        }
+
         function recalculateCartTotalsUI() {
-            let sub = 0;
-            cart.forEach(item => {
-                sub += (Number(item.price) || 0);
-            });
-            subtotal = roundMoney(sub);
-            let calc = computeOrderAmounts(cart, serviceChargeRate, isServiceChargeEnabled);
+            let calc = computeOrderAmounts(cart, serviceChargeRate, isServiceChargeEnabled, discountRate, isDiscountEnabled);
+            subtotal = calc.subtotal;
             serviceChargeAmount = calc.serviceCharge;
+            discountAmount = calc.discountAmount;
             total = calc.totalAmount;
 
             let svcEl = document.getElementById('cart-service-info');
@@ -1169,12 +1390,25 @@
                 if (isServiceChargeEnabled && subtotal > 0) {
                     let rateLabel = Number.isInteger(serviceChargeRate) ? serviceChargeRate : serviceChargeRate.toFixed(1);
                     svcEl.style.display = 'block';
-                    svcEl.innerText = `Subtotal: $${subtotal} + Service (${rateLabel}%): $${serviceChargeAmount}`;
+                    svcEl.innerText = `Subtotal: $${subtotal} + Service (${rateLabel}%): +$${serviceChargeAmount}`;
                 } else {
                     svcEl.style.display = 'none';
                     svcEl.innerText = '';
                 }
             }
+
+            let discEl = document.getElementById('cart-discount-info');
+            if (discEl) {
+                if (isDiscountEnabled && subtotal > 0) {
+                    let dLabel = Number.isInteger(discountRate) ? discountRate : discountRate.toFixed(1);
+                    discEl.style.display = 'block';
+                    discEl.innerText = `Discount (${dLabel}%): -$${discountAmount}`;
+                } else {
+                    discEl.style.display = 'none';
+                    discEl.innerText = '';
+                }
+            }
+
             document.getElementById('total-amount').innerText = total;
         }
 
@@ -1273,7 +1507,7 @@
         }
 
         let todayKey = getTodayDateKey();
-        let dailyStats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0, serviceTotal: 0 };
+        let dailyStats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0, serviceTotal: 0, discountTotal: 0 };
         let allOrderLogs = JSON.parse(localStorage.getItem('pos_all_order_logs')) || {};
 
         if (!allOrderLogs[todayKey]) {
@@ -1302,6 +1536,7 @@
 
         function updatePassProtectBtnUI() {
             let btn = document.getElementById('pass-toggle-btn');
+            if (!btn) return;
             if (isPassProtectionEnabled) {
                 btn.innerText = "⚙️ Pass Protect: ON";
                 btn.style.color = "#f1c40f";
@@ -1321,12 +1556,13 @@
 
         function updatePrinterBtnUI() {
             let btn = document.getElementById('printer-toggle-btn');
+            if (!btn) return;
             if (isPrinterEnabled) {
                 btn.innerText = "🖨️ Printer: ON";
-                btn.className = "printer-toggle-btn";
+                btn.className = "drawer-option-btn printer-toggle-btn";
             } else {
                 btn.innerText = "🚫 Printer: OFF";
-                btn.className = "printer-toggle-btn off";
+                btn.className = "drawer-option-btn printer-toggle-btn off";
             }
         }
 
@@ -1463,7 +1699,7 @@
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Mayonnaise', 3, this)">Mayonnaise</button>
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Sour Cream', 3, this)">Sour Cream</button>
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Sweet Chili Sauce', 3, this)">Sweet Chili</button>
-                            <button class="opt-btn extra-btn" onclick="toggleExtra('Sweet Chili & Sour Cream', 3, this)">Sweet Chili & Sour</button>
+                            <button class="opt-btn extra-btn" onclick="toggleExtra('Sweet Chili & Sour Cream', 3, this)">Sweet Chili &amp; Sour</button>
                             <button class="opt-btn extra-btn" onclick="toggleExtra('Chilli Mayo', 3, this)" style="grid-column: span 2;">Chilli Mayo</button>
                         </div>
                     </div>
@@ -2366,7 +2602,7 @@
                 updateSundayRumpBadgeUI();
             }
 
-            let amtCalc = computeOrderAmounts(cart, serviceChargeRate, isServiceChargeEnabled);
+            let amtCalc = computeOrderAmounts(cart, serviceChargeRate, isServiceChargeEnabled, discountRate, isDiscountEnabled);
 
             let newOrderLog = {
                 orderNo: finalOrderNo,
@@ -2378,6 +2614,9 @@
                 serviceChargeEnabled: Boolean(isServiceChargeEnabled),
                 serviceChargeRate: amtCalc.serviceChargeRate,
                 serviceChargeAmount: amtCalc.serviceCharge,
+                discountEnabled: Boolean(isDiscountEnabled),
+                discountRate: amtCalc.discountRate,
+                discountAmount: amtCalc.discountAmount,
                 totalAmount: amtCalc.totalAmount
             };
 
@@ -2497,9 +2736,13 @@
                 return `<div style="padding: 8px 0; border-bottom: 1px solid #eee;"><b>${it.title}</b> ($${it.price})${detailsStr}</div>`;
             }).join('');
 
-            let svcText = (ord.serviceChargeAmount && Number(ord.serviceChargeAmount) > 0) ? ` (incl. Service $${ord.serviceChargeAmount})` : '';
+            let notesArr = [];
+            if (ord.serviceChargeAmount && Number(ord.serviceChargeAmount) > 0) notesArr.push(`Service $${ord.serviceChargeAmount}`);
+            if (ord.discountAmount && Number(ord.discountAmount) > 0) notesArr.push(`Discount -$${ord.discountAmount}`);
+            let extraSummary = notesArr.length > 0 ? ` (${notesArr.join(', ')})` : '';
+
             let bodyHtml = `
-                <div style="font-size: 15px; font-weight: bold; color: #2c3e50;">Time: ${ord.time} | Total: $${ord.totalAmount}${svcText}</div>
+                <div style="font-size: 15px; font-weight: bold; color: #2c3e50;">Time: ${ord.time} | Total: $${ord.totalAmount}${extraSummary}</div>
                 <hr style="margin: 8px 0;">
                 <div style="font-size: 15px; line-height: 1.3;">${itemsList}</div>
             `;
@@ -2654,6 +2897,17 @@
                 }
             }
 
+            let discRow = document.getElementById('daily-discount-row');
+            let discAmtEl = document.getElementById('daily-discount-amount');
+            if (discRow && discAmtEl) {
+                if (isDiscountEnabled) {
+                    discRow.style.display = 'flex';
+                    discAmtEl.innerText = Number(dailyStats.discountTotal || 0);
+                } else {
+                    discRow.style.display = 'none';
+                }
+            }
+
             let grandTotalCount = (Number(dailyStats.cashCount) || 0) + (Number(dailyStats.cardCount) || 0) + (Number(dailyStats.bulkCount) || 0);
             let grandTotalSales = roundMoney((Number(dailyStats.cashTotal) || 0) + (Number(dailyStats.cardTotal) || 0) + (Number(dailyStats.bulkTotal) || 0));
 
@@ -2665,6 +2919,7 @@
             cart = [];
             subtotal = 0;
             serviceChargeAmount = 0;
+            discountAmount = 0;
             total = 0;
             isBulkOptionSelected = false;
             editingOrderNo = null;
@@ -2676,6 +2931,11 @@
             if (svcEl) {
                 svcEl.style.display = 'none';
                 svcEl.innerText = '';
+            }
+            let discEl = document.getElementById('cart-discount-info');
+            if (discEl) {
+                discEl.style.display = 'none';
+                discEl.innerText = '';
             }
             document.getElementById('total-amount').innerText = '0';
 
@@ -2718,8 +2978,15 @@
                     return `• ${it.title}${detailsStr} - $${it.price}`;
                 }).join('<br>');
 
-                let svcNote = (log.serviceChargeAmount && Number(log.serviceChargeAmount) > 0)
-                    ? `<div style="font-size: 12px; color: #8e44ad; margin-top: 4px;">Service Charge (${log.serviceChargeRate || 0}%): +$${log.serviceChargeAmount}</div>`
+                let extraLines = [];
+                if (log.serviceChargeAmount && Number(log.serviceChargeAmount) > 0) {
+                    extraLines.push(`Service Charge (${log.serviceChargeRate || 0}%): +$${log.serviceChargeAmount}`);
+                }
+                if (log.discountAmount && Number(log.discountAmount) > 0) {
+                    extraLines.push(`Discount (${log.discountRate || 0}%): -$${log.discountAmount}`);
+                }
+                let extraNote = extraLines.length > 0
+                    ? `<div style="font-size: 12px; color: #8e44ad; margin-top: 4px;">${extraLines.join(' | ')}</div>`
                     : '';
 
                 let paymentText = log.paymentType || 'Cash';
@@ -2736,7 +3003,7 @@
                         <div style="font-size: 13px; color: #444; margin-top: 6px; margin-bottom: 4px;">
                             ${itemsList}
                         </div>
-                        ${svcNote}
+                        ${extraNote}
                         <div style="display: flex; gap: 8px; margin-top: 8px;">
                             <button style="background: #2980b9; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: bold; flex: 1; font-family: 'Calibri', Arial, sans-serif;" onclick="loadOrderForEditByOrderNo(${targetOrderNo})">📥 Load to Cart (Edit)</button>
                             <button style="background: #e74c3c; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: bold; flex: 1; font-family: 'Calibri', Arial, sans-serif;" onclick="deletePastOrder(${targetOrderNo})">🗑️ Delete Order</button>
@@ -2789,12 +3056,14 @@
         }
 
         function computeStatsFromRemainingOrders(remainingLogs) {
-            let stats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0, serviceTotal: 0 };
+            let stats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0, serviceTotal: 0, discountTotal: 0 };
             remainingLogs.forEach(ord => {
                 let pType = ord.paymentType || 'Cash';
                 let pAmt = Number(ord.totalAmount) || 0;
                 let sAmt = Number(ord.serviceChargeAmount) || 0;
+                let dAmt = Number(ord.discountAmount) || 0;
                 stats.serviceTotal = roundMoney(stats.serviceTotal + sAmt);
+                stats.discountTotal = roundMoney(stats.discountTotal + dAmt);
 
                 if (pType === 'Cash') {
                     stats.cashCount += 1;
@@ -2908,6 +3177,7 @@
         }
 
         function openReportModal() {
+            closeHamburgerMenu();
             if (isPassProtectionEnabled) {
                 document.getElementById('auth-modal').style.display = 'flex';
                 document.getElementById('auth-pass-input').value = '';
@@ -3106,7 +3376,7 @@
         async function resetTodaySalesDirectly() {
             if (!confirm("คุณต้องการรีเซ็ตยอดขายและจำนวน Rump Steak ของวันนี้ให้กลับเป็น 0 ใช่หรือไม่?")) return;
             let currentKey = getTodayDateKey();
-            dailyStats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0, serviceTotal: 0 };
+            dailyStats = { cashCount: 0, cashTotal: 0, cardCount: 0, cardTotal: 0, bulkCount: 0, bulkTotal: 0, serviceTotal: 0, discountTotal: 0 };
             sundayRumpCounts[currentKey] = 0;
             allOrderLogs[currentKey] = [];
             localStorage.setItem('pos_all_order_logs', JSON.stringify(allOrderLogs));
@@ -3176,6 +3446,7 @@
             let aggCardCount = 0, aggCardTotal = 0;
             let aggBulkCount = 0, aggBulkTotal = 0;
             let aggServiceTotal = 0;
+            let aggDiscountTotal = 0;
             let aggRumpTotal = 0;
             let combinedLogs = [];
 
@@ -3202,6 +3473,7 @@
                     aggBulkCount += fromLogs.bulkCount;
                     aggBulkTotal = roundMoney(aggBulkTotal + fromLogs.bulkTotal);
                     aggServiceTotal = roundMoney(aggServiceTotal + fromLogs.serviceTotal);
+                    aggDiscountTotal = roundMoney(aggDiscountTotal + fromLogs.discountTotal);
                 } else {
                     let st = (dateStr === getTodayDateKey()) ? dailyStats : allSalesData[dateStr];
                     if (st) {
@@ -3212,6 +3484,7 @@
                         aggBulkCount += (Number(st.bulkCount) || 0);
                         aggBulkTotal = roundMoney(aggBulkTotal + (Number(st.bulkTotal) || 0));
                         aggServiceTotal = roundMoney(aggServiceTotal + (Number(st.serviceTotal) || 0));
+                        aggDiscountTotal = roundMoney(aggDiscountTotal + (Number(st.discountTotal) || 0));
                     }
                 }
             });
@@ -3398,8 +3671,15 @@
                         return `• ${it.title}${detailsStr} - $${it.price}`;
                     }).join('<br>');
 
-                    let svcInfo = (log.serviceChargeAmount && Number(log.serviceChargeAmount) > 0)
-                        ? `<div style="font-size: 12px; color: #8e44ad; margin-top: 4px;">Service Charge (${log.serviceChargeRate || 0}%): +$${log.serviceChargeAmount}</div>`
+                    let extraLines = [];
+                    if (log.serviceChargeAmount && Number(log.serviceChargeAmount) > 0) {
+                        extraLines.push(`Service Charge (${log.serviceChargeRate || 0}%): +$${log.serviceChargeAmount}`);
+                    }
+                    if (log.discountAmount && Number(log.discountAmount) > 0) {
+                        extraLines.push(`Discount (${log.discountRate || 0}%): -$${log.discountAmount}`);
+                    }
+                    let extraInfo = extraLines.length > 0
+                        ? `<div style="font-size: 12px; color: #8e44ad; margin-top: 4px;">${extraLines.join(' | ')}</div>`
                         : '';
 
                     let paymentText = log.paymentType || 'Cash';
@@ -3412,7 +3692,7 @@
                                 <span>${paymentText}: $${log.totalAmount}</span>
                             </div>
                             <div style="font-size: 13px; color: #444; margin-top: 6px;">${itemsList}</div>
-                            ${svcInfo}
+                            ${extraInfo}
                         </div>
                     `;
                 });
@@ -3537,11 +3817,16 @@
             updatePassProtectBtnUI();
             updatePrinterBtnUI();
             updateServiceChargeBtnUI();
+            updateDiscountBtnUI();
             updateDailyReportUI();
             updateSundayRumpBadgeUI();
             updateBackdateBannerUI();
             initRealtimeSync();
             switchCategory('lunch');
+
+            document.addEventListener('click', function() {
+                closeHamburgerMenu();
+            });
 
             document.getElementById('kitchen-order-modal').addEventListener('click', function(event) {
                 if (event.target === this) {
